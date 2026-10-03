@@ -8,6 +8,8 @@ import { EngineClient } from './engine/client.js';
 import { $, h, fmtBytes, fmtMs, fmtInt, debounce, samplingDistribution, sampleFrom } from './util.js';
 import { createMachine } from './viz/machine.js';
 
+import { initGlossary } from './glossary.js';
+import primer from './chapters/primer.js';
 import artifact from './chapters/artifact.js';
 import tokenizer from './chapters/tokenizer.js';
 import embed from './chapters/embed.js';
@@ -415,7 +417,8 @@ function init() {
   initChrome();
   const machine = createMachine($('#machine'), $('#machine-caption'), ctx);
   ctx.machine = machine;
-  for (const mod of [artifact, tokenizer, embed, rope, attention, ffn, sample, kv, roofline, prefix, summary]) {
+  initGlossary($('#tooltip'));
+  for (const mod of [primer, artifact, tokenizer, embed, rope, attention, ffn, sample, kv, roofline, prefix, summary]) {
     chapters.push(mod(ctx));
   }
   chapters.push(machine);

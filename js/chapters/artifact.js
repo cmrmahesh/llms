@@ -138,44 +138,61 @@ export default function artifact(ctx) {
     if (btn) list.scrollTop = btn.offsetTop - 60;
   }
 
+  function role(name) {
+    const tied = S.config?.tie_word_embeddings;
+    if (name.includes('embed_tokens')) return `The vocabulary table. Row n is the vector for token ID n (chapter 3).${tied ? ' This model reuses it at the very end to score every possible next token (chapter 7).' : ''}`;
+    if (name.includes('lm_head')) return 'Scores every vocabulary entry as the possible next token (chapter 7).';
+    if (name.includes('q_proj')) return 'Turns each token’s vector into its query: “what am I looking for?” (chapter 5).';
+    if (name.includes('k_proj')) return 'Turns each token’s vector into its key: “what do I contain?” It is smaller than the query matrix because several heads share each key (chapter 5).';
+    if (name.includes('v_proj')) return 'Turns each token’s vector into its value: the information it passes on when another token pays attention to it (chapter 5).';
+    if (name.includes('o_proj')) return 'Combines the results of all attention heads into one vector, which is added to the token’s running total (chapter 6).';
+    if (name.includes('gate_proj')) return 'Feed-forward, step 1 of 3: stretches 576 numbers to 1,536. This one decides how much of each passes through (chapter 6).';
+    if (name.includes('up_proj')) return 'Feed-forward, step 2 of 3: also stretches 576 numbers to 1,536. This one carries the content that the gate lets through (chapter 6).';
+    if (name.includes('down_proj')) return 'Feed-forward, step 3 of 3: squeezes the 1,536 numbers back to 576 and adds them to the token’s running total (chapter 6).';
+    return 'A list of scale factors, one per position in the vector. Before each block, the token’s vector is rescaled to a standard size and then multiplied by these.';
+  }
+
   function detail(t) {
     const n = numel(t);
     const box = h('div', { class: 'tensor-detail' },
       h('h4', {}, t.name),
-      h('div', { class: 'facts' },
-        h('span', {}, 'Shape ', h('b', {}, t.shape.join(' × '))),
-        h('span', {}, 'Numbers ', h('b', {}, fmtInt(n))),
-        h('span', {}, `${t.dtype} `, h('b', {}, fmtBytes(t.end - t.begin))),
-        S.header ? h('span', {}, 'File bytes ', h('b', {}, `${fmtInt(t.begin)}–${fmtInt(t.end)}`)) : null));
+      h('p', { class: 'tensor-role' }, role(t.name)),
+      h('p', { class: 'tensor-io' }, t.shape.length === 2
+        ? `${fmtInt(t.shape[0])} rows × ${fmtInt(t.shape[1])} columns: takes in a vector of ${fmtInt(t.shape[1])} numbers and gives out ${fmtInt(t.shape[0])}. That's ${fmtInt(n)} numbers, ${fmtBytes(t.end - t.begin)} in the file.`
+        : `${fmtInt(n)} numbers, ${fmtBytes(t.end - t.begin)} in the file.`));
     const p = S.previews?.find(x => x.name === t.name);
     if (!p) {
-      box.append(h('p', { class: 'caption' }, S.loaded ? '' : 'Load the weights to see the actual values.'));
+      box.append(h('p', { class: 'caption' }, S.loaded ? '' : 'Load the weights to see the actual numbers.'));
       return box;
+    }
+    // A few raw numbers, as they are
+    const raw = h('div', {});
+    box.append(raw);
+    if (t.shape.length === 2) {
+      ctx.engine.call('slice', { name: t.name, rows: 4, cols: 7 }).then(r => {
+        const tbl = h('table', { class: 'raw-grid', 'aria-label': 'The first 4 rows and 7 columns of this matrix' },
+          h('tbody', {}, [0, 1, 2, 3].map(i => h('tr', {}, Array.from(r.data.subarray(i * 7, i * 7 + 7), v => h('td', {}, v.toFixed(3)))))));
+        raw.append(h('p', { class: 'caption', style: { margin: '6px 0 0' } }, 'The top-left corner, exactly as stored:'), tbl);
+      }).catch(() => {});
     }
     if (p.grid) {
       const cv = h('canvas', { class: 'hm', 'aria-label': `Sampled values of ${t.name}` });
-      cv.style.aspectRatio = `${p.gc} / ${p.gr}`;
-      cv.style.maxHeight = '260px';
+      // Canvas keeps its intrinsic aspect ratio: fix the height, let the width follow.
+      cv.style.height = `${Math.min(220, Math.max(120, 220 * p.gr / p.gc))}px`;
       cv.style.width = 'auto';
       cv.style.maxWidth = '100%';
       drawGrid(cv, p.grid, p.gr, p.gc, diverging, 3 * p.std || 1);
-      box.append(cv, h('div', { class: 'scale' }, h('span', {}, `−${(3 * p.std).toFixed(3)}`), h('span', { class: 'grad' }), h('span', {}, `+${(3 * p.std).toFixed(3)}`)),
-        h('p', { class: 'caption' }, `A ${p.gr} × ${p.gc} grid sampled evenly from the ${t.shape.join(' × ')} matrix. Rows are output units, columns are inputs.`));
-    } else {
-      box.append(h('p', { class: 'caption' }, 'A norm weight: one scale factor per dimension, applied after normalising.'));
+      box.append(h('p', { class: 'caption', style: { margin: '10px 0 0' } }, `The whole matrix at a glance: ${p.gr} × ${p.gc} numbers picked evenly from it, one coloured square each.`), cv,
+        h('div', { class: 'scale' }, h('span', {}, `−${(3 * p.std).toFixed(2)}`), h('span', { class: 'grad' }), h('span', {}, `+${(3 * p.std).toFixed(2)}`)));
     }
-    box.append(h('div', { class: 'facts' },
-      h('span', {}, 'Mean ', h('b', {}, p.mean.toFixed(4))),
-      h('span', {}, 'Std ', h('b', {}, p.std.toFixed(4))),
-      h('span', {}, 'Largest |w| ', h('b', {}, p.absmax.toFixed(3)))));
-    // A few raw numbers
-    const raw = h('p', { class: 'caption mono' }, '');
-    box.append(raw);
-    if (t.shape.length === 2) {
-      ctx.engine.call('slice', { name: t.name, rows: 1, cols: 6 }).then(r => {
-        raw.textContent = `Row 0 begins: ${Array.from(r.data, v => v.toFixed(4)).join(', ')}, …`;
-      }).catch(() => {});
-    }
+    box.append(h('ul', { class: 'notice-list' },
+      t.shape.length === 2
+        ? [
+          h('li', {}, `The numbers are small: about two-thirds lie between −${p.std.toFixed(2)} and +${p.std.toFixed(2)}, and the largest is ${p.absmax.toFixed(2)}.`),
+          h('li', {}, `They average out to about zero (${p.mean.toFixed(4)}), so positive and negative values balance.`),
+          h('li', {}, 'Apart from faint stripes (some input positions carry bigger numbers throughout), there’s no picture to see. What the model learned is spread across all the numbers working together, not stored in any one place.'),
+        ]
+        : [h('li', {}, `Average ${p.mean.toFixed(3)}, largest ${p.absmax.toFixed(2)}. Each factor stretches or shrinks one of the ${fmtInt(n)} positions.`)]));
     return box;
   }
 

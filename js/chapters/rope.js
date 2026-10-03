@@ -1,4 +1,5 @@
-// 4. Position via RoPE: rotate query/key pairs by position × frequency.
+// 4. Word order via RoPE, shown as clock hands: each position turns the hand,
+// and the angle between two hands depends only on how far apart they are.
 
 import { $, h } from '../util.js';
 
@@ -6,8 +7,9 @@ const NS = 'http://www.w3.org/2000/svg';
 
 export default function rope(ctx) {
   const { S } = ctx;
-  let pair = 0, pos = 7, dist = 3;
+  let pair = 0, qPos = 12, kPos = 9, shift = 0;
   let q = null, k = null, fromModel = false;
+  let dial = null, readout = null, shiftBtn = null, kInput = null, kOut = null;
 
   function dims() {
     const c = S.config;
@@ -16,7 +18,6 @@ export default function rope(ctx) {
   }
 
   function exampleVectors(HD) {
-    // Deterministic pseudo-random vectors when the model hasn't run yet.
     let s = 7;
     const r = () => ((s = (s * 16807) % 2147483647) / 2147483647) * 2 - 1;
     return [Float32Array.from({ length: HD }, r), Float32Array.from({ length: HD }, r)];
@@ -33,15 +34,16 @@ export default function rope(ctx) {
     return out;
   }
   const dot = (a, b) => a.reduce((s, x, i) => s + x * b[i], 0);
+  const deg = r => r * 180 / Math.PI;
+  const wrap = a => { a = ((a % 360) + 360) % 360; return a > 180 ? a - 360 : a; };
 
-  function svgEl(tag, attrs, parent) {
+  function svgEl(tag, attrs, parent, text) {
     const e = document.createElementNS(NS, tag);
     for (const [k2, v] of Object.entries(attrs)) e.setAttribute(k2, v);
+    if (text !== undefined) e.textContent = text;
     parent?.append(e);
     return e;
   }
-
-  let dial = null, readout = null;
 
   function build() {
     const el = $('#rope');
@@ -49,75 +51,79 @@ export default function rope(ctx) {
     if (!S.config) return;
     const { half } = dims();
     dial = h('div', {});
-    readout = h('div', { class: 'readout' });
+    readout = h('div', { class: 'readout', 'aria-live': 'polite' });
     const ctl = h('div', { class: 'ctl' });
-    const slider = (label, min, max, val, on) => {
-      const out = h('output', {}, String(val));
-      const inp = h('input', { type: 'range', min, max, value: val, 'aria-label': label });
-      inp.addEventListener('input', () => { out.textContent = inp.value; on(+inp.value); draw(); });
-      ctl.append(h('label', {}, label, ' ', out), inp);
+    const slider = (label, min, max, get, set, hint) => {
+      const out = h('output', {}, String(get()));
+      const inp = h('input', { type: 'range', min, max, value: get(), 'aria-label': label });
+      inp.addEventListener('input', () => { set(+inp.value); out.textContent = String(get()); inp.value = get(); draw(); });
+      ctl.append(h('label', {}, label, ' ', out, hint ? h('span', { class: 'dim' }, ` ${hint}`) : null), inp);
+      return [inp, out];
     };
-    slider('Pair', 0, half - 1, pair, v => { pair = v; });
-    slider('Position m', 0, 512, pos, v => { pos = v; });
-    slider('Distance m − n', 0, 64, dist, v => { dist = v; });
-    ctl.append(readout);
+    slider('Position of the word asking (query)', 0, 300, () => qPos, v => { qPos = v; if (kPos > qPos) { kPos = qPos; syncK(); } });
+    [kInput, kOut] = slider('Position of the earlier word (key)', 0, 300, () => kPos, v => { kPos = Math.min(v, qPos); });
+    slider('Which pair of numbers', 0, half - 1, () => pair, v => { pair = v; }, '(0 turns fastest)');
+    shiftBtn = h('button', { class: 'btn small', 'aria-pressed': 'false' }, 'Move both words 1,000 positions later');
+    shiftBtn.addEventListener('click', () => { shift = shift ? 0 : 1000; shiftBtn.setAttribute('aria-pressed', String(!!shift)); draw(); });
+    ctl.append(h('div', { style: { margin: '14px 0 4px' } }, shiftBtn), readout);
     el.append(dial, ctl);
     draw();
   }
+  function syncK() { if (kInput) { kInput.value = kPos; kOut.textContent = String(kPos); } }
 
   function draw() {
     if (!dial) return;
     const { HD, half, base } = dims();
     if (!q) [q, k] = exampleVectors(HD);
-    const theta = Math.pow(base, -2 * pair / HD);
-    const ang = pos * theta;
+    const omega = Math.pow(base, -2 * pair / HD); // radians per position for this pair
+    const m = qPos + shift, n = kPos + shift;
+    const aq0 = Math.atan2(q[pair + half], q[pair]), ak0 = Math.atan2(k[pair + half], k[pair]);
+    const aq = aq0 + m * omega, ak = ak0 + n * omega;
+    const between = wrap(deg(aq - ak));
 
-    // --- dial ---
-    const svg = svgEl('svg', { viewBox: '-150 -150 300 300', role: 'img', 'aria-label': `Pair ${pair} of the query vector rotated by ${ang.toFixed(2)} radians` });
-    svgEl('circle', { r: 120, fill: 'none', stroke: 'var(--rule)' }, svg);
-    svgEl('line', { x1: -140, x2: 140, y1: 0, y2: 0, stroke: 'var(--rule-2)' }, svg);
-    svgEl('line', { y1: -140, y2: 140, x1: 0, x2: 0, stroke: 'var(--rule-2)' }, svg);
-    const x0 = q[pair], y0 = q[pair + half];
-    const r0 = Math.hypot(x0, y0) || 1;
-    const sc = 110 / r0;
-    const a0 = Math.atan2(y0, x0);
-    const x1 = r0 * Math.cos(a0 + ang), y1 = r0 * Math.sin(a0 + ang);
-    // arc from original to rotated (mod 2π, drawn up to one turn)
-    const sweep = ang % (2 * Math.PI);
-    const steps = 48;
-    let d = '';
-    for (let i = 0; i <= steps; i++) {
-      const t = a0 + sweep * i / steps;
-      d += `${i ? 'L' : 'M'}${(70 * Math.cos(t)).toFixed(1)} ${(-70 * Math.sin(t)).toFixed(1)}`;
+    const svg = svgEl('svg', { viewBox: '-150 -150 300 320', role: 'img', 'aria-label': `Two clock hands; the angle between them is ${Math.round(Math.abs(between))} degrees` });
+    svgEl('circle', { r: 120, fill: 'var(--panel-2)', stroke: 'var(--rule)' }, svg);
+    for (let i = 0; i < 12; i++) {
+      const a = i * Math.PI / 6;
+      svgEl('line', { x1: 112 * Math.cos(a), y1: 112 * Math.sin(a), x2: 120 * Math.cos(a), y2: 120 * Math.sin(a), stroke: 'var(--rule)', 'stroke-width': 2 }, svg);
     }
-    svgEl('path', { d, fill: 'none', stroke: 'var(--sm)', 'stroke-width': 1.5, 'stroke-dasharray': '3 3' }, svg);
-    svgEl('line', { x1: 0, y1: 0, x2: x0 * sc, y2: -y0 * sc, stroke: 'var(--ink-3)', 'stroke-width': 2 }, svg);
-    svgEl('circle', { cx: x0 * sc, cy: -y0 * sc, r: 6, fill: 'var(--panel)', stroke: 'var(--ink-3)', 'stroke-width': 2 }, svg);
-    svgEl('line', { x1: 0, y1: 0, x2: x1 * sc, y2: -y1 * sc, stroke: 'var(--sm)', 'stroke-width': 2.5 }, svg);
-    svgEl('circle', { cx: x1 * sc, cy: -y1 * sc, r: 6.5, fill: 'var(--sm)' }, svg);
-    const t1 = svgEl('text', { x: -144, y: -132, 'font-size': 11, fill: 'var(--ink-3)' }, svg);
-    t1.textContent = `dims ${pair} and ${pair + half}`;
-    const t2 = svgEl('text', { x: -144, y: 144, 'font-size': 11, fill: 'var(--ink-3)' }, svg);
-    t2.textContent = 'hollow: before · filled: after';
-
-    // --- readout ---
-    const turn = 2 * Math.PI / theta;
-    const m = pos, n = Math.max(0, pos - dist);
-    const qa = rotate(q, m, base, HD), ka = rotate(k, n, base, HD);
-    const qb = rotate(q, m + 1000, base, HD), kb = rotate(k, n + 1000, base, HD);
-    const qc = rotate(q, m, base, HD), kc = rotate(k, Math.max(0, m - dist - 20), base, HD);
-    readout.textContent = '';
-    readout.append(
-      h('p', {}, `Pair ${pair} turns `, h('b', {}, `${theta.toPrecision(3)} rad`), ' per position, one full turn every ', h('b', {}, `${turn < 1e5 ? turn.toFixed(turn < 10 ? 1 : 0) : turn.toExponential(1)} positions`), '.'),
-      h('p', {}, `At position ${m} it has rotated `, h('b', {}, `${ang.toFixed(2)} rad`), '.'),
-      h('p', { style: { marginTop: '14px' } }, `Query at ${m} · key at ${n}: `, h('b', {}, dot(qa, ka).toFixed(4))),
-      h('p', {}, `Query at ${m + 1000} · key at ${n + 1000}: `, h('b', {}, dot(qb, kb).toFixed(4)), h('span', { class: 'dim' }, '  same distance, same score')),
-      h('p', {}, `Query at ${m} · key at ${Math.max(0, m - dist - 20)}: `, h('b', {}, dot(qc, kc).toFixed(4)), h('span', { class: 'dim' }, '  further away, different score')),
-      h('p', { class: 'caption' }, fromModel
-        ? `Real vectors: query and key of head 0, layer 0, for the last token of your prompt, before rotation.`
-        : 'Example vectors. Run the model to use the real query and key from layer 0.'));
+    // arc between the hands
+    const steps = 40;
+    let d = '';
+    const from = -ak, span = -(aq - ak);
+    const spanW = ((span % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
+    for (let i = 0; i <= steps; i++) {
+      const t = from + spanW * i / steps;
+      d += `${i ? 'L' : 'M'}${(52 * Math.cos(t)).toFixed(1)} ${(52 * Math.sin(t)).toFixed(1)}`;
+    }
+    svgEl('path', { d, fill: 'none', stroke: 'var(--ink)', 'stroke-width': 2 }, svg);
+    const hand = (a, color, len) => {
+      const x = len * Math.cos(a), y = -len * Math.sin(a);
+      svgEl('line', { x1: 0, y1: 0, x2: x, y2: y, stroke: color, 'stroke-width': 5, 'stroke-linecap': 'round' }, svg);
+    };
+    hand(ak, 'var(--host)', 92);
+    hand(aq, 'var(--sm)', 104);
+    svgEl('circle', { r: 6, fill: 'var(--ink)' }, svg);
+    svgEl('text', { x: 0, y: 142, 'text-anchor': 'middle', 'font-size': 13, fill: 'var(--ink)', 'font-weight': 650 }, svg, `Angle between: ${Math.abs(between).toFixed(0)}°`);
+    svgEl('text', { x: -60, y: 162, 'text-anchor': 'middle', 'font-size': 11.5, fill: 'var(--sm)', 'font-weight': 650 }, svg, `query, position ${m}`);
+    svgEl('text', { x: 60, y: 162, 'text-anchor': 'middle', 'font-size': 11.5, fill: 'var(--host)', 'font-weight': 650 }, svg, `key, position ${n}`);
     dial.textContent = '';
     dial.append(svg);
+
+    // scores using all pairs
+    const qa = rotate(q, qPos, base, HD), ka = rotate(k, kPos, base, HD);
+    const qb = rotate(q, qPos + 1000, base, HD), kb = rotate(k, kPos + 1000, base, HD);
+    const turn = 360 * omega / (2 * Math.PI);
+    readout.textContent = '';
+    readout.append(
+      h('p', {}, `This pair turns `, h('b', {}, `${turn < 0.1 ? turn.toFixed(4) : turn.toFixed(1)}° per position`),
+        turn > 1 ? `, a full circle every ${(360 / turn).toFixed(1)} positions.` : ', so slowly that it only matters for words far apart.'),
+      h('p', {}, `The two words are `, h('b', {}, `${qPos - kPos} position${qPos - kPos === 1 ? '' : 's'} apart`), `. Press the button: both hands spin to new places, but the angle between them stays the same.`),
+      h('p', { class: 'score' }, 'How strongly the query matches the key, using all 32 pairs together: ',
+        h('b', {}, dot(qa, ka).toFixed(3)), shift ? '' : h('span', { class: 'dim' }, ` (1,000 positions later: ${dot(qb, kb).toFixed(3)}, the same)`)),
+      h('p', { class: 'caption' }, fromModel
+        ? 'Real vectors: the query and key from the model’s first layer, first attention head, for the last token of your prompt.'
+        : 'Example vectors for now. After you generate, these become the model’s real query and key.'));
   }
 
   return {
@@ -125,7 +131,7 @@ export default function rope(ctx) {
       if (reason === 'model') { q = k = null; fromModel = false; build(); }
       if (reason === 'prefill') {
         const tr = S.run?.prefill?.trace;
-        if (tr?.qkv) { q = tr.qkv.qPre; k = tr.qkv.kPre; fromModel = true; pos = Math.min(512, tr.qkv.pos); build(); }
+        if (tr?.qkv) { q = tr.qkv.qPre; k = tr.qkv.kPre; fromModel = true; draw(); }
       }
     },
   };

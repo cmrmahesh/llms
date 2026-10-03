@@ -16,12 +16,19 @@ Hugging Face. After that they come from the browser's Cache Storage.
 
 ## What the page covers, in order
 
+It's written for someone new to the topic. Chapter 0 covers vectors, matrices,
+tensors, matrix multiplication, weights and the hardware. Every chapter opens
+with an "in plain words" explanation and keeps the technical version in a
+"Go deeper" section. Underlined terms show a definition on hover, focus or tap
+(`js/glossary.js`).
+
 | # | Chapter | Where it runs on a real server |
 |---|---------|--------------------------------|
+| 0 | The ideas you need first: vectors, tensors, matrix × vector, weights, hardware | — |
 | 1 | What's in the download: config, tokenizer, safetensors header, quantization | disk → RAM → HBM |
-| 2 | Tokenizer: special tokens, regex pre-split, BPE merge replay, ID lookup | CPU |
+| 2 | Tokenizer: vocabulary explorer, pre-split, BPE merge replay, ID lookup | CPU |
 | 3 | Embedding lookup and nearest neighbours | HBM gather |
-| 4 | Position via RoPE (rotation, relative-distance property) | SM registers |
+| 4 | Word order via RoPE, shown as clock hands using the model's real vectors | SM registers |
 | 5 | Attention: layer diagram with real shapes, Q/K/V, attention maps, per-op time | HBM → SM |
 | 6 | Feed-forward (SwiGLU), the residual stream, logit lens | HBM → SM |
 | 7 | Logits → softmax → temperature / top-k / top-p → token → bytes → text | SM, then 4 bytes to CPU |

@@ -2,6 +2,7 @@
 // Each chapter lights up the parts it uses and animates the data it moves.
 
 import { fmtBytes, fmtInt } from '../util.js';
+import { TERMS } from '../glossary.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const COL = {
@@ -50,6 +51,7 @@ function chapters(d, S) {
   const file = d ? fmtBytes(d.params * 2) : '';
   return {
     hero: { on: [], flows: [], cap: 'This map follows you down the page. It shows which part of a GPU server each step uses, and what crosses between them.' },
+    primer: { on: ['cpu', 'ram', 'hbm', 'l2', 'sm'], flows: [['ram-hbm', 'hbm', 'weights, once']], cap: 'A GPU server. Text work happens on the CPU (teal). The model’s weights sit in the GPU’s own memory, HBM (amber), and the multiplying happens in the GPU’s compute units, SMs (pink). The dotted lines show data moving.' },
     console: { on: ['cpu'], flows: [], cap: 'Your prompt is a string in CPU memory. Nothing has touched the GPU yet.' },
     artifact: { on: ['disk', 'ram', 'hbm'], flows: [['disk-ram', 'link', file], ['ram-hbm', 'hbm', 'copied once']], cap: `At startup the engine reads ${file} of weights from disk into RAM and copies them over PCIe into HBM. They stay there for every request after that.` },
     tokenizer: { on: ['cpu'], flows: [], cap: 'Tokenizing is string work on one CPU core: microseconds for a short prompt. Its output is one 4-byte integer per token.' },
@@ -93,6 +95,8 @@ export function createMachine(root, captionEl, ctx) {
   for (const [id, n] of Object.entries(NODES)) {
     const g = el('g', { class: 'm-node' });
     const r = el('rect', { x: n.x, y: n.y, width: n.w, height: n.h, rx: 6, fill: 'var(--panel)', stroke: 'var(--rule)', 'stroke-width': 1.5 }, g);
+    const term = { cpu: 'cpu', ram: 'ram', hbm: 'hbm', l2: 'l2', sm: 'sm' }[id];
+    if (term) el('title', {}, g).textContent = TERMS[term];
     const t = el('text', { x: n.x + 10, y: n.y + 20, 'font-size': 12.5, 'font-weight': 650, fill: 'var(--ink-3)' }, g);
     t.textContent = n.label;
     let s = null;

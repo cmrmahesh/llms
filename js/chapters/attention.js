@@ -15,6 +15,47 @@ export default function attention(ctx) {
   const { S } = ctx;
   let layer = 0, head = 0, query = -1, source = 'prompt';
   let view = null;
+  const sliders = {};
+
+  function jumpTo(l, hh) {
+    layer = l; head = hh; source = 'prompt'; query = -1;
+    for (const [k, v] of [['Layer', l], ['Head', hh]]) { sliders[k].inp.value = v; sliders[k].out.textContent = String(v); }
+    const sel = $('#attn-controls select'); if (sel) sel.value = 'prompt';
+    draw();
+    $('#attn-map').scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }
+
+  // Find attention sinks and previous-token heads in this prompt's real attention.
+  function notice() {
+    const el = $('#attn-notice');
+    const tr = S.run?.prefill?.trace;
+    const d = ctx.dims();
+    if (!tr || !tr.fullAttn || tr.T < 6) return;
+    const { T, N, startPos } = tr;
+    const stats = [];
+    for (let l = 0; l < d.L; l++) for (let hh = 0; hh < d.H; hh++) {
+      let sink = 0, prev = 0, n = 0;
+      for (let t = 3; t < T; t++) {
+        const o = ((l * d.H + hh) * T + t) * N;
+        sink += tr.attn[o]; prev += tr.attn[o + startPos + t - 1]; n++;
+      }
+      stats.push({ l, h: hh, sink: sink / n, prev: prev / n });
+    }
+    const sinks = stats.filter(s => s.sink > 0.5).length;
+    const topSink = [...stats].sort((a, b) => b.sink - a.sink)[0];
+    const topPrev = [...stats].sort((a, b) => b.prev - a.prev)[0];
+    const btn = (s, label) => {
+      const b = h('button', { class: 'btn small' }, label);
+      b.addEventListener('click', () => jumpTo(s.l, s.h));
+      return b;
+    };
+    el.textContent = '';
+    el.append(h('b', {}, 'What to notice in your prompt: '),
+      `${sinks} of ${d.L * d.H} heads give more than half their attention to the very first token. That’s a known habit called an attention sink: a head with nothing useful to look at parks its attention there. The most extreme is `,
+      btn(topSink, `layer ${topSink.l}, head ${topSink.h}`), ` (${Math.round(topSink.sink * 100)}%). `,
+      `Other heads mostly look at the word just before, which shows up as a dark line just left of the diagonal. The clearest one here is `,
+      btn(topPrev, `layer ${topPrev.l}, head ${topPrev.h}`), ` (${Math.round(topPrev.prev * 100)}% on the previous word).`);
+  }
 
   // ---------------- layer diagram
   function diagram() {
@@ -94,6 +135,7 @@ export default function attention(ctx) {
       const out = h('output', {}, String(get()));
       const inp = h('input', { type: 'range', min: 0, max, value: get(), 'aria-label': label });
       inp.addEventListener('input', () => { set(+inp.value); out.textContent = inp.value; draw(); });
+      sliders[label] = { inp, out };
       return h('label', {}, label, inp, out);
     };
     const src = h('select', { class: 'inline', 'aria-label': 'Which pass to show' },
@@ -244,7 +286,7 @@ export default function attention(ctx) {
       }
       if (reason === 'tokens') diagram();
       if (reason === 'weights') draw();
-      if (reason === 'prefill') { query = -1; draw(); opTimes(); }
+      if (reason === 'prefill') { query = -1; draw(); opTimes(); notice(); }
       if (reason === 'step' && source === 'latest' && view) draw();
     },
   };

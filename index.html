@@ -33,21 +33,30 @@
 <div class="layout">
 <main id="top">
 
+
   <!-- HERO ---------------------------------------------------------------->
   <section class="hero" data-map="hero">
     <div class="hero-copy">
       <h1>Every number between your prompt and its answer</h1>
-      <p class="lede">A real open-weight language model, <b id="hero-model">SmolLM2-135M-Instruct</b>, runs inside this tab. Type a prompt and follow it through the tokenizer, the transformer layers, the KV cache and the sampler. The machine map follows along, showing where each step would run on a GPU server and how many bytes it moves.</p>
+      <p class="lede">A real language model, <b id="hero-model">SmolLM2-135M-Instruct</b>, runs inside this tab. Type a question and follow it step by step, from your words to the model’s answer, using the model’s actual numbers. No background needed: the first section covers the few ideas everything else builds on, and every underlined term explains itself when you point at it.</p>
       <div class="hero-actions">
         <button class="btn primary" id="hero-load">Load the model <span class="dim" id="hero-size">269 MB</span></button>
-        <a class="btn ghost" href="#ch-tokenizer">Start with the tokenizer, no download</a>
+        <a class="btn ghost" href="#ch-primer">Start with the basics</a>
       </div>
-      <p class="fineprint">The weights download from Hugging Face once and stay in your browser cache. Nothing you type leaves this page.</p>
+      <p class="fineprint">The model downloads from Hugging Face once and stays in your browser. Nothing you type leaves this page.</p>
     </div>
     <figure class="hero-stage">
-      <div id="stage3d" class="stage3d" aria-label="Three-dimensional view of every weight tensor in the model, drawn to scale"></div>
-      <figcaption id="stage-caption">Every weight tensor in the model, drawn to scale. The long slab underneath is the vocabulary table. Drag to turn it.</figcaption>
+      <div id="stage3d" class="stage3d" aria-label="Three-dimensional view of every weight matrix in the model, drawn to scale"></div>
       <div class="stage-hover" id="stage-hover" hidden></div>
+      <figcaption id="stage-caption">
+        <b>This is the whole model.</b> Each flat tile is one <dfn data-term="matrix">matrix</dfn> of learned numbers, sized by how many numbers it holds.
+        <ul class="how-to-read">
+          <li><b>The tower:</b> 30 <dfn data-term="layer">layers</dfn> stacked bottom to top. Every layer has the same 7 tiles, each filled with different numbers. Your text passes through them in order.</li>
+          <li><b>Light tiles</b> are attention, where words look at each other. <b>Dark, wide tiles</b> are the feed-forward network, where each word is processed on its own.</li>
+          <li><b>The long strip</b> along the bottom is the vocabulary table: one row for each of the 49,152 tokens. It is as big as 8 whole layers. Teal marks are the rows your prompt uses.</li>
+          <li>Once loaded, the colours are the real numbers: blue below zero, red above. Drag to turn the model; point at a tile to name it.</li>
+        </ul>
+      </figcaption>
     </figure>
   </section>
 
@@ -55,23 +64,57 @@
   <section class="console" id="console" data-map="console">
     <div class="console-head">
       <h2 class="console-title">Your prompt</h2>
-      <label class="toggle"><input type="checkbox" id="opt-chat" checked> Wrap in the chat template</label>
+      <label class="toggle"><input type="checkbox" id="opt-chat" checked> Add chat markers (who’s speaking)</label>
     </div>
     <details class="system" id="system-wrap">
-      <summary>System prompt <span class="dim">(sent before every message; this is what prefix caching reuses)</span></summary>
+      <summary>System prompt <span class="dim">(hidden instructions sent before every message)</span></summary>
       <textarea id="system-prompt" rows="2" spellcheck="false"></textarea>
     </details>
     <label class="sr" for="prompt">Prompt</label>
     <textarea id="prompt" rows="3" spellcheck="false">What is the capital of France?</textarea>
     <div class="console-controls">
       <button class="btn primary" id="btn-run" disabled>Generate</button>
-      <button class="btn" id="btn-step" disabled title="Run prefill, then one decode step per click">One token at a time</button>
+      <button class="btn" id="btn-step" disabled title="Run the prompt, then one more token per click">One token at a time</button>
       <button class="btn" id="btn-stop" disabled>Pause</button>
       <label class="num">Max new tokens <input type="number" id="opt-max" value="48" min="1" max="400"></label>
-      <span class="console-note" id="console-note">Load the model to generate. The tokenizer below already works.</span>
+      <span class="console-note" id="console-note">Load the model to generate. The basics and the tokenizer below already work.</span>
     </div>
-    <div class="output" id="output" aria-live="polite"><span class="placeholder">The model's answer appears here, token by token.</span></div>
+    <div class="output" id="output" aria-live="polite"><span class="placeholder">The model’s answer appears here, one token at a time.</span></div>
     <div class="run-stats" id="run-stats"></div>
+  </section>
+
+  <!-- 0. PRIMER ----------------------------------------------------------->
+  <section class="chapter" id="ch-primer" data-map="primer">
+    <header class="ch-head">
+      <span class="ch-num" aria-hidden="true">0</span>
+      <div>
+        <h2>The ideas you need first</h2>
+        <p class="runs-on"><span class="loc plain-loc">No model needed</span></p>
+      </div>
+    </header>
+    <p class="plain">A language model is a very large pile of numbers and one simple operation repeated over and over. Five ideas are enough to follow the rest of this page.</p>
+
+    <h3 class="step-h">A vector is a list of numbers that describes something</h3>
+    <div class="prose"><p>Here is a colour described by three numbers: how much red, green and blue. That list of three is a <dfn data-term="vector">vector</dfn>. Move the sliders: the numbers change the thing they describe.</p></div>
+    <div class="primer-color" id="primer-color"></div>
+    <div class="prose"><p>Language models describe each piece of text the same way, just with far more numbers. In this model every word or word-piece becomes a list of <b data-bind="D">576</b> numbers. Nobody decided what each number means. Training settled on values that make the model good at predicting text, so the numbers end up capturing things like “this is a city” or “this is plural”, spread across many positions at once.</p></div>
+
+    <h3 class="step-h">Matrices and tensors are boxes of numbers</h3>
+    <div class="prose"><p>A <dfn data-term="matrix">matrix</dfn> is a grid of numbers, like a spreadsheet: so many rows, so many columns. <dfn data-term="tensor">Tensor</dfn> is the catch-all word for a box of numbers with any number of directions. Files and code say “tensor” because they don’t care how many directions a box has.</p></div>
+    <div class="primer-shapes" id="primer-shapes"></div>
+
+    <h3 class="step-h">The one operation: multiply a matrix by a vector</h3>
+    <div class="prose"><p>Almost all of the model’s work is this. Take a vector in. For each row of the matrix, multiply the row and the vector number by number and add up the results. That sum is a <dfn data-term="dot">dot product</dfn>, and each row gives one output number. The result is a new vector. Click an output to see its arithmetic, and edit the input numbers.</p></div>
+    <div class="primer-matvec" id="primer-matvec"></div>
+    <div class="prose"><p>The model does exactly this, with bigger grids: a 576-number vector times a 1,536 × 576 matrix gives 1,536 numbers. To produce a single word, this model performs about <b data-bind="macsPerTok">134 million</b> of these multiply-and-add steps.</p></div>
+
+    <h3 class="step-h">Weights are the numbers inside the matrices</h3>
+    <div class="prose"><p>The numbers in the model’s matrices are its <dfn data-term="weights">weights</dfn>, also called <dfn data-term="parameters">parameters</dfn>. Training adjusted them over trillions of words of text until the model got good at guessing the next word. When you use the model, which is called <em>inference</em>, the weights are frozen: nothing is learned and nothing changes. The 269 MB download is about 135 million of these numbers, and nothing else.</p></div>
+
+    <h3 class="step-h">The machine: where the numbers live and move</h3>
+    <div class="prose"><p>A server running a model has two very different processors. The <dfn data-term="cpu">CPU</dfn> handles text and decisions. The <dfn data-term="gpu">GPU</dfn> does the giant multiplications. Each has its own memory, and moving numbers between places takes time.</p></div>
+    <div class="primer-hw" id="primer-hw"></div>
+    <div class="prose"><p>The key fact for everything that follows: a modern GPU can multiply numbers much faster than it can fetch them from its own memory. Much of what makes inference fast or slow comes down to <b>how many bytes have to move</b>, not how much arithmetic there is. The map on the right (at the bottom on a phone) follows every chapter and lights up where each step happens.</p></div>
   </section>
 
   <!-- 1. ARTIFACT --------------------------------------------------------->
@@ -83,26 +126,26 @@
         <p class="runs-on"><span class="loc host">Disk → CPU RAM</span><span class="loc hbm">→ GPU memory</span></p>
       </div>
     </header>
-    <div class="prose">
-      <p>An open-weight model is three files and no program. <code>config.json</code> describes the shape, <code>tokenizer.json</code> holds the vocabulary and merge rules, and <code>model.safetensors</code> holds the numbers. The inference engine (vLLM, llama.cpp, or the few hundred lines of JavaScript running this page) supplies the code that multiplies them.</p>
-    </div>
+    <p class="plain">A downloaded model isn’t a program. It is three files: a short description of the model’s shape, a dictionary of text pieces, and one big file of numbers. The software that runs it, called an inference engine, brings the code. Here it is a few hundred lines of JavaScript; on servers it’s vLLM, llama.cpp or similar.</p>
     <div class="files" id="files"></div>
-    <div class="prose">
-      <h3>The shape: config.json</h3>
-      <p>These few numbers decide every tensor size on this page. Change the model at the top and they all change with it.</p>
-    </div>
+
+    <h3 class="step-h">The shape: config.json</h3>
+    <div class="prose"><p>A handful of sizes fixes every matrix in the model. For example, <code>hidden_size</code> of 576 means every token is a vector of 576 numbers, and <code>num_hidden_layers</code> of 30 means the tower in the 3D view is 30 layers high.</p></div>
     <div id="config-view" class="config-view"></div>
-    <div class="prose">
-      <h3>The numbers: model.safetensors</h3>
-      <p>The file starts with 8 bytes giving the length of a JSON header. The header lists every tensor's name, data type, shape and byte range. Everything after it is raw numbers, back to back. The engine reads the header, then copies each tensor into GPU memory once. This page read the real header from Hugging Face with two small range requests, without downloading the weights.</p>
-    </div>
+
+    <h3 class="step-h">The numbers: model.safetensors</h3>
+    <div class="prose"><p>This file is a table of contents followed by the numbers themselves, packed back to back. The table of contents lists every matrix by name, shape and position in the file. Here is where the 135 million numbers go:</p></div>
     <div class="param-split" id="param-split"></div>
+    <div class="prose"><p>Pick any matrix below to see what it does and to look at its actual numbers.</p></div>
     <div class="tensor-browser" id="tensor-browser"></div>
-    <div class="prose">
-      <h3>Precision is a memory decision</h3>
-      <p>The weights ship as bfloat16, which is 2 bytes per number. Quantizing to 8 or 4 bits shrinks the file, and because generating each token means reading every weight once, it also cuts the bytes moved per token. That's why quantized models often generate faster, not just fit in less memory.</p>
-    </div>
-    <div id="quant-table"></div>
+    <details class="deeper">
+      <summary>Go deeper: the file format and number precision</summary>
+      <div class="prose">
+        <p>A safetensors file starts with 8 bytes giving the length of a JSON header. The header lists each tensor’s name, data type, shape and byte range; raw numbers follow. An engine reads the header, then copies each tensor into GPU memory once at startup. This page read the real header from Hugging Face with two small HTTP range requests, without downloading the weights.</p>
+        <p>The weights are stored as <dfn data-term="bf16">bfloat16</dfn>, 2 bytes per number. <dfn data-term="quantization">Quantizing</dfn> to 8 or 4 bits shrinks the file. Because generating each token means reading every weight once, it also cuts the bytes moved per token, so quantized models often generate faster, not just fit in less memory.</p>
+      </div>
+      <div id="quant-table"></div>
+    </details>
     <div class="load-panel" id="load-panel">
       <button class="btn primary" id="btn-load">Load the weights</button>
       <div class="progress" id="load-progress" hidden><div class="bar"><span></span></div><p class="progress-label"></p></div>
@@ -114,24 +157,26 @@
     <header class="ch-head">
       <span class="ch-num" aria-hidden="true">2</span>
       <div>
-        <h2>Text becomes integers</h2>
+        <h2>Text becomes numbers</h2>
         <p class="runs-on"><span class="loc host">CPU</span></p>
       </div>
     </header>
-    <div class="prose">
-      <p>The model never sees letters. A tokenizer turns your text into integer IDs from a fixed vocabulary of <b data-bind="vocab">49,152</b> entries. It runs on the CPU, usually in Rust or C++, before any GPU work starts. This one uses <b>byte-level Byte Pair Encoding</b>, the same family as GPT-2, Llama 3 and Qwen. Edit the prompt above and everything here updates as you type.</p>
-    </div>
+    <p class="plain">The model can only do arithmetic, so your text first has to become numbers. The model comes with a fixed dictionary of <b data-bind="vocab">49,152</b> text pieces called <dfn data-term="token">tokens</dfn>. Common words are a single piece, rarer words are built from several, and every piece has an ID number. The <em>tokenizer</em> chops your text into these pieces and looks up their IDs. It runs on the CPU, before the GPU does anything.</p>
 
-    <h3 class="step-h">Split off special tokens, then pre-split into words</h3>
-    <div class="prose"><p>Chat markers like <code>&lt;|im_start|&gt;</code> are matched literally and get fixed IDs. The rest is cut by a regex into words, each keeping its leading space, plus punctuation runs and single digits. BPE never merges across these cuts.</p></div>
+    <h3 class="step-h">Look inside the dictionary</h3>
+    <div class="prose"><p>Search the model’s <dfn data-term="vocabulary">vocabulary</dfn>, or browse parts of it. On this page <code>␣</code> marks a space and <code>↵</code> a new line. Spaces are part of tokens: <code>␣cat</code> (as in “the cat”) is a different entry from <code>cat</code> at the start of a line. The full list is in <a href="https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct/raw/main/tokenizer.json" rel="noopener">tokenizer.json on Hugging Face</a> (a 2 MB text file), and <a href="https://tiktokenizer.vercel.app/" rel="noopener">Tiktokenizer</a> lets you compare how different models split the same text.</p></div>
+    <div class="vocab" id="vocab-explorer"></div>
+
+    <h3 class="step-h">Step 1: cut the text into words</h3>
+    <div class="prose"><p>First the text is cut at spaces and punctuation, keeping each space attached to the word after it. Chat markers like <code>&lt;|im_start|&gt;</code>, shown in black, are special tokens with fixed IDs: they tell the model who is speaking. Edit the prompt above and watch these update.</p></div>
     <div class="pieces" id="tok-pieces"></div>
 
-    <h3 class="step-h">Replay the merges for one word</h3>
-    <div class="prose"><p>Each word starts as raw UTF-8 bytes, each shown as one printable character, so a space appears as <code>Ġ</code>. The tokenizer then repeatedly merges the adjacent pair that ranks highest in its merge list. That list was learned during training by counting which pairs appeared most often, and a lower rank means more common. It stops when no adjacent pair is in the list. Click any word above to replay it.</p></div>
+    <h3 class="step-h">Step 2: glue letters into dictionary pieces</h3>
+    <div class="prose"><p>Each word starts as separate letters (strictly, bytes). The tokenizer then keeps gluing together the neighbouring pair that its merge list rates most common, until no more pairs in the list apply. The merge list was learned by counting pairs in a huge amount of text, which is why common words end up as one piece. This method is called <dfn data-term="bpe">Byte Pair Encoding</dfn>. In this view a space appears as <code>Ġ</code>, which is how the dictionary file writes it. Press play, or click any word above.</p></div>
     <div class="bpe" id="bpe"></div>
 
-    <h3 class="step-h">Look up the IDs</h3>
-    <div class="prose"><p>Each final piece is a key in the vocabulary. The result is the only thing sent to the GPU: one integer per token, 4 bytes each.</p></div>
+    <h3 class="step-h">Step 3: look up the IDs</h3>
+    <div class="prose"><p>Each final piece is a dictionary entry with an ID. This list of integers, 4 bytes each, is all that gets sent to the GPU.</p></div>
     <div class="token-ids" id="token-ids"></div>
     <div class="facts" id="tok-facts"></div>
   </section>
@@ -141,18 +186,19 @@
     <header class="ch-head">
       <span class="ch-num" aria-hidden="true">3</span>
       <div>
-        <h2>Each ID picks a row</h2>
+        <h2>Each ID becomes a vector</h2>
         <p class="runs-on"><span class="loc link">IDs over PCIe</span><span class="loc hbm">row reads from HBM</span></p>
       </div>
     </header>
-    <div class="prose">
-      <p>The embedding matrix has one row per vocabulary entry: <b data-bind="embedShape">49,152 × 576</b>. There's no arithmetic in this step. Token ID <i>n</i> means “copy row <i>n</i>”. A prompt of <i>T</i> tokens becomes a <i>T</i> × <b data-bind="D">576</b> matrix of floats. These are the actual rows for your prompt, with blue for negative values and red for positive.</p>
-    </div>
+    <p class="plain">An ID like 5992 is just a label, as meaningless as a locker number. So the model swaps each ID for a <dfn data-term="vector">vector</dfn> of <span data-bind="D">576</span> numbers that it learned during training: the token’s <dfn data-term="embedding">embedding</dfn>. The vectors sit in one big table with a row per vocabulary entry, and ID 5992 simply means “take row 5992”. There is no calculation in this step, just lookups.</p>
     <div class="embed-viz" id="embed-viz"></div>
-    <div class="prose">
-      <p>The rows aren't random. Training placed tokens that behave alike near each other. Pick a token to see its nearest neighbours among all 49,152 rows by cosine similarity.</p>
-    </div>
+    <div class="prose"><p><b>How to read this:</b> the strip on the left is the whole table, all <span data-bind="vocab">49,152</span> rows squeezed to fit, with teal marks at the rows your prompt uses. On the right, each line is one of your tokens, with its 576 numbers drawn as coloured bars: blue for negative, red for positive, paler for close to zero. The patterns look random to us. To the model they encode what the token means and how it is used.</p></div>
+    <div class="prose"><p>One way to check that these numbers mean something: tokens used in similar ways get similar vectors. Pick a token to find the rows closest to it in the table.</p></div>
     <div class="neighbors" id="neighbors"></div>
+    <details class="deeper">
+      <summary>Go deeper: shapes and sizes</summary>
+      <div class="prose"><p>The embedding table is a <b data-bind="embedShape">49,152 × 576</b> matrix. A prompt of <i>T</i> tokens becomes a <i>T</i> × <span data-bind="D">576</span> matrix: one row per token. On a GPU this step is a gather: it reads <i>T</i> rows of 576 × 2 bytes from <dfn data-term="hbm">HBM</dfn>. The similarity search above uses cosine similarity, the <dfn data-term="dot">dot product</dfn> of two vectors divided by their lengths, so 1 means “same direction”.</p></div>
+    </details>
   </section>
 
   <!-- 4. POSITION --------------------------------------------------------->
@@ -160,15 +206,23 @@
     <header class="ch-head">
       <span class="ch-num" aria-hidden="true">4</span>
       <div>
-        <h2>Where position comes in</h2>
-        <p class="runs-on"><span class="loc sm">SM registers, inside attention</span></p>
+        <h2>How the model knows word order</h2>
+        <p class="runs-on"><span class="loc sm">inside attention, on the GPU</span></p>
       </div>
     </header>
+    <p class="plain">Looking up vectors loses the word order: “dog bites man” and “man bites dog” fetch exactly the same three vectors. The model needs to know which word came where, or at least how far apart two words are.</p>
     <div class="prose">
-      <p>A row lookup knows nothing about order: “dog bites man” and “man bites dog” fetch the same rows. GPT-2 fixed this by <em>adding</em> a learned position vector to each embedding. Llama-family models, including this one, add nothing. Instead, inside every attention layer, they <b>rotate</b> each query and key vector by an angle proportional to its position. This is <b>RoPE</b>, rotary position embedding.</p>
-      <p>Each 64-number head vector is treated as 32 pairs, and each pair is a point that gets spun. Pair 0 turns a full radian per position, while the last pair barely moves. When a query at position <i>m</i> meets a key at position <i>n</i>, the two rotations partly cancel, so their dot product depends only on the distance <i>m − n</i>.</p>
+      <p>Its trick is like clock hands. Picture each token’s vector as a clock hand. Before tokens are compared, every hand is turned by an amount that depends on the token’s position: the token at position 1 is turned a little, position 2 a little more, and so on.</p>
+      <p>When the model compares two tokens, it effectively looks at the angle <em>between</em> their hands. That angle depends only on how far apart the tokens are, not on where they sit in the text. Words three apart look the same to the model at the start of a sentence or a thousand words in. The widget below uses the model’s real vectors. Move the positions, then shift both tokens later and watch the angle between them stay put.</p>
     </div>
     <div class="rope" id="rope"></div>
+    <details class="deeper">
+      <summary>Go deeper: RoPE in detail</summary>
+      <div class="prose">
+        <p>This is <dfn data-term="rope">rotary position embedding (RoPE)</dfn>, used by Llama, Qwen, Mistral and this model. GPT-2 did something simpler: it <em>added</em> a learned position vector to each embedding. RoPE adds nothing to the embedding. Instead, inside every attention layer, it rotates the <dfn data-term="query">query</dfn> and <dfn data-term="key">key</dfn> vectors.</p>
+        <p>Each 64-number attention vector is split into 32 pairs, and each pair is a point that gets rotated. Pair 0 turns 1 radian (about 57°) per position. Each later pair turns more slowly, down to pair 31, which barely moves. Fast pairs tell nearby words apart; slow pairs still change measurably across thousands of positions. Because a rotation by angle <i>a</i> and another by angle <i>b</i> meet at angle <i>a</i> − <i>b</i>, the query·key score depends only on the distance between positions.</p>
+      </div>
+    </details>
   </section>
 
   <!-- 5. ATTENTION -------------------------------------------------------->
@@ -176,29 +230,39 @@
     <header class="ch-head">
       <span class="ch-num" aria-hidden="true">5</span>
       <div>
-        <h2>Attention: tokens read each other</h2>
+        <h2>Attention: words look at each other</h2>
         <p class="runs-on"><span class="loc hbm">weights + KV from HBM</span><span class="loc sm">matmuls on tensor cores</span></p>
       </div>
     </header>
+    <p class="plain">To understand “it” in “the cat sat because it was tired”, the model has to find what “it” refers to. <dfn data-term="attention">Attention</dfn> is how each token gathers information from the tokens before it. The vectors now pass through <b data-bind="L">30</b> <dfn data-term="layer">layers</dfn>, and each layer starts with an attention step.</p>
     <div class="prose">
-      <p>The <i>T</i> × <span data-bind="D">576</span> matrix now passes through <b data-bind="L">30</b> identical layers, each with its own weights. Every layer does two things: attention, where tokens exchange information, and a feed-forward network, where each token is transformed on its own. Here is one layer with the real shapes.</p>
-    </div>
-    <div class="layer-diagram" id="layer-diagram"></div>
-    <div class="prose">
-      <h3>Q, K and V are three matrix multiplies</h3>
-      <p>Each token's vector is multiplied by three learned matrices. The <b>query</b> says what this token is looking for. The <b>key</b> says what this token offers to others looking. The <b>value</b> is what it hands over if chosen. The query is compared with every earlier key by dot product, the scores go through softmax so they sum to 1, and the output is the weighted sum of the values. A token can't look forward: the causal mask hides later positions.</p>
-      <p>This model has <b data-bind="H">9</b> query heads but only <b data-bind="KVH">3</b> key/value heads, so each K/V head serves 3 query heads. This is grouped-query attention, and it makes the KV cache 3× smaller.</p>
+      <p>It works like a library search. Each token makes three new vectors by <dfn data-term="matmul">multiplying</dfn> its own vector by three weight matrices:</p>
+      <ul class="plain-list">
+        <li>a <dfn data-term="query">query</dfn>: what am I looking for?</li>
+        <li>a <dfn data-term="key">key</dfn>: what do I contain? This is like a book’s title.</li>
+        <li>a <dfn data-term="value">value</dfn>: what will I hand over if picked? This is like the book’s contents.</li>
+      </ul>
+      <p>Each token compares its query with the key of every earlier token (a <dfn data-term="dot">dot product</dfn>). Better matches get a bigger share of its attention, with shares adding up to 100%. The token then takes that mix of the earlier tokens’ values. A token can never look at tokens after it, because when generating text those don’t exist yet.</p>
     </div>
     <div class="attn-controls" id="attn-controls"></div>
     <div class="attn-grid">
       <div class="attn-map" id="attn-map"></div>
       <div class="attn-row" id="attn-row"></div>
     </div>
-    <div class="prose">
-      <h3>Where the milliseconds went</h3>
-      <p>Measured during your last prefill in this tab, summed over all layers. The large blocks are matrix multiplies against weights.</p>
+    <div class="prose notice">
+      <p><b>How to read the grid:</b> each row is one token, read left to right. That row’s shading shows how it split its attention across earlier tokens: dark means a lot. The empty top-right triangle is the “no looking ahead” rule. The list on the right spells out one row as percentages. Click a row to switch.</p>
+      <p id="attn-notice"><b>What to notice:</b> many heads put most of their attention on the very first token. That’s a known habit called an attention sink: heads with nothing useful to look at park their attention there. Some heads look mostly at the previous word, which shows up as a dark line just left of the diagonal. Generate to find these in your own prompt.</p>
     </div>
-    <div class="op-times" id="op-times"></div>
+    <details class="deeper">
+      <summary>Go deeper: one layer with real shapes, heads, and timings</summary>
+      <div class="prose"><p>The full layer, with the matrix shapes for your prompt (<i>T</i> = number of tokens). Amber boxes multiply by weights read from GPU memory; pink boxes are arithmetic with no weights.</p></div>
+      <div class="layer-diagram" id="layer-diagram"></div>
+      <div class="prose">
+        <p>Attention runs as <b data-bind="H">9</b> independent <dfn data-term="head">heads</dfn> per layer, each with 64-number queries and keys, so each can track a different kind of relationship. To save memory, this model has only <b data-bind="KVH">3</b> key/value heads, and each is shared by 3 query heads. This is grouped-query attention, and it makes the KV cache (chapter 8) 3× smaller. Scores are divided by √64 before <dfn data-term="softmax">softmax</dfn> to keep them in a sensible range.</p>
+        <p>Where the time went during your last prompt, measured in this tab and summed over all layers:</p>
+      </div>
+      <div class="op-times" id="op-times"></div>
+    </details>
   </section>
 
   <!-- 6. FFN + RESIDUAL --------------------------------------------------->
@@ -206,24 +270,25 @@
     <header class="ch-head">
       <span class="ch-num" aria-hidden="true">6</span>
       <div>
-        <h2>Feed-forward and the residual stream</h2>
-        <p class="runs-on"><span class="loc hbm">most of each layer's weights</span><span class="loc sm">tensor cores</span></p>
+        <h2>Each word thinks on its own, and keeps a running total</h2>
+        <p class="runs-on"><span class="loc hbm">most of each layer’s weights</span><span class="loc sm">tensor cores</span></p>
       </div>
     </header>
-    <div class="prose">
-      <p>After attention, each token goes through its own two-step network. It is projected up from <span data-bind="D">576</span> to <b data-bind="I">1,536</b> numbers twice (a <i>gate</i> and an <i>up</i> projection), the two are combined as <code>silu(gate) × up</code>, and the result is projected back down. That's three matrices holding <b data-bind="ffnShare">⅔</b> of each layer's weights. Most of a model's parameters, and most of its stored knowledge, sit here. Below are the 1,536 combined values for the last token of your prompt, in the layer you choose.</p>
-    </div>
+    <p class="plain">After gathering context with attention, each token is processed on its own by a small network called the <em>feed-forward</em> network. It stretches the token’s 576 numbers out to <b data-bind="I">1,536</b>, filters them, and squeezes them back to 576. These matrices hold <b data-bind="ffnShare">75%</b> of each layer’s weights, and this is where much of the model’s learned knowledge is applied.</p>
+    <div class="prose"><p><b>How to read this:</b> each thin bar is one of the 1,536 intermediate numbers for the last token of your prompt, in the layer you pick. Most sit near zero and a few spike. Each spike is a learned pattern that recognised something in this context and fired.</p></div>
     <div class="ffn" id="ffn"></div>
-    <div class="prose">
-      <h3>Nothing is overwritten, only added</h3>
-      <p>Attention and the feed-forward network don't replace a token's vector. They each add a correction to it (<code>x = x + attention(x)</code>, then <code>x = x + ffn(x)</code>). That running vector is the residual stream. Its length grows as the layers write into it.</p>
-    </div>
+
+    <h3 class="step-h">Nothing is replaced, only added</h3>
+    <div class="prose"><p>Neither attention nor the feed-forward step overwrites a token’s vector. Each adds its result to the vector instead, like adding notes to a running total. That running vector is the <dfn data-term="residual">residual stream</dfn>, and it carries everything the token has picked up so far. <b>How to read this:</b> each line is one token of your prompt, showing how long its vector gets after each layer. The highlighted line is the last token, the one that will predict the next word.</p></div>
     <div class="resid" id="resid"></div>
-    <div class="prose">
-      <h3>Read the stream early: the logit lens</h3>
-      <p>Apply the final output step to the residual stream after <em>each</em> layer and you see what the model would say if it stopped there. Early layers produce noise, and the answer usually snaps into place in the last third.</p>
-    </div>
+
+    <h3 class="step-h">Peek at the model’s guess after every layer</h3>
+    <div class="prose"><p>The running total can be read at any point to see what the model would say if it stopped there. This trick is called the logit lens. Early layers produce nonsense, and the real answer usually appears in the last third.</p></div>
     <div class="lens" id="lens"></div>
+    <details class="deeper">
+      <summary>Go deeper: SwiGLU</summary>
+      <div class="prose"><p>The feed-forward block uses two “up” projections from 576 to 1,536, called <i>gate</i> and <i>up</i>. They are combined as <code>silu(gate) × up</code>, where SiLU is a smooth function that passes positive values and squashes negative ones. A <i>down</i> projection then maps back to 576. Each layer is normalised first with RMSNorm, which rescales a vector to a standard length so the numbers don’t grow out of control across 30 layers.</p></div>
+    </details>
   </section>
 
   <!-- 7. SAMPLING --------------------------------------------------------->
@@ -231,20 +296,30 @@
     <header class="ch-head">
       <span class="ch-num" aria-hidden="true">7</span>
       <div>
-        <h2>From a vector to a word</h2>
-        <p class="runs-on"><span class="loc sm">LM head + softmax on GPU</span><span class="loc link">4 bytes back</span><span class="loc host">detokenize on CPU</span></p>
+        <h2>Picking the next word</h2>
+        <p class="runs-on"><span class="loc sm">scores on the GPU</span><span class="loc link">4 bytes back</span><span class="loc host">text on the CPU</span></p>
       </div>
     </header>
+    <p class="plain">After the last layer, the model compares the last token’s vector against every one of the <span data-bind="V">49,152</span> dictionary entries and gives each a score. These scores are called <dfn data-term="logits">logits</dfn>. <dfn data-term="softmax">Softmax</dfn> turns the scores into percentages. Then the computer rolls weighted dice: a token with 80% wins 8 times out of 10. The winner is the next token, and the whole process repeats with it added to the text.</p>
     <div class="prose">
-      <p>After the last layer, only the final token's vector matters for predicting what comes next. It is normalised and multiplied by the <b>LM head</b>, a <span data-bind="V">49,152</span> × <span data-bind="D">576</span> matrix. <span data-bind="tiedNote">In this model it is the same matrix as the embedding table, read the other way.</span> The result is one score per vocabulary entry: the <b>logits</b>. Softmax turns them into probabilities, and a sampler picks one. Only that one integer has to travel back to the CPU.</p>
+      <p>You control the dice:</p>
+      <ul class="plain-list">
+        <li><b>Temperature</b> below 1 makes the favourite even more likely (safer, more repetitive). Above 1 evens the odds (more varied, more mistakes). At 0 the model always takes the top choice, called greedy.</li>
+        <li><b>Top-k</b> only allows the <i>k</i> highest-scoring tokens.</li>
+        <li><b>Top-p</b> only allows the smallest group of top tokens whose chances add up to <i>p</i>.</li>
+      </ul>
+      <p>Click any word of the answer above to see the choice behind it. Click another candidate below to swap it in and continue from there.</p>
     </div>
     <div class="sampler-controls" id="sampler-controls"></div>
     <div class="dist" id="dist"></div>
-    <div class="prose">
-      <h3>Integer back to text</h3>
-      <p>The CPU reverses the tokenizer: ID → vocabulary entry → raw bytes → UTF-8. A token can end partway through a multi-byte character, such as an emoji, so streaming decoders hold incomplete bytes until the character is finished.</p>
-    </div>
+
+    <h3 class="step-h">From ID back to text</h3>
+    <div class="prose"><p>Only the winning ID, a single number, goes back to the CPU. The CPU reverses the tokenizer: it looks up the dictionary entry, turns it into bytes, and the bytes into characters.</p></div>
     <div class="detok" id="detok"></div>
+    <details class="deeper">
+      <summary>Go deeper: the LM head</summary>
+      <div class="prose"><p>The scores come from one last matrix multiply: the final vector (normalised) times the <b>LM head</b>, a <span data-bind="V">49,152</span> × <span data-bind="D">576</span> matrix. <span data-bind="tiedNote">In this model the LM head is the embedding table itself, read the other way round: the score for each token is the dot product between the final vector and that token’s embedding.</span> A token can end partway through a multi-byte character such as an emoji, so streaming decoders hold incomplete bytes until the character is complete.</p></div>
+    </details>
   </section>
 
   <!-- 8. DECODE + KV CACHE ------------------------------------------------>
@@ -252,19 +327,19 @@
     <header class="ch-head">
       <span class="ch-num" aria-hidden="true">8</span>
       <div>
-        <h2>The decode loop and the KV cache</h2>
-        <p class="runs-on"><span class="loc hbm">KV cache lives in HBM</span><span class="loc sm">one token per pass</span></p>
+        <h2>One word at a time, with notes</h2>
+        <p class="runs-on"><span class="loc hbm">KV cache lives in GPU memory</span><span class="loc sm">one token per pass</span></p>
       </div>
     </header>
+    <p class="plain">Your whole prompt went through the model in one go; this is called <dfn data-term="prefill">prefill</dfn>. The answer can’t be produced that way. Each new token depends on the one chosen before it, so the model runs once per token, feeding in the token it just picked. This loop is called <dfn data-term="decode">decode</dfn>.</p>
     <div class="prose">
-      <p>Prefill ran all prompt tokens through the layers at once. From here on, the model generates one token at a time, and each new token runs through all <span data-bind="L">30</span> layers by itself. It can't be parallelised, because step <i>n</i> + 1 needs the token chosen at step <i>n</i>.</p>
-      <p>In each layer the new token needs the <b>keys and values of every earlier token</b>. Those never change: a past token's K and V depend only on the tokens before it. So the engine computes them once and stores them. That store is the <b>KV cache</b>. Each step computes K and V for the one new token, appends them, and reads all the rest back.</p>
+      <p>On every pass, the new token needs to look back at all earlier tokens (chapter 5), using their <dfn data-term="key">keys</dfn> and <dfn data-term="value">values</dfn>. Those never change once computed, so instead of recomputing them on every pass the model keeps them, like notes, in GPU memory. These notes are the <dfn data-term="kvcache">KV cache</dfn>. Each pass adds one column of notes for the new token, in every layer.</p>
+      <p><b>How to read this:</b> each column is one token and each row is one layer. Every small cell holds that token’s key and value for that layer. Amber cells came from your prompt; pink cells were added one by one as the answer was written.</p>
     </div>
     <div class="kv" id="kv"></div>
-    <div class="prose">
-      <h3>Turn it off and watch the cost</h3>
-      <p>Without the cache, every step must recompute K and V for the whole sequence: a full prefill per token. The bars are the real per-step times in this tab.</p>
-    </div>
+
+    <h3 class="step-h">Turn the notes off and see the cost</h3>
+    <div class="prose"><p>Without the cache, every new word means redoing the work for the whole text so far. Untick the box and press Generate (or Continue). Each bar is the real time one step took in this tab.</p></div>
     <div class="steps" id="steps"></div>
   </section>
 
@@ -273,20 +348,25 @@
     <header class="ch-head">
       <span class="ch-num" aria-hidden="true">9</span>
       <div>
-        <h2>Why decode is memory-bound</h2>
-        <p class="runs-on"><span class="loc hbm">bandwidth</span><span class="loc sm">vs compute</span></p>
+        <h2>Why writing is slower than reading</h2>
+        <p class="runs-on"><span class="loc hbm">memory speed</span><span class="loc sm">vs arithmetic speed</span></p>
       </div>
     </header>
+    <p class="plain">Think of the GPU as a very fast chef with a pantry down the hall. The ingredients are the model’s weights. To write each new word, the chef must fetch <em>every</em> ingredient (all <span data-bind="weightMB">269 MB</span>), does a few seconds of chopping, then fetches everything again for the next word. The chef spends most of the time walking, not cooking. That is what <b>memory-bound</b> means.</p>
     <div class="prose">
-      <p>Every decode step streams <em>all</em> the weights from HBM into the compute units, roughly <b data-bind="weightMB">269 MB</b> for this model, to do about <b data-bind="flopsPerTok">0.27 GFLOP</b> of math. That's about <b>1 FLOP per byte</b>. An H100 can do about 295 FLOPs in the time it takes to fetch one byte from HBM, so during decode the compute units wait on memory most of the time.</p>
-      <p>Prefill feeds <i>T</i> tokens through the same weights at once. Each weight fetched is used <i>T</i> times, so intensity rises to about <i>T</i> FLOPs per byte and prefill becomes compute-bound. Batching many users' decode steps together does the same for decode. That's what continuous batching in vLLM and TGI exploits.</p>
+      <p>Reading the prompt is different. The chef fetches each ingredient once and uses it for all the prompt’s tokens at once, so there is lots of chopping per trip. That is <b>compute-bound</b>, and it’s why prefill handles hundreds of tokens in the time decode writes a few.</p>
+      <p>Servers fix the walking problem by cooking many orders per trip: they <dfn data-term="batch">batch</dfn> many users’ next words into one pass, so each weight fetched is used for all of them. Drag the sliders and watch the dots move toward the flat “compute” part of the chart, where the chef finally stops waiting.</p>
     </div>
     <div class="roofline" id="roofline"></div>
-    <div class="prose">
-      <h3>Same effect on your CPU</h3>
-      <p>This page's WebAssembly kernel loads a weight vector once and reuses it for up to 4 tokens. Benchmark it at decode shape (1 token) and prefill shape (32 tokens):</p>
-    </div>
+    <div class="prose notice"><p><b>How to read the chart:</b> left to right is how much arithmetic is done per byte fetched from memory. Up is how fast the GPU can go. The sloped part of the roof is the memory limit and the flat part is the arithmetic limit. A dot on the slope is waiting on memory. An H100 needs about 295 operations per byte before its arithmetic units are kept busy. One user’s decode does about 1.</p></div>
+
+    <h3 class="step-h">The same effect on your own computer</h3>
+    <div class="prose"><p>This page’s own multiply code reuses each fetched weight for up to 4 tokens at once. Time it doing one token at a time (like decode) and 32 at a time (like prefill):</p></div>
     <div class="bench" id="bench"></div>
+    <details class="deeper">
+      <summary>Go deeper: arithmetic intensity</summary>
+      <div class="prose"><p>Arithmetic intensity is <dfn data-term="flop">FLOPs</dfn> divided by bytes read. A decode step for one sequence does about 2 FLOPs per weight (a multiply and an add) and reads each weight once at 2 bytes, so intensity is about 1. An H100 SXM moves 3.35 TB/s from <dfn data-term="hbm">HBM</dfn> and computes about 989 trillion bf16 FLOPs per second, so it needs about 295 FLOPs per byte to be compute-bound. Prefill with <i>T</i> tokens, or decode with a batch of <i>B</i> sequences, multiplies the intensity by roughly <i>T</i> or <i>B</i>. Attention over the KV cache adds bytes that batching can’t share, because each sequence has its own cache.</p></div>
+    </details>
   </section>
 
   <!-- 10. PREFIX CACHE ---------------------------------------------------->
@@ -294,13 +374,14 @@
     <header class="ch-head">
       <span class="ch-num" aria-hidden="true">10</span>
       <div>
-        <h2>Prefix caching: don't prefill twice</h2>
-        <p class="runs-on"><span class="loc hbm">KV blocks stay in HBM</span></p>
+        <h2>Reusing notes between requests</h2>
+        <p class="runs-on"><span class="loc hbm">KV blocks stay in GPU memory</span></p>
       </div>
     </header>
+    <p class="plain">Most requests to a chatbot start with the same text: the hidden instructions (the system prompt) and the chat formatting. Their KV-cache notes come out identical every time, because each token’s notes depend only on the text before it. So servers keep those notes after a request ends and reuse them for the next request that starts the same way, skipping that part of prefill. This is <b>prefix caching</b>.</p>
     <div class="prose">
-      <p>Most requests start with the same tokens: a chat template and a system prompt. Their keys and values come out identical every time, because they depend only on the tokens before them. Engines therefore keep the KV cache in fixed-size <b>blocks of 16 tokens</b> and key each block by a hash of its tokens <em>and</em> the hash of the block before it. A block is reused only when everything before it matches too.</p>
-      <p>Run a prompt, change only the question, and run it again. The shared blocks are skipped, and you can see the real prefill time drop. The default system prompt here is short, so only one block can be shared. Production system prompts often run to thousands of tokens, which is where this pays off: switch to a longer one, run twice, and compare.</p>
+      <p>Notes are kept in blocks of 16 tokens. A block is reused only if it <em>and everything before it</em> match exactly. Change one word early on and every block after it has to be recomputed. That’s why production apps keep their system prompt identical, byte for byte.</p>
+      <p>Try it: run a question, then press “Ask a different question”. Only the question changes, so the shared blocks are reused and the time to the first word drops. The default system prompt is short, so only one block can be shared. Switch to the longer one to see a bigger effect.</p>
     </div>
     <div class="prefix-controls">
       <label class="toggle"><input type="checkbox" id="opt-prefix" checked> Prefix caching on</label>
@@ -316,16 +397,20 @@
     <header class="ch-head">
       <span class="ch-num" aria-hidden="true">11</span>
       <div>
-        <h2>One request, every byte</h2>
+        <h2>The whole trip, in one table</h2>
         <p class="runs-on"><span class="loc host">CPU</span><span class="loc link">PCIe</span><span class="loc hbm">HBM</span><span class="loc sm">SM</span></p>
       </div>
     </header>
-    <div class="prose">
-      <p>Your last run, phase by phase. “H100 estimate” is the time the bytes or FLOPs alone would take on one H100 SXM (3.35 TB/s HBM, 989 dense BF16 TFLOPS). It is a floor that ignores kernel-launch overhead, which dominates for a model this small. “This tab” is what actually happened here.</p>
-    </div>
+    <p class="plain">Your last request, step by step: where each step ran, how much data it moved, and how long it took. “This tab” is what actually happened in your browser. “H100 estimate” is the least time the same work could take on one data-centre GPU, counting only memory and arithmetic limits.</p>
     <div class="summary" id="summary"></div>
     <div class="prose closing">
-      <p>Three things set the speed of inference. The weights must be read once per decode step, which makes HBM bandwidth the limit. The KV cache grows with every token in every request, which makes HBM capacity the limit. Prefill is a big matrix multiply, which makes compute the limit. Quantization, paged attention, continuous batching, prefix caching, speculative decoding and prefill/decode disaggregation each attack one of those three.</p>
+      <p>Three limits set the speed of inference:</p>
+      <ul class="plain-list">
+        <li><b>Memory speed:</b> every new word means reading all the weights again.</li>
+        <li><b>Memory space:</b> every word of every conversation adds to the KV cache.</li>
+        <li><b>Arithmetic:</b> reading a long prompt is one big multiplication.</li>
+      </ul>
+      <p>Every speed-up you’ll read about attacks one of these: quantization, paged attention, batching, prefix caching, speculative decoding, and splitting prefill and decode onto different GPUs.</p>
     </div>
   </section>
 
@@ -340,9 +425,9 @@
     <div id="machine"></div>
     <p class="rail-caption" id="machine-caption"></p>
     <dl class="rail-mapping">
-      <div><dt>CPU</dt><dd>this page's main thread</dd></div>
+      <div><dt>CPU</dt><dd>this page’s main thread</dd></div>
       <div><dt>GPU</dt><dd>a Web Worker running a WebAssembly kernel</dd></div>
-      <div><dt>HBM</dt><dd>the worker's WebAssembly memory</dd></div>
+      <div><dt>HBM</dt><dd>the worker’s WebAssembly memory</dd></div>
     </dl>
   </div>
 </aside>

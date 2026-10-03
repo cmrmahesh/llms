@@ -71,7 +71,7 @@ export default function roofline(ctx) {
     const roof = I => Math.min(GPU.flops, GPU.bw * I) / 1e12;
     add('path', { d: `M${X(10 ** x0)} ${Y(roof(10 ** x0))} L${X(ridge)} ${Y(roof(ridge))} L${X(10 ** x1)} ${Y(roof(10 ** x1))}`, stroke: 'var(--ink)', 'stroke-width': 2.5, fill: 'none' });
     add('text', { x: X(1.2), y: Y(roof(1.2)) - 10, 'font-size': 11, fill: 'var(--hbm)', 'font-weight': 600, transform: `rotate(-33 ${X(1.2)} ${Y(roof(1.2)) - 10})` }, 'memory roof: 3.35 TB/s');
-    add('text', { x: X(10 ** x1) - 4, y: Y(989) + 16, 'font-size': 11, fill: 'var(--sm)', 'font-weight': 600, 'text-anchor': 'end' }, 'compute roof: 989 TFLOP/s');
+    add('text', { x: X(10 ** x1) - 4, y: Y(989) - 8, 'font-size': 11, fill: 'var(--sm)', 'font-weight': 600, 'text-anchor': 'end' }, 'compute roof: 989 TFLOP/s');
     add('line', { x1: X(ridge), x2: X(ridge), y1: Y(roof(ridge)), y2: H - pb, stroke: 'var(--ink-3)', 'stroke-dasharray': '3 3' });
     add('text', { x: X(ridge) + 4, y: H - pb - 6, 'font-size': 10.5, fill: 'var(--ink-3)' }, `ridge ≈ ${Math.round(ridge)}`);
     const pt2 = (I, label, color, dy) => {

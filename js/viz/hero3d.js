@@ -28,6 +28,31 @@ export function createHero(container, ctx) {
   controls.minPolarAngle = 0.25;
   controls.maxPolarAngle = 1.45;
 
+  // HTML labels pinned to points in the scene
+  const labelLayer = document.createElement('div');
+  labelLayer.className = 'stage-labels';
+  labelLayer.setAttribute('aria-hidden', 'true');
+  container.append(labelLayer);
+  let labels = []; // { el, pos: Vector3 }
+  function addLabel(text, pos, cls = '') {
+    const el = document.createElement('span');
+    el.className = `stage-label ${cls}`;
+    el.textContent = text;
+    labelLayer.append(el);
+    labels.push({ el, pos });
+  }
+  function placeLabels() {
+    const w = renderer.domElement.clientWidth, hgt = renderer.domElement.clientHeight;
+    const v = new THREE.Vector3();
+    for (const l of labels) {
+      v.copy(l.pos).project(camera);
+      const hidden = v.z > 1 || v.x < -1.1 || v.x > 1.1 || v.y < -1.1 || v.y > 1.1;
+      l.el.style.display = hidden ? 'none' : '';
+      l.el.style.left = `${(v.x + 1) / 2 * w}px`;
+      l.el.style.top = `${(1 - v.y) / 2 * hgt}px`;
+    }
+  }
+
   const root = new THREE.Group();
   scene.add(root);
   let tiles = [];          // { mesh, name, shape, layer }
@@ -100,6 +125,16 @@ export function createHero(container, ctx) {
     root.add(sweep);
     markers = new THREE.Group();
     root.add(markers);
+    // Labels
+    labelLayer.textContent = '';
+    labels = [];
+    const attnW = row.slice(0, 4).reduce((a, r) => a + r[1] * SCALE + gap, -gap);
+    const left = -rowW / 2;
+    addLabel('Layer 0 (first)', new THREE.Vector3(rowW / 2 + 0.12, 0.12, depth / 2), 'right');
+    addLabel(`Layer ${d.L - 1} (last)`, new THREE.Vector3(rowW / 2 + 0.12, stackH - LAYER_GAP + 0.12, depth / 2), 'right');
+    addLabel('Attention', new THREE.Vector3(left + attnW / 2, stackH + 0.12, 0));
+    addLabel('Feed-forward', new THREE.Vector3(left + attnW + gap + (rowW - attnW - gap) / 2, stackH + 0.12, 0));
+    addLabel(`Vocabulary table, ${fmtInt(d.V)} rows →`, new THREE.Vector3(-rowW / 2 + 2.2, -0.1, depth / 2 + 0.2), 'below');
     frame();
     applyTextures();
     placeMarkers();
@@ -221,6 +256,7 @@ export function createHero(container, ctx) {
     }
     busy = controls.update() || busy;
     renderer.render(scene, camera);
+    placeLabels();
     if (busy || dragging) requestAnimationFrame(tick); else awake = false;
   }
   let dragging = false;
