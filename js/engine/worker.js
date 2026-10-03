@@ -127,7 +127,7 @@ async function load({ id, configUrl, weightsUrl }) {
 function collectBuffers(tr) {
   if (!tr) return [];
   const b = [tr.embed.buffer, tr.attn.buffer, tr.resNorm.buffer, tr.ffnAct.buffer, tr.hidden.buffer, tr.layerMs.buffer];
-  if (tr.qkv) for (const k of ['qPre', 'kPre', 'q', 'k', 'v']) b.push(tr.qkv[k].buffer);
+  if (tr.qkv) for (const k of ['qPre', 'kPre', 'q', 'k', 'v', 'qAll', 'kAll', 'vAll']) b.push(tr.qkv[k].buffer);
   return b;
 }
 
@@ -218,6 +218,14 @@ function findWeight(name) {
   return L[map[m[2]]];
 }
 
+// The stored keys and values of one layer: [positions × kvHeads·headDim] each.
+function kvLayer({ id, layer }) {
+  const n = model.cacheLen, kvDim = model.KVH * model.HD;
+  const K = model.kcache[layer].slice(0, n * kvDim);
+  const V = model.vcache[layer].slice(0, n * kvDim);
+  post({ id, type: 'kv', K, V, n }, [K.buffer, V.buffer]);
+}
+
 function embedRows({ id, ids }) {
   const D = model.D;
   const out = new Float32Array(ids.length * D);
@@ -283,6 +291,7 @@ self.onmessage = async e => {
       case 'slice': slice(m); break;
       case 'bench': benchKernel(m); break;
       case 'rows': embedRows(m); break;
+      case 'kv': kvLayer(m); break;
       case 'neighbors': neighbors(m); break;
       case 'reset': seq = []; model?.resetCache(); post({ id: m.id, type: 'reset' }); break;
       default: throw new Error(`Unknown message ${m.type}`);

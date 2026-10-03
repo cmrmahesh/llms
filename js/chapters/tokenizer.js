@@ -8,8 +8,6 @@ const showSym = s => s.replace(/\n/g, '↵').replace(/\t/g, '⇥');
 export default function tokenizer(ctx) {
   const { S } = ctx;
   let selWord = -1;      // index into enc.segments
-  let stepAt = 0;        // how many merges applied in the replay
-  let playing = null;
 
   function pickDefault(segs) {
     // Prefer the word with the most merges in the user's part of the prompt.
@@ -34,72 +32,65 @@ export default function tokenizer(ctx) {
         'aria-pressed': String(i === selWord),
         title: s.kind === 'special' ? `Special token, id ${s.ids[0]}` : `${s.ids.length} token${s.ids.length > 1 ? 's' : ''} after BPE`,
       }, s.kind === 'special' ? s.text : vis(s.text));
-      if (s.kind === 'word') b.addEventListener('click', () => { selWord = i; stepAt = 0; stop(); renderPieces(); renderBpe(); });
+      if (s.kind === 'word') b.addEventListener('click', () => { selWord = i; tryText = null; if (tryInput) tryInput.value = ''; renderPieces(); drawBpe(); });
       el.append(b);
     });
   }
 
-  function stop() { if (playing) { clearInterval(playing); playing = null; } }
 
-  let bpeView = null; // persistent controls for the selected word
+  // ---------------- BPE as a staircase: every glue step at once
+  let tryText = null;            // a word typed into "try any word", or null to follow the prompt
+  let bpeBody = null, tryInput = null;
+  const EXAMPLES = [' cat', ' tokenization', ' unbelievably', ' SmolLM', ' 2026', ' antidisestablishmentarianism'];
 
-  function renderBpe() {
+  function buildBpe() {
     const el = $('#bpe');
     el.textContent = '';
-    bpeView = null;
-    const seg = S.enc.segments[selWord];
-    if (!seg || seg.kind !== 'word') { el.append(h('p', { class: 'caption' }, 'Pick a word above.')); return; }
-    const row = h('div', { class: 'bpe-row', 'aria-live': 'polite' });
-    const range = h('input', { type: 'range', min: 0, max: seg.steps.length, value: stepAt, 'aria-label': 'Merge step' });
-    const count = h('span', { class: 'dim' });
-    const play = h('button', { class: 'btn small' });
-    const log = h('div', { class: 'bpe-log' });
-    range.addEventListener('input', () => { stop(); stepAt = +range.value; drawBpe(); });
-    play.addEventListener('click', () => {
-      if (playing) { stop(); drawBpe(); return; }
-      if (stepAt >= seg.steps.length) stepAt = 0;
-      playing = setInterval(() => {
-        if (stepAt >= seg.steps.length) { stop(); drawBpe(); return; }
-        stepAt++;
-        drawBpe();
-      }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 1200 : 650);
-      drawBpe();
+    tryInput = h('input', { type: 'search', placeholder: 'Try any word', 'aria-label': 'Try any word', value: tryText ?? '' });
+    tryInput.addEventListener('input', () => { tryText = tryInput.value ? tryInput.value : null; drawBpe(); });
+    const ex = EXAMPLES.map(w => {
+      const b = h('button', { class: 'btn small' }, w.trim());
+      b.addEventListener('click', () => { tryText = w; tryInput.value = w; drawBpe(); });
+      return b;
     });
-    el.append(
-      h('div', { class: 'bpe-word' }, 'Word ', h('code', {}, vis(seg.text)), ` → ${seg.bytes.length} UTF-8 byte${seg.bytes.length > 1 ? 's' : ''}`),
-      h('div', { class: 'bpe-bytes', 'aria-label': 'bytes in hex' }, seg.bytes.map(b => h('span', {}, b.toString(16).padStart(2, '0')))),
-      row,
-      h('div', { class: 'bpe-ctl' }, play, range, count),
-      log,
-    );
-    bpeView = { seg, row, range, count, play, log };
+    bpeBody = h('div', { 'aria-live': 'polite' });
+    el.append(h('div', { class: 'vocab-ctl' }, tryInput, ...ex), bpeBody);
     drawBpe();
   }
 
+  function staircase(seg) {
+    const box = h('div', { class: 'stair' });
+    const symRow = (symbols, merged) => h('div', { class: 'bpe-row' }, symbols.map(x => h('span', { class: `sym${x === merged ? ' merged' : ''}` }, showSym(x))));
+    box.append(h('div', { class: 'stair-step' },
+      h('span', { class: 'stair-label' }, `Start: ${seg.bytes.length} byte${seg.bytes.length > 1 ? 's' : ''}`),
+      symRow(seg.initial, null)));
+    seg.steps.forEach((st, i) => {
+      box.append(h('div', { class: 'stair-step' },
+        h('span', { class: 'stair-label' }, `Glue ${i + 1}: `, h('code', {}, showSym(st.pair[0])), ' + ', h('code', {}, showSym(st.pair[1])), h('small', {}, ` rule #${fmtInt(st.rank)}`)),
+        symRow(st.symbols, st.pair.join(''))));
+    });
+    box.append(h('div', { class: 'stair-step done' },
+      h('span', { class: 'stair-label' }, seg.steps.length ? 'No rule applies any more.' : 'No rule applies.'),
+      h('div', { class: 'bpe-row' }, seg.symbols.map((x, i) => h('span', { class: 'tid' }, h('span', { class: 's' }, showSym(x)), h('span', { class: 'n' }, String(seg.ids[i])))),
+        h('span', { class: 'dim' }, ` → ${seg.ids.length} token${seg.ids.length > 1 ? 's' : ''}`))));
+    return box;
+  }
+
   function drawBpe() {
-    if (!bpeView) return;
-    const { seg, row, range, count, play, log } = bpeView;
-    const symbols = stepAt === 0 ? seg.initial : seg.steps[stepAt - 1].symbols;
-    const lastMerge = stepAt > 0 ? seg.steps[stepAt - 1] : null;
-    const merged = lastMerge ? lastMerge.pair.join('') : null;
-    row.textContent = '';
-    row.append(...symbols.map(s => h('span', { class: `sym${s === merged ? ' merged' : ''}` }, showSym(s))));
-    range.value = stepAt;
-    count.textContent = `${stepAt} / ${seg.steps.length} merges`;
-    play.textContent = playing ? 'Pause' : stepAt >= seg.steps.length && seg.steps.length ? 'Replay' : 'Play merges';
-    play.disabled = !seg.steps.length;
-    log.textContent = '';
-    if (lastMerge) {
-      log.append('Merged ', h('code', {}, showSym(lastMerge.pair[0])), ' + ', h('code', {}, showSym(lastMerge.pair[1])),
-        ` (merge rule #${fmtInt(lastMerge.rank)} of ${fmtInt(S.tok.numMerges)})`);
-    } else if (seg.steps.length === 0) {
-      log.append('No merge rule applies: this is already a single token.');
+    if (!bpeBody) return;
+    bpeBody.textContent = '';
+    let segs;
+    if (tryText !== null) {
+      segs = S.tok.encodeWithTrace(tryText).segments.filter(x => x.kind === 'word');
+      if (!segs.length) { bpeBody.append(h('p', { class: 'caption' }, 'Type a word.')); return; }
+      if (segs.length > 1) bpeBody.append(h('p', { class: 'caption' }, `Step 1 cut this into ${segs.length} separate words first (digits are always cut one by one), so each is glued on its own:`));
     } else {
-      log.append('Start: one symbol per byte. Press play or drag the slider.');
+      const seg = S.enc.segments[selWord];
+      if (!seg || seg.kind !== 'word') { bpeBody.append(h('p', { class: 'caption' }, 'Pick a word above, or type one.')); return; }
+      segs = [seg];
+      bpeBody.append(h('p', { class: 'caption' }, 'Showing ', h('code', {}, vis(seg.text)), ' from your prompt. Type a word or pick an example to try others.'));
     }
-    if (stepAt === seg.steps.length) {
-      log.append(h('br'), 'Done. Final pieces → IDs: ', seg.symbols.map((s, i) => h('span', {}, h('code', {}, showSym(s)), ` ${seg.ids[i]}${i < seg.ids.length - 1 ? ', ' : ''}`)));
-    }
+    for (const seg of segs.slice(0, 6)) bpeBody.append(staircase(seg));
   }
 
   function renderIds() {
@@ -195,9 +186,8 @@ export default function tokenizer(ctx) {
       }
       if (reason === 'tokens') {
         const segs = S.enc.segments;
-        if (selWord < 0 || selWord >= segs.length || segs[selWord].kind !== 'word') { selWord = pickDefault(segs); stepAt = 0; }
-        else stepAt = Math.min(stepAt, segs[selWord].steps.length);
-        renderPieces(); renderBpe(); renderIds();
+        if (selWord < 0 || selWord >= segs.length || segs[selWord].kind !== 'word') selWord = pickDefault(segs);
+        renderPieces(); if (!bpeBody) buildBpe(); else drawBpe(); renderIds();
       }
       if (reason === 'prefill') renderIds();
     },

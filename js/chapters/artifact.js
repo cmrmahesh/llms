@@ -116,6 +116,67 @@ export default function artifact(ctx) {
     else el.append(h('p', { class: 'caption' }, `Real header: ${fmtInt(hd.headerBytes)} bytes of JSON after the 8-byte length prefix.`));
   }
 
+  // The model as a tree: embedding, one (repeated) layer, final norm, with the sums.
+  let anatomyLayer = 12;
+  function renderAnatomy() {
+    const el = $('#anatomy');
+    el.textContent = '';
+    const d = ctx.dims();
+    if (!d) return;
+    anatomyLayer = Math.min(anatomyLayer, d.L - 1);
+    const kvw = d.KVH * d.HD;
+    const px = 0.055; // pixels per row/column for the little shape drawings
+    const mat = (rows, cols, cls) => h('span', { class: `mini ${cls}`, style: { width: `${Math.max(3, cols * px)}px`, height: `${Math.max(3, rows * px)}px` }, 'aria-hidden': 'true' });
+    const pick = name => { selected = name; renderBrowser(); $('#tensor-browser').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); };
+    const line = (name, shape, cls, note, depth = 0) => {
+      const n = shape.reduce((a, b) => a * b, 1);
+      const b = h('button', { class: `an-row d${depth}`, title: 'Show this matrix below' },
+        h('span', { class: 'an-name' }, name.split('.').slice(-2).join('.')),
+        h('span', { class: 'an-shape' }, shape.length === 2 ? `${fmtInt(shape[0])} × ${fmtInt(shape[1])}` : fmtInt(shape[0])),
+        h('span', { class: 'an-draw' }, shape.length === 2 ? mat(shape[0], shape[1], cls) : mat(1, shape[0], 'norm')),
+        h('span', { class: 'an-n' }, fmtInt(n)),
+        h('span', { class: 'an-note' }, note || ''));
+      b.addEventListener('click', () => pick(name));
+      return b;
+    };
+    const p = `model.layers.${anatomyLayer}.`;
+    const attn = 2 * d.D * d.D + 2 * kvw * d.D;
+    const ffn = 3 * d.D * d.I;
+    const slider = h('input', { type: 'range', min: 0, max: d.L - 1, value: anatomyLayer, 'aria-label': 'Which layer' });
+    const out = h('output', {}, String(anatomyLayer));
+    slider.addEventListener('input', () => { out.textContent = slider.value; });
+    slider.addEventListener('change', () => { anatomyLayer = +slider.value; renderAnatomy(); el.querySelector('input[type=range]')?.focus(); });
+    const sum = (label, a, b, total, note) => h('div', { class: 'an-sum' }, h('span', {}, label), h('span', {}, `${a} × ${b} = `, h('b', {}, total)), h('span', { class: 'dim' }, note));
+    el.append(
+      h('div', { class: 'an-head' }, h('span', {}, 'Name'), h('span', {}, 'Shape'), h('span', {}, 'Drawn to scale'), h('span', {}, 'Numbers'), h('span', {}, '')),
+      line('model.embed_tokens.weight', [d.V, d.D], 'emb', 'the vocabulary table (too long to draw: 49,152 rows)'),
+      h('div', { class: 'an-layer' },
+        h('div', { class: 'an-layer-head' },
+          h('b', {}, `model.layers.${anatomyLayer}`),
+          h('label', {}, 'Pick a layer ', slider, out),
+          h('span', { class: 'dim' }, `One of ${d.L}. Every layer has exactly this list.`)),
+        line(p + 'input_layernorm.weight', [d.D], 'norm', 'rescales the vector first', 1),
+        h('div', { class: 'an-group' }, 'self_attn: attention (chapter 5)'),
+        line(p + 'self_attn.q_proj.weight', [d.D, d.D], 'attn', 'makes queries', 2),
+        line(p + 'self_attn.k_proj.weight', [kvw, d.D], 'attn', 'makes keys (narrower: shared by heads)', 2),
+        line(p + 'self_attn.v_proj.weight', [kvw, d.D], 'attn', 'makes values (narrower: shared by heads)', 2),
+        line(p + 'self_attn.o_proj.weight', [d.D, d.D], 'attn', 'combines the heads’ results', 2),
+        h('div', { class: 'an-subtotal' }, `Attention in this layer: ${fmtInt(attn)} numbers`),
+        line(p + 'post_attention_layernorm.weight', [d.D], 'norm', 'rescales again', 1),
+        h('div', { class: 'an-group' }, 'mlp: feed-forward (chapter 6)'),
+        line(p + 'mlp.gate_proj.weight', [d.I, d.D], 'mlp', 'stretch 576 → 1,536', 2),
+        line(p + 'mlp.up_proj.weight', [d.I, d.D], 'mlp', 'stretch 576 → 1,536', 2),
+        line(p + 'mlp.down_proj.weight', [d.D, d.I], 'mlp', 'squeeze 1,536 → 576', 2),
+        h('div', { class: 'an-subtotal' }, `Feed-forward in this layer: ${fmtInt(ffn)} numbers`)),
+      h('p', { class: 'an-repeat' }, `… then model.layers.${anatomyLayer === d.L - 1 ? 0 : anatomyLayer + 1}, and so on: ${d.L} layers in all, each with its own copy of these ${2 + 4 + 3} tensors.`),
+      line('model.norm.weight', [d.D], 'norm', 'one last rescale before scoring'),
+      h('div', { class: 'an-sums' },
+        sum('All attention matrices', fmtInt(attn), `${d.L} layers`, fmtInt(attn * d.L), '← the attention share in the bar below'),
+        sum('All feed-forward matrices', fmtInt(ffn), `${d.L} layers`, fmtInt(ffn * d.L), ''),
+        sum('Embedding table', fmtInt(d.V), fmtInt(d.D), fmtInt(d.V * d.D), d.tied ? 'also used as the final scoring table' : '')),
+    );
+  }
+
   function renderBrowser() {
     const el = $('#tensor-browser');
     el.textContent = '';
@@ -246,7 +307,7 @@ export default function artifact(ctx) {
         $('#btn-load').textContent = `Load the weights (${S.meta.downloadMB} MB)`;
         $('#btn-load').hidden = false;
         $('#load-progress').hidden = true;
-        renderFiles(); renderConfig(); renderSplit(); renderBrowser(); renderQuant();
+        renderFiles(); renderConfig(); renderAnatomy(); renderSplit(); renderBrowser(); renderQuant();
       }
       if (reason === 'header') { renderFiles(); renderSplit(); renderBrowser(); }
       if (reason === 'weights') { renderBrowser(); renderLoad(); }

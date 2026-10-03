@@ -1,6 +1,6 @@
 // 5. Attention: layer diagram, real attention maps, per-op timings.
 
-import { $, h, fmtInt, fmtMs, vis, sequential, rgb, tip, esc } from '../util.js';
+import { $, h, fmtInt, fmtMs, vis, sequential, diverging, rgb, tip, esc } from '../util.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -23,6 +23,68 @@ export default function attention(ctx) {
     const sel = $('#attn-controls select'); if (sel) sel.value = 'prompt';
     draw();
     $('#attn-map').scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }
+
+  // Heads as slices: the query (H × HD) and key/value (KVH × HD) vectors, real values.
+  function headsViz() {
+    const el = $('#heads-viz');
+    if (!el) return;
+    el.textContent = '';
+    const d = ctx.dims();
+    if (!d) return;
+    const qkv = S.run?.prefill?.trace?.qkv;
+    const { H, KVH, HD } = d;
+    const group = H / KVH;
+    const cell = 840 / (H * HD + (H - 1) * 6); // px per number so the query fits
+    const segW = HD * cell;
+    const W = 860, Hh = 304;
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', `0 0 ${W} ${Hh}`);
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', `The ${H * HD}-number query split into ${H} heads of ${HD}; keys and values split into ${KVH} heads, each shared by ${group} query heads`);
+    const add = (tag, a, txt) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(a)) e.setAttribute(k, v); if (txt !== undefined) e.textContent = txt; svg.append(e); return e; };
+    const groupCol = ['#0d7480', '#965800', '#a8126f', '#2f4570', '#5b687d'];
+    const strip = (vec, x, y, hIdx, n) => {
+      let s = 0; if (vec) { for (let i = 0; i < n; i++) s += vec[hIdx * HD + i] ** 2; }
+      const scale = vec ? 2.5 * Math.sqrt(s / n) || 1 : 1;
+      for (let i = 0; i < n; i++) {
+        const v = vec ? vec[hIdx * HD + i] / scale : 0;
+        const c = vec ? rgb(diverging(v)) : '#e2e7ed';
+        add('rect', { x: x + i * cell, y, width: Math.max(0.6, cell - 0.3), height: 26, fill: c });
+      }
+    };
+    const qx = i => 10 + i * (segW + 6);
+    const kSegW = HD * cell;
+    const kStart = (W - (KVH * kSegW + (KVH - 1) * 40)) / 2;
+    const kx = i => kStart + i * (kSegW + 40);
+    add('text', { x: 10, y: 20, 'font-size': 13, 'font-weight': 700, fill: 'var(--ink)' }, `Query: ${H * HD} numbers = ${H} heads × ${HD}`);
+    for (let i = 0; i < H; i++) {
+      const g = Math.floor(i / group);
+      strip(qkv?.qAll, qx(i), 34, i, HD);
+      add('rect', { x: qx(i) - 1.5, y: 32.5, width: segW + 3, height: 29, fill: 'none', stroke: groupCol[g % 5], 'stroke-width': 2, rx: 2 });
+      add('text', { x: qx(i) + segW / 2, y: 78, 'text-anchor': 'middle', 'font-size': 11.5, fill: groupCol[g % 5], 'font-weight': 650 }, `head ${i}`);
+    }
+    // connectors
+    for (let i = 0; i < H; i++) {
+      const g = Math.floor(i / group);
+      const x1 = qx(i) + segW / 2, x2 = kx(g) + kSegW / 2;
+      add('path', { d: `M${x1} 84 C ${x1} 130, ${x2} 130, ${x2} 172`, fill: 'none', stroke: groupCol[g % 5], 'stroke-width': 1.5, opacity: 0.7 });
+    }
+    add('text', { x: 10, y: 196, 'font-size': 13, 'font-weight': 700, fill: 'var(--ink)' }, `Key: ${KVH * HD} = ${KVH} × ${HD}`);
+    for (let g = 0; g < KVH; g++) {
+      strip(qkv?.kAll, kx(g), 178, g, HD);
+      add('rect', { x: kx(g) - 1.5, y: 176.5, width: kSegW + 3, height: 29, fill: 'none', stroke: groupCol[g % 5], 'stroke-width': 2, rx: 2 });
+      add('text', { x: kx(g) + kSegW / 2, y: 220, 'text-anchor': 'middle', 'font-size': 11.5, fill: groupCol[g % 5], 'font-weight': 650 }, `key head ${g}`);
+      add('text', { x: kx(g) + kSegW / 2, y: 234, 'text-anchor': 'middle', 'font-size': 10.5, fill: groupCol[g % 5] }, `for heads ${g * group}–${g * group + group - 1}`);
+    }
+    add('text', { x: 10, y: 258, 'font-size': 13, 'font-weight': 700, fill: 'var(--ink)' }, `Value: ${KVH * HD} = ${KVH} × ${HD}, shared the same way`);
+    for (let g = 0; g < KVH; g++) {
+      strip(qkv?.vAll, kx(g), 268, g, HD);
+      add('rect', { x: kx(g) - 1.5, y: 266.5, width: kSegW + 3, height: 29, fill: 'none', stroke: groupCol[g % 5], 'stroke-width': 2, rx: 2 });
+    }
+    el.append(svg, h('p', { class: 'caption' }, qkv
+      ? `Real numbers: layer 0, last token of your prompt (blue negative, red positive). Same colour outline = they work together: query head 3 compares itself only with key head ${Math.floor(3 / group)}.`
+      : 'Grey until you generate; then these fill with the real numbers.'));
   }
 
   // Find attention sinks and previous-token heads in this prompt's real attention.
@@ -282,11 +344,11 @@ export default function attention(ctx) {
           document.querySelectorAll(`[data-bind="${k}"]`).forEach(e => { e.textContent = fmtInt(v); });
         }
         layer = Math.min(layer, d.L - 1); head = Math.min(head, d.H - 1);
-        controls(); diagram(); draw(); opTimes();
+        controls(); diagram(); draw(); opTimes(); headsViz();
       }
       if (reason === 'tokens') diagram();
       if (reason === 'weights') draw();
-      if (reason === 'prefill') { query = -1; draw(); opTimes(); notice(); }
+      if (reason === 'prefill') { query = -1; draw(); opTimes(); notice(); headsViz(); }
       if (reason === 'step' && source === 'latest' && view) draw();
     },
   };

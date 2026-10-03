@@ -97,16 +97,30 @@
     <h3 class="step-h">A vector is a list of numbers that describes something</h3>
     <div class="prose"><p>Here is a colour described by three numbers: how much red, green and blue. That list of three is a <dfn data-term="vector">vector</dfn>. Move the sliders: the numbers change the thing they describe.</p></div>
     <div class="primer-color" id="primer-color"></div>
-    <div class="prose"><p>Language models describe each piece of text the same way, just with far more numbers. In this model every word or word-piece becomes a list of <b data-bind="D">576</b> numbers. Nobody decided what each number means. Training settled on values that make the model good at predicting text, so the numbers end up capturing things like “this is a city” or “this is plural”, spread across many positions at once.</p></div>
+    <div class="prose">
+      <p>Language models describe each piece of text the same way, just with far more numbers. Two separate tables are involved, and both are looked up with the same ID number:</p>
+      <ul class="plain-list">
+        <li>The <dfn data-term="vocabulary">vocabulary</dfn> (in <code>tokenizer.json</code>) only maps IDs to text: ID 3575 is the text “␣capital”. It contains no numbers about meaning.</li>
+        <li>The <dfn data-term="embedding">embedding table</dfn> (in the model file) gives every ID its own list of <b data-bind="D">576</b> numbers. That list is what the model actually works with.</li>
+      </ul>
+    </div>
+    <div class="two-tables" id="primer-two-tables"></div>
+    <div class="prose">
+      <p><b>Why 576?</b> It’s a size the model’s makers picked before training, called the <em>hidden size</em>. Bigger means more room to encode meaning, but every matrix grows with it, so the model gets slower and needs more memory. Small models use a few hundred; GPT-2 used 768, Llama 3 8B uses 4,096 and Llama 3 70B uses 8,192. Nobody decided what each of the 576 numbers means either. Training settled on values that make the model good at predicting text, so the numbers end up capturing things like “this is a city” or “this is plural”, spread across many positions at once.</p>
+    </div>
 
     <h3 class="step-h">Matrices and tensors are boxes of numbers</h3>
     <div class="prose"><p>A <dfn data-term="matrix">matrix</dfn> is a grid of numbers, like a spreadsheet: so many rows, so many columns. <dfn data-term="tensor">Tensor</dfn> is the catch-all word for a box of numbers with any number of directions. Files and code say “tensor” because they don’t care how many directions a box has.</p></div>
     <div class="primer-shapes" id="primer-shapes"></div>
+    <div class="prose"><p>The last row is the trickiest, so here is its shape drawn out. Picture one sheet of numbers per layer. On each sheet, every token is a column, and the column holds 3 heads × 64 = 192 numbers. Stack 30 sheets and you have the keys; the values are a second stack of the same shape. Chapter 8 shows the real numbers.</p></div>
+    <div class="kv-schematic" id="primer-kv"></div>
 
     <h3 class="step-h">The one operation: multiply a matrix by a vector</h3>
     <div class="prose"><p>Almost all of the model’s work is this. Take a vector in. For each row of the matrix, multiply the row and the vector number by number and add up the results. That sum is a <dfn data-term="dot">dot product</dfn>, and each row gives one output number. The result is a new vector. Click an output to see its arithmetic, and edit the input numbers.</p></div>
     <div class="primer-matvec" id="primer-matvec"></div>
-    <div class="prose"><p>The model does exactly this, with bigger grids: a 576-number vector times a 1,536 × 576 matrix gives 1,536 numbers. To produce a single word, this model performs about <b data-bind="macsPerTok">134 million</b> of these multiply-and-add steps.</p></div>
+    <div class="prose"><p>The sizes always follow one rule. A matrix with <i>m</i> rows and <i>n</i> columns needs an input of exactly <i>n</i> numbers, one per column, and gives back <i>m</i> numbers, one per row. Feed it several input vectors side by side and you get that many output vectors in one go. That is how the model handles a whole prompt at once.</p></div>
+    <div class="shape-rule" id="primer-rule"></div>
+    <div class="prose"><p>To produce a single word, this model performs about <b data-bind="macsPerTok">134 million</b> of these multiply-and-add steps.</p></div>
 
     <h3 class="step-h">Weights are the numbers inside the matrices</h3>
     <div class="prose"><p>The numbers in the model’s matrices are its <dfn data-term="weights">weights</dfn>, also called <dfn data-term="parameters">parameters</dfn>. Training adjusted them over trillions of words of text until the model got good at guessing the next word. When you use the model, which is called <em>inference</em>, the weights are frozen: nothing is learned and nothing changes. The 269 MB download is about 135 million of these numbers, and nothing else.</p></div>
@@ -134,7 +148,9 @@
     <div id="config-view" class="config-view"></div>
 
     <h3 class="step-h">The numbers: model.safetensors</h3>
-    <div class="prose"><p>This file is a table of contents followed by the numbers themselves, packed back to back. The table of contents lists every matrix by name, shape and position in the file. Here is where the 135 million numbers go:</p></div>
+    <div class="prose"><p>This file is a table of contents followed by the numbers themselves, packed back to back. The table of contents lists every matrix by name and shape. Laid out as a tree, it gives the model’s whole anatomy. The key thing to see: each of the 30 layers has <em>its own</em> copy of the same set of matrices. The shapes are identical, the numbers inside are different.</p></div>
+    <div class="anatomy" id="anatomy"></div>
+    <div class="prose"><p>Adding it all up by type:</p></div>
     <div class="param-split" id="param-split"></div>
     <div class="prose"><p>Pick any matrix below to see what it does and to look at its actual numbers.</p></div>
     <div class="tensor-browser" id="tensor-browser"></div>
@@ -172,7 +188,15 @@
     <div class="pieces" id="tok-pieces"></div>
 
     <h3 class="step-h">Step 2: glue letters into dictionary pieces</h3>
-    <div class="prose"><p>Each word starts as separate letters (strictly, bytes). The tokenizer then keeps gluing together the neighbouring pair that its merge list rates most common, until no more pairs in the list apply. The merge list was learned by counting pairs in a huge amount of text, which is why common words end up as one piece. This method is called <dfn data-term="bpe">Byte Pair Encoding</dfn>. In this view a space appears as <code>Ġ</code>, which is how the dictionary file writes it. Press play, or click any word above.</p></div>
+    <div class="prose">
+      <p>This is the part that isn’t obvious: the tokenizer does <em>not</em> search the dictionary for your word. It follows a recipe:</p>
+      <ol class="plain-list">
+        <li>Break the word into single letters (strictly, bytes). Every single byte is in the dictionary, so this always works, even for emoji or made-up words.</li>
+        <li>Look at each pair of neighbours. The dictionary file also stores a ranked list of 48,900 <em>glue rules</em>, such as “Ġ + t → Ġt” as rule #0. They were learned in training by repeatedly gluing the most common pair in a huge pile of text. Apply the highest-ranked rule that matches.</li>
+        <li>Repeat until no rule matches. Every glued piece is itself a dictionary entry, so whatever is left has an ID.</li>
+      </ol>
+      <p>Common words get glued all the way into one piece. Rare or made-up words run out of rules partway and stay as several pieces. This method is called <dfn data-term="bpe">Byte Pair Encoding</dfn>. In this view a space appears as <code>Ġ</code>, which is how the dictionary file writes it. Try the examples:</p>
+    </div>
     <div class="bpe" id="bpe"></div>
 
     <h3 class="step-h">Step 3: look up the IDs</h3>
@@ -243,7 +267,13 @@
         <li>a <dfn data-term="value">value</dfn>: what will I hand over if picked? This is like the book’s contents.</li>
       </ul>
       <p>Each token compares its query with the key of every earlier token (a <dfn data-term="dot">dot product</dfn>). Better matches get a bigger share of its attention, with shares adding up to 100%. The token then takes that mix of the earlier tokens’ values. A token can never look at tokens after it, because when generating text those don’t exist yet.</p>
+      <p><b>Is this per layer?</b> Yes. Each of the 30 layers has its own three matrices for this, plus a fourth (<code>o_proj</code>) that combines the results: 4 attention matrices × 30 layers = 120 separate matrices. They’re the four light tiles in every layer of the 3D model and the <code>self_attn</code> group in chapter 1’s anatomy. Every layer does the same steps with different numbers, so each layer looks for different things.</p>
     </div>
+
+    <h3 class="step-h">Heads: one query, cut into slices</h3>
+    <div class="prose"><p>One more detail, because it explains the odd matrix sizes. The <dfn data-term="query">query</dfn> isn’t used as one long list of 576 numbers. It is cut into 9 slices of 64, and each slice does its own attention, separately from the others. Each slice is called a <dfn data-term="head">head</dfn>. Nine heads means nine independent “searches” per layer: one head might track the previous word, another the subject of the sentence. That’s why the grid below changes when you change Head.</p>
+    <p>Keys and values are cut the same way, but there are only 3 slices of them (3 × 64 = 192 numbers). Each key/value slice is shared by 3 query heads. That saves memory, and it’s exactly why <code>k_proj</code> and <code>v_proj</code> are 192 × 576 while <code>q_proj</code> is 576 × 576. Here are the real vectors for the last token of your prompt in layer 0, each number a coloured cell:</p></div>
+    <div class="heads" id="heads-viz"></div>
     <div class="attn-controls" id="attn-controls"></div>
     <div class="attn-grid">
       <div class="attn-map" id="attn-map"></div>
@@ -337,6 +367,10 @@
       <p><b>How to read this:</b> each column is one token and each row is one layer. Every small cell holds that token’s key and value for that layer. Amber cells came from your prompt; pink cells were added one by one as the answer was written.</p>
     </div>
     <div class="kv" id="kv"></div>
+
+    <h3 class="step-h">Open one layer’s notes</h3>
+    <div class="prose"><p>Here are the actual numbers inside one layer’s cache: the 4-D shape from chapter 0, with a single layer picked out. Each column is one token. Each column holds that token’s key (3 heads × 64 numbers) and, on the right, its value. Watch a new column appear for every word the model writes.</p></div>
+    <div class="kv-layer" id="kv-layer"></div>
 
     <h3 class="step-h">Turn the notes off and see the cost</h3>
     <div class="prose"><p>Without the cache, every new word means redoing the work for the whole text so far. Untick the box and press Generate (or Continue). Each bar is the real time one step took in this tab.</p></div>

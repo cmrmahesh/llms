@@ -1,6 +1,6 @@
 // 8. Decode loop and KV cache: a live grid of cached K/V, sizes, and step timings.
 
-import { $, h, fmtInt, fmtBytes, fmtMs, vis, drawVector, tip, esc } from '../util.js';
+import { $, h, fmtInt, fmtBytes, fmtMs, vis, drawVector, tip, esc, diverging, rgb } from '../util.js';
 import { tokenAt } from './attention.js';
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -149,9 +149,80 @@ export default function kv(ctx) {
       h('span', {}, 'Prefill of the prompt ', h('b', {}, fmtMs(run.prefill.ms)))));
   }
 
+  // ---------------- real K and V numbers for one layer
+  let kvL = 0, kvBody = null, kvBusy = false;
+  function buildKvLayer() {
+    const el = $('#kv-layer');
+    el.textContent = '';
+    const d = ctx.dims();
+    const out = h('output', {}, String(kvL));
+    const inp = h('input', { type: 'range', min: 0, max: d.L - 1, value: kvL, 'aria-label': 'Layer' });
+    inp.addEventListener('input', () => { out.textContent = inp.value; });
+    inp.addEventListener('change', () => { kvL = +inp.value; fetchKv(); });
+    kvBody = h('div', {});
+    el.append(h('div', { class: 'attn-controls', style: { marginTop: 0 } }, h('label', {}, 'Layer', inp, out)), kvBody);
+    fetchKv();
+  }
+  async function fetchKv() {
+    if (!kvBody) return;
+    if (!S.loaded || !S.run?.prefill) { kvBody.textContent = ''; kvBody.append(h('p', { class: 'empty', style: { margin: 0 } }, 'Generate to fill the cache.')); return; }
+    if (kvBusy) return;
+    kvBusy = true;
+    try {
+      const r = await ctx.engine.call('kv', { layer: kvL });
+      drawKv(r.K, r.V, r.n);
+    } catch { /* ignore */ } finally { kvBusy = false; }
+  }
+  function drawKv(K, V, n) {
+    const d = ctx.dims();
+    const { KVH, HD } = d;
+    const kvDim = KVH * HD;
+    const cw = Math.max(2, Math.min(12, Math.floor(380 / Math.max(n, 1))));
+    const ch = 1.6, gap = 6, top = 18, left = 56;
+    const panelW = cw * n, panelH = KVH * HD * ch + (KVH - 1) * gap;
+    const W = left + panelW * 2 + 40, Hh = top + panelH + 26;
+    const dpr = devicePixelRatio || 1;
+    const cv = h('canvas', { 'aria-label': `Layer ${kvL} KV cache: ${n} tokens, keys and values` });
+    cv.width = W * dpr; cv.height = Hh * dpr; cv.style.width = `${W}px`; cv.style.height = `${Hh}px`;
+    const g = cv.getContext('2d');
+    g.scale(dpr, dpr);
+    const rmsOf = A => { let s = 0; for (let i = 0; i < n * kvDim; i++) s += A[i] * A[i]; return Math.sqrt(s / (n * kvDim)) || 1; };
+    const panel = (A, x0, title) => {
+      const sc = 2.5 * rmsOf(A);
+      for (let p = 0; p < n; p++) for (let hh = 0; hh < KVH; hh++) for (let i = 0; i < HD; i++) {
+        g.fillStyle = rgb(diverging(A[p * kvDim + hh * HD + i] / sc));
+        g.fillRect(x0 + p * cw, top + hh * (HD * ch + gap) + i * ch, cw - (cw > 3 ? 0.5 : 0), ch + 0.2);
+      }
+      g.fillStyle = '#14213a'; g.font = '600 12px Archivo, sans-serif'; g.textAlign = 'left';
+      g.fillText(title, x0, 12);
+    };
+    panel(K, left, 'Keys');
+    panel(V, left + panelW + 40, 'Values');
+    g.fillStyle = '#6f7b8f'; g.font = '11px Archivo, sans-serif'; g.textAlign = 'right';
+    for (let hh = 0; hh < KVH; hh++) g.fillText(`head ${hh}`, left - 8, top + hh * (HD * ch + gap) + HD * ch / 2 + 4);
+    g.textAlign = 'left';
+    g.fillText(`← ${n} tokens: one column each →`, left, Hh - 6);
+    cv.addEventListener('mousemove', e => {
+      const r = cv.getBoundingClientRect();
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      let px = x - left, which = 'key';
+      if (px >= panelW + 40) { px -= panelW + 40; which = 'value'; }
+      const p = Math.floor(px / cw);
+      const hh = Math.floor((y - top) / (HD * ch + gap));
+      if (p < 0 || p >= n || hh < 0 || hh >= KVH || px > panelW) return tip(e, null);
+      tip(e, `<code>${esc(vis(S.tok.tokenText(tokenAt(S, p))))}</code> (position ${p})<br>its ${which}, head ${hh}: 64 numbers`);
+    });
+    cv.addEventListener('mouseleave', e => tip(e, null));
+    kvBody.textContent = '';
+    kvBody.append(h('div', { class: 'kv-scroll' }, cv),
+      h('p', { class: 'caption' }, `Layer ${kvL}: ${n} tokens × ${KVH} heads × ${HD} numbers = ${fmtInt(n * kvDim)} numbers for keys, and the same for values. The other ${d.L - 1} layers each hold a stack like this too.`));
+    requestAnimationFrame(() => { const sc = kvBody.querySelector('.kv-scroll'); if (sc) sc.scrollLeft = sc.scrollWidth; });
+  }
+
   return {
     update(reason) {
-      if (reason === 'model') build();
+      if (reason === 'model') { build(); buildKvLayer(); }
+      if (['prefill', 'step', 'idle', 'branch', 'weights'].includes(reason)) fetchKv();
       if (!built) return;
       if (['model', 'weights', 'prefill', 'step', 'branch'].includes(reason)) { drawGrid(); drawSteps(); }
     },

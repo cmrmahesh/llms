@@ -211,6 +211,10 @@ export class LlamaModel {
           q: q.slice((T - 1) * D, (T - 1) * D + HD),
           k: k.slice((T - 1) * kvDim, (T - 1) * kvDim + HD),
           v: v.slice((T - 1) * kvDim, (T - 1) * kvDim + HD),
+          // all heads, for showing how the vectors split into heads
+          qAll: q.slice((T - 1) * D, T * D),
+          kAll: k.slice((T - 1) * kvDim, T * kvDim),
+          vAll: v.slice((T - 1) * kvDim, T * kvDim),
         };
       }
       // Append this step's K and V to the cache.
