@@ -19,7 +19,7 @@
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
-<a class="skip" href="#console">Skip to the prompt</a>
+<a class="skip" href="#prompt">Skip to the prompt</a>
 
 <header class="topbar">
   <a class="brand" href="#top">Inference, <span>opened</span></a>
@@ -60,28 +60,34 @@
     </figure>
   </section>
 
-  <!-- CONSOLE ------------------------------------------------------------->
-  <section class="console" id="console" data-map="console">
+  <!-- CONSOLE: docked in the right column on wide screens (see app.js placeConsole) -->
+  <div id="console-home">
+  <section class="console" id="console" aria-label="Your prompt">
     <div class="console-head">
       <h2 class="console-title">Your prompt</h2>
-      <label class="toggle"><input type="checkbox" id="opt-chat" checked> Add chat markers (who’s speaking)</label>
     </div>
-    <details class="system" id="system-wrap">
-      <summary>System prompt <span class="dim">(hidden instructions sent before every message)</span></summary>
-      <textarea id="system-prompt" rows="2" spellcheck="false"></textarea>
-    </details>
     <label class="sr" for="prompt">Prompt</label>
-    <textarea id="prompt" rows="3" spellcheck="false">What is the capital of France?</textarea>
+    <textarea id="prompt" rows="2" spellcheck="false">What is the capital of France?</textarea>
+    <button class="btn primary console-load" id="console-load">Load the model <span class="dim">269 MB</span></button>
     <div class="console-controls">
       <button class="btn primary" id="btn-run" disabled>Generate</button>
-      <button class="btn" id="btn-step" disabled title="Run the prompt, then one more token per click">One token at a time</button>
+      <button class="btn" id="btn-step" disabled title="Run the prompt, then one more token per click">Step one token</button>
       <button class="btn" id="btn-stop" disabled>Pause</button>
-      <label class="num">Max new tokens <input type="number" id="opt-max" value="48" min="1" max="400"></label>
-      <span class="console-note" id="console-note">Load the model to generate. The basics and the tokenizer below already work.</span>
     </div>
+    <p class="console-note" id="console-note">Load the model to generate. The basics and the tokenizer already work.</p>
     <div class="output" id="output" aria-live="polite"><span class="placeholder">The model’s answer appears here, one token at a time.</span></div>
     <div class="run-stats" id="run-stats"></div>
+    <details class="console-opts">
+      <summary>Options</summary>
+      <label class="toggle"><input type="checkbox" id="opt-chat" checked> Add chat markers (who’s speaking)</label>
+      <label class="num">Max new tokens <input type="number" id="opt-max" value="48" min="1" max="400"></label>
+      <div id="system-wrap">
+        <label class="opt-label" for="system-prompt">System prompt <span class="dim">(hidden instructions sent before every message)</span></label>
+        <textarea id="system-prompt" rows="3" spellcheck="false"></textarea>
+      </div>
+    </details>
   </section>
+  </div>
 
   <!-- 0. PRIMER ----------------------------------------------------------->
   <section class="chapter" id="ch-primer" data-map="primer">
@@ -453,16 +459,20 @@
   </footer>
 </main>
 
-<aside class="rail" aria-label="Machine map">
+<aside class="rail" aria-label="Prompt and machine map">
   <div class="rail-inner">
+    <div id="console-dock"></div>
     <p class="rail-title">Where this runs</p>
-    <div id="machine"></div>
     <p class="rail-caption" id="machine-caption"></p>
-    <dl class="rail-mapping">
-      <div><dt>CPU</dt><dd>this page’s main thread</dd></div>
-      <div><dt>GPU</dt><dd>a Web Worker running a WebAssembly kernel</dd></div>
-      <div><dt>HBM</dt><dd>the worker’s WebAssembly memory</dd></div>
-    </dl>
+    <div id="machine"></div>
+    <details class="rail-mapping">
+      <summary>What plays each part in this tab?</summary>
+      <dl>
+        <div><dt>CPU</dt><dd>this page’s main thread</dd></div>
+        <div><dt>GPU</dt><dd>a Web Worker running a WebAssembly kernel</dd></div>
+        <div><dt>HBM</dt><dd>the worker’s WebAssembly memory</dd></div>
+      </dl>
+    </details>
   </div>
 </aside>
 </div>

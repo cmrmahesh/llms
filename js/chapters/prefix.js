@@ -37,7 +37,7 @@ export default function prefix(ctx) {
   $('#btn-long-sys').addEventListener('click', () => {
     if (S.running || !S.meta.chat) return;
     ctx.setSystem(LONG_SYSTEM);
-    document.getElementById('system-wrap').open = true;
+    document.querySelector('.console-opts').open = true;
   });
   $('#opt-prefix').addEventListener('change', e => { S.settings.prefixCache = e.target.checked; });
   $('#btn-new-q').addEventListener('click', () => {

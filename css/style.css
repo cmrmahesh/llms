@@ -88,8 +88,8 @@ b { font-weight: 650; }
 /* ---------- layout ---------- */
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 40px;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 36px;
   max-width: 1360px; margin: 0 auto;
   padding: 0 var(--gutter);
 }
@@ -440,11 +440,17 @@ canvas.hm { display: block; image-rendering: pixelated; }
 
 /* ---------- rail / machine map ---------- */
 .rail { position: relative; }
-.rail-inner { position: sticky; top: 72px; padding: 22px 0 16px; }
+.rail-inner {
+  position: sticky; top: 64px; padding: 14px 4px 16px 0;
+  max-height: calc(100vh - 64px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
+}
 .rail-title { font-weight: 700; font-variation-settings: 'wdth' 112; margin: 0 0 10px; font-size: 1rem; }
 #machine svg { width: 100%; height: auto; display: block; }
-.rail-caption { font-size: 0.88rem; color: var(--ink-2); min-height: 4.8em; margin: 10px 0; line-height: 1.5; }
-.rail-mapping { font-size: 0.8rem; color: var(--ink-3); margin: 14px 0 0; border-top: 1px solid var(--rule); padding-top: 10px; }
+.rail-caption { font-size: 0.86rem; color: var(--ink-2); min-height: 4.5em; margin: 8px 0; line-height: 1.45; }
+#machine svg { max-height: 36vh; width: auto; max-width: 100%; margin: 0 auto; }
+.rail-mapping { font-size: 0.8rem; color: var(--ink-3); margin: 10px 0 0; border-top: 1px solid var(--rule); padding-top: 8px; }
+.rail-mapping summary { cursor: pointer; color: var(--ink-2); min-height: 28px; display: flex; align-items: center; }
+.rail-mapping dl { margin: 6px 0 0; }
 .rail-mapping div { display: grid; grid-template-columns: 44px 1fr; gap: 6px; margin: 3px 0; }
 .rail-mapping dt { font-weight: 650; color: var(--ink-2); }
 .rail-mapping dd { margin: 0; }
@@ -726,3 +732,31 @@ details.deeper .prose:first-of-type { margin-top: 14px; }
 .heads { background: var(--panel); border: 1px solid var(--rule); border-radius: var(--r-m); padding: 14px 16px; margin: 12px 0 16px; overflow-x: auto; }
 .heads svg { width: 100%; min-width: 640px; height: auto; display: block; }
 .kv-layer { background: var(--panel); border: 1px solid var(--rule); border-radius: var(--r-m); padding: 14px 16px; margin: 12px 0 16px; }
+
+/* ---------- console (compact, works docked in the rail or inline) ---------- */
+.console-head { margin-bottom: 6px; }
+.console #prompt { font-size: 0.98rem; }
+.console-load { width: 100%; margin-top: 8px; }
+.console-load[hidden] { display: none; }
+.console-controls { margin: 8px 0 4px; gap: 8px; }
+.console-note { margin: 4px 0 8px; font-size: 0.82rem; line-height: 1.4; }
+.console-opts { margin-top: 8px; font-size: 0.9rem; border-top: 1px solid var(--rule-2); padding-top: 4px; }
+.console-opts summary { cursor: pointer; color: var(--ink-2); min-height: 36px; display: flex; align-items: center; font-weight: 600; }
+.console-opts > label { display: flex; margin: 4px 0; }
+.opt-label { display: block; font-size: 0.85rem; color: var(--ink-2); margin: 8px 0 4px; }
+.console-opts textarea { font-size: 0.88rem; }
+
+.rail .console { padding: 12px 14px 6px; margin: 0 0 12px; border-color: var(--ink-3); }
+.rail .console-head { margin-bottom: 4px; }
+.rail .console-note { margin: 2px 0 6px; font-size: 0.78rem; }
+.rail .rail-caption { min-height: 0; margin: 4px 0 8px; }
+.rail .console-title { font-size: 1.05rem; }
+.rail .console-controls .btn { padding: 8px 11px; min-height: 40px; font-size: 0.88rem; }
+.rail .output { min-height: 56px; max-height: 17vh; overflow-y: auto; font-size: 0.95rem; line-height: 1.75; padding: 10px; }
+.rail .run-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px; font-size: 0.78rem; margin-top: 6px; line-height: 1.35; }
+.rail .rail-title { margin-top: 4px; }
+@media (min-width: 1181px) and (max-height: 960px) {
+  .rail .output { max-height: 13vh; }
+  #machine svg { max-height: 28vh; }
+  .rail #prompt { min-height: 0; }
+}

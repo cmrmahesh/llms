@@ -105,6 +105,7 @@ async function selectModel(meta) {
   $('#hero-model').textContent = meta.label;
   $('#hero-size').textContent = `${meta.downloadMB} MB`;
   $('#system-wrap').hidden = !meta.chat;
+  $('#console-load .dim').textContent = `${meta.downloadMB} MB`;
   $('#opt-chat').closest('label').hidden = !meta.chat;
   S.settings.chat = meta.chat && $('#opt-chat').checked;
   S.settings.system = meta.systemPrompt || '';
@@ -272,6 +273,7 @@ async function generate({ single = false } = {}) {
   S.stopRequested = false;
   $('#console-note').textContent = single ? 'Stepping: each click runs one forward pass.' : 'Generating. Pause stops after the current token.';
   updateButtons();
+  let failed = false;
   try {
     const fresh = !S.run || !sameIds(S.run.ids, S.ids) || S.run.done;
     if (fresh) {
@@ -286,9 +288,15 @@ async function generate({ single = false } = {}) {
     }
   } catch (e) {
     console.error(e);
+    failed = true;
     $('#console-note').textContent = `Generation failed: ${e.message}`;
   } finally {
     S.running = false;
+    if (S.run?.steps.length && !failed) {
+      $('#console-note').textContent = S.run.done
+        ? 'Done. Click any word of the answer to see how it was picked.'
+        : 'Paused. Generate continues; Step adds one token.';
+    }
     setStatus(S.loaded ? (S.run?.done ? 'Done' : 'Paused') : 'Weights not loaded', S.loaded ? 'ready' : 'idle');
     updateButtons();
     emit('idle');
@@ -354,10 +362,10 @@ function renderStats() {
   const item = (label, value) => h('span', {}, `${label} `, h('b', {}, value));
   el.append(...[
     item('Prompt', `${run.ids.length} tokens`),
-    run.prefill.reused ? item('Reused from prefix cache', `${run.prefill.reused} tokens`) : null,
-    item('Time to first token', fmtMs(run.ttft)),
+    run.prefill.reused ? item('Reused', `${run.prefill.reused} tokens`) : null,
+    item('First token after', fmtMs(run.ttft)),
     dec.length ? item('Decode', `${(dec.length / (decMs / 1000)).toFixed(1)} tokens/s`) : null,
-    item('KV cache', `${fmtInt(kvTokens)} tokens · ${fmtBytes(kvTokens * d.kvBytesPerToken)} in bf16`),
+    item('KV cache', fmtBytes(kvTokens * d.kvBytesPerToken)),
   ].filter(Boolean));
 }
 
@@ -376,6 +384,10 @@ function updateButtons() {
   $('#btn-run').textContent = S.run && !S.run.done && S.run && sameIds(S.run.ids, S.ids) ? 'Continue' : 'Generate';
   for (const b of document.querySelectorAll('[data-action="load"]')) b.disabled = S.loaded || S.loading || !S.config;
   $('#hero-load').disabled = S.loaded || S.loading || !S.config;
+  const cl = $('#console-load');
+  cl.hidden = S.loaded;
+  cl.disabled = S.loading || !S.config;
+  cl.firstChild.textContent = S.loading ? 'Loading… ' : 'Load the model ';
   $('#hero-load').firstChild.textContent = S.loaded ? 'Model loaded ' : S.loading ? 'Loading… ' : 'Load the model ';
 }
 
@@ -394,6 +406,7 @@ function initChrome() {
   $('#btn-step').addEventListener('click', () => generate({ single: true }));
   $('#btn-stop').addEventListener('click', () => { S.stopRequested = true; });
   $('#hero-load').addEventListener('click', () => { loadWeights(); document.getElementById('ch-artifact').scrollIntoView(); });
+  $('#console-load').addEventListener('click', () => loadWeights());
   $('#prompt').addEventListener('keydown', e => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); generate({}); }
   });
@@ -411,10 +424,23 @@ async function initHero() {
   }
 }
 
+// The console lives in the right column on wide screens so it is always at hand,
+// and in the page flow on narrow screens (where the right column is a bottom strip).
+function placeConsole() {
+  const wide = matchMedia('(min-width: 1181px)');
+  const move = () => {
+    const target = wide.matches ? $('#console-dock') : $('#console-home');
+    if ($('#console').parentElement !== target) target.append($('#console'));
+  };
+  wide.addEventListener('change', move);
+  move();
+}
+
 function init() {
   // Handy for poking around in DevTools: inference.S.run.prefill.trace, etc.
   globalThis.inference = ctx;
   initChrome();
+  placeConsole();
   const machine = createMachine($('#machine'), $('#machine-caption'), ctx);
   ctx.machine = machine;
   initGlossary($('#tooltip'));
