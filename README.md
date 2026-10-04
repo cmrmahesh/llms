@@ -33,7 +33,7 @@ with an "in plain words" explanation and keeps the technical version in a
 | 6 | Attention: Q/K/V, heads as slices, real attention maps, attention sinks and previous-word heads | HBM → SM |
 | 7 | Feed-forward (SwiGLU), the residual stream, logit lens | HBM → SM |
 | 8 | Logits → softmax → temperature / top-k / top-p → token → bytes → text | SM, then 4 bytes to CPU |
-| 9 | Follow one token through the whole model: every stage of every layer, real vectors, a worked multiply, per-layer best guess, final softmax | HBM → SM |
+| 9 | Your whole prompt through all 30 layers as a T × 576 matrix: the matrix after every layer, every step of a layer on all rows (Q/K/V, each head's T × T attention table, combine + add, normalize, feed-forward), every row's guess for its next token, final softmax | HBM → SM |
 | 10 | Decode loop and the KV cache (live grid, one layer's real numbers, with/without cache timings) | HBM |
 | 11 | Why decode is memory-bound: arithmetic intensity, H100 roofline, CPU benchmark | HBM vs SM |
 | 12 | Prefix caching: hash-chained 16-token blocks, measured time-to-first-token | HBM |

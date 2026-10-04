@@ -183,6 +183,7 @@ export default function journey(ctx) {
     const text = h('p', { class: 'tv-plain' });
     const stage = h('div', { class: 'jv-stage', 'aria-live': 'polite' });
     const note = h('p', { class: 'caption jv-note' });
+    const nums = h('div', { class: 'jv-nums' });
     const ledger = h('div', { class: 'jv-ledger' });
     el.tabIndex = 0;
     el.setAttribute('aria-label', 'Shape walkthrough. Left and right arrow keys step back and forward.');
@@ -194,8 +195,8 @@ export default function journey(ctx) {
     el.append(
       h('div', { class: 'tv-top' }, h('div', { class: 'tv-nav' }, back, next), play, dots),
       h('div', { class: 'jv-head' }, h('div', {}, title, text), shapeNow),
-      stage, note, ledger);
-    ui = { back, next, play, dots, shapeNow, title, text, stage, note, ledger };
+      stage, nums, note, ledger);
+    ui = { back, next, play, dots, shapeNow, title, text, stage, nums, note, ledger };
     render();
   }
 
@@ -268,10 +269,56 @@ export default function journey(ctx) {
       prevOp = '';
     }
     ui.stage.append(row);
+    ui.nums.replaceWith(ui.nums = numbers(st, dat));
     ui.note.textContent = dat.real
       ? 'Real numbers: your prompt’s last token in layer 0, and the model’s real weights (a sample of each matrix). Very tall or wide shapes are cut off, shown by the jagged edge.'
       : `Stand-in numbers until you generate${S.previews ? '' : ' (and grey matrices until the weights are loaded)'}. The shapes are already exact. Very tall or wide shapes are cut off, shown by the jagged edge.`;
     renderLedger(st.ledger);
+  }
+
+  // The vectors of this step as numbers: the first few, and their length.
+  function numbers(st, dat) {
+    const box = h('div', { class: 'jv-nums' });
+    if (!dat.real) return box;
+    const fmt = v => (v >= 0 ? ' ' : '−') + Math.abs(v).toFixed(3);
+    const seen = new Set(), labels = new Set();
+    for (const it of st.items) {
+      if (it.t !== 'vec' || it.key === 'scores' || it.key === 'probs' || seen.has(it.key)) continue;
+      seen.add(it.key);
+      const label = labels.has(it.label) ? `${it.label} (after)` : it.label;
+      labels.add(it.label);
+      const a = dat[it.key];
+      let ss = 0;
+      for (const v of a) ss += v * v;
+      box.append(h('div', { class: 'jv-num' }, h('code', { class: 'jv-nlabel' }, label),
+        h('code', {}, `[${Array.from(a.subarray(0, 6), fmt).join('  ')}  …]`),
+        h('small', {}, `${fmtInt(a.length)} numbers · length ${Math.sqrt(ss).toFixed(1)}`)));
+    }
+    if (st.ledger === 'q') box.append(worked(dat));
+    return box;
+  }
+
+  // One number of q worked out by hand: the first row of Wq · h.
+  let wqRow = null;
+  function worked(dat) {
+    const { D } = ctx.dims();
+    const box = h('div', { class: 'tv-worked' });
+    const draw = W => {
+      let sum = 0;
+      for (let i = 0; i < D; i++) sum += dat.h[i] * W[i];
+      const term = i => h('span', { class: 'w' }, `(${W[i].toFixed(3)} × ${dat.h[i].toFixed(3)})`);
+      box.textContent = '';
+      box.append(h('p', { class: 'tv-sub' }, 'Where one of those numbers comes from: the first number of q is the first row of Wq times h, number by number, added up.'),
+        h('p', { class: 'mv-work' }, 'q[0] = ', term(0), ' + ', term(1), ' + ', term(2), ` + … ${fmtInt(D - 3)} more pairs … = `, h('b', {}, sum.toFixed(3))),
+        h('p', { class: 'caption' }, `That is one dot product. The other ${fmtInt(D - 1)} rows of Wq give the rest of q.`));
+    };
+    if (wqRow) draw(wqRow);
+    else {
+      box.append(h('p', { class: 'caption' }, 'Fetching the weights…'));
+      ctx.engine.call('slice', { name: 'model.layers.0.self_attn.q_proj.weight', rows: 1, cols: D })
+        .then(r => { wqRow = r.data; draw(wqRow); }).catch(() => {});
+    }
+    return box;
   }
 
   function renderLedger(current) {
@@ -313,7 +360,7 @@ export default function journey(ctx) {
 
   return {
     update(reason) {
-      if (reason === 'model') { stopPlay(); step = 0; build(); }
+      if (reason === 'model') { stopPlay(); step = 0; wqRow = null; build(); }
       if (reason === 'prefill' || reason === 'weights') render();
     },
   };

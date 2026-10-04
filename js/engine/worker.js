@@ -112,6 +112,7 @@ async function load({ id, configUrl, weightsUrl }) {
   model.resetCache();
   const tWarm = performance.now() - tw;
   seq = [];
+  insp = null;
   previews = makePreviews(weights, header.tensors);
   post({
     id, type: 'loaded',
@@ -181,6 +182,28 @@ function decode({ id, token, pos, noCache, trace = true }) {
 function lens({ id }) {
   if (!prefillHidden) return post({ id, type: 'lens', layers: [] });
   post({ id, type: 'lens', layers: model.logitLens(prefillHidden, 5) });
+}
+
+// Chapter 9's matrix view: the prompt as one matrix through every layer. The residual
+// matrices are kept here, so opening a layer only recomputes that one layer.
+let insp = null;
+function inspected(ids) {
+  const key = ids.join(',');
+  if (insp?.key !== key) insp = { key, ...model.inspectPrompt(ids) };
+  return insp;
+}
+
+function inspect({ id, ids }) {
+  const r = inspected(ids);
+  const resid = r.resid.slice();
+  post({ id, type: 'inspect', T: r.T, resid, guesses: r.guesses }, [resid.buffer]);
+}
+
+function inspectLayer({ id, ids, layer }) {
+  const r = inspected(ids);
+  const n = r.T * model.D;
+  const out = model.inspectLayer(layer, r.resid.subarray(layer * n, (layer + 1) * n), r.T, true);
+  post({ id, type: 'inspectLayer', layer, T: r.T, ...out }, Object.values(out).map(a => a.buffer));
 }
 
 // Read a block of real weights, e.g. for the weight inspector.
@@ -294,6 +317,8 @@ self.onmessage = async e => {
       case 'rows': embedRows(m); break;
       case 'kv': kvLayer(m); break;
       case 'neighbors': neighbors(m); break;
+      case 'inspect': inspect(m); break;
+      case 'inspectLayer': inspectLayer(m); break;
       case 'reset': seq = []; model?.resetCache(); post({ id: m.id, type: 'reset' }); break;
       default: throw new Error(`Unknown message ${m.type}`);
     }

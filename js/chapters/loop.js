@@ -1,6 +1,6 @@
 // 5. The transformer loop: attention (tokens talk) → add → feed-forward (each
 // token alone) → add, repeated for every layer. A sketch, not real data: the
-// tracer (chapter 9) replays the real numbers.
+// matrix view (chapter 9) replays the real numbers for the whole prompt.
 
 import { $, h, diverging, rgb } from '../util.js';
 

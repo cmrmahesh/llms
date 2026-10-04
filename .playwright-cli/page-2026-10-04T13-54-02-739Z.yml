@@ -1,0 +1,798 @@
+- generic [active] [ref=f1e1]:
+  - link "Skip to the prompt" [ref=f1e2] [cursor=pointer]:
+    - /url: "#prompt"
+  - banner [ref=f1e3]:
+    - link "Inference, opened" [ref=f1e4] [cursor=pointer]:
+      - /url: "#top"
+    - generic [ref=f1e5]:
+      - generic [ref=f1e6]: Model
+      - combobox "Model" [ref=f1e7]:
+        - option "SmolLM2-135M-Instruct" [selected]
+        - option "SmolLM2-135M (base)"
+        - option "SmolLM2-360M-Instruct"
+    - status [ref=f1e8]: Reading config and tokenizer…
+  - generic [ref=f1e9]:
+    - main [ref=f1e10]:
+      - generic [ref=f1e11]:
+        - generic [ref=f1e12]:
+          - heading "Every number between your prompt and its answer" [level=1] [ref=f1e13]
+          - paragraph [ref=f1e14]: "A real language model, SmolLM2-135M-Instruct, runs inside this tab. Type a question and follow it step by step, from your words to the model’s answer, using the model’s actual numbers. No background needed: the first section covers the few ideas everything else builds on, and every underlined term explains itself when you point at it."
+          - generic [ref=f1e15]:
+            - button "Load the model 269 MB" [disabled] [ref=f1e16]
+            - link "Start with the basics" [ref=f1e17] [cursor=pointer]:
+              - /url: "#ch-primer"
+          - paragraph [ref=f1e18]: The model downloads from Hugging Face once and stays in your browser. Nothing you type leaves this page.
+        - figure [ref=f1e19]:
+          - generic "Three-dimensional view of every weight matrix in the model, drawn to scale" [ref=f1e20]
+          - generic [ref=f1e22]:
+            - text: This is the whole model. Each flat tile is one
+            - 'button "matrix: A grid of numbers with rows and columns, like a spreadsheet. A 192 × 576 matrix has 192 rows of 576 numbers each." [ref=f1e23]': matrix
+            - text: of learned numbers, sized by how many numbers it holds.
+            - list [ref=f1e24]:
+              - listitem [ref=f1e25]:
+                - text: "The tower: 30"
+                - 'button "layers: One repeated block of the model: attention followed by a feed-forward network. This model stacks 30 identical-shaped layers, each with its own weights." [ref=f1e26]': layers
+                - text: stacked bottom to top. Every layer has the same 7 tiles, each filled with different numbers. Your text passes through them in order.
+              - listitem [ref=f1e27]: Light tiles are attention, where words look at each other. Dark, wide tiles are the feed-forward network, where each word is processed on its own.
+              - listitem [ref=f1e28]: "The long strip along the bottom is the vocabulary table: one row for each of the 49,152 tokens. It is as big as 8 whole layers. Teal marks are the rows your prompt uses."
+              - listitem [ref=f1e29]: "Once loaded, the colours are the real numbers: blue below zero, red above. Drag to turn the model; point at a tile to name it."
+      - generic [ref=f1e30]:
+        - generic [ref=f1e31]:
+          - generic [aria-hidden] [ref=f1e32]: "0"
+          - generic [ref=f1e33]:
+            - heading "The ideas you need first" [level=2] [ref=f1e34]
+            - paragraph [ref=f1e35]:
+              - generic [ref=f1e36]: No model needed
+        - paragraph [ref=f1e37]: A language model is a very large pile of numbers and one simple operation repeated over and over. Five ideas are enough to follow the rest of this page.
+        - heading "A vector is a list of numbers that describes something" [level=3] [ref=f1e38]
+        - paragraph [ref=f1e40]:
+          - text: "Here is a colour described by three numbers: how much red, green and blue. That list of three is a"
+          - 'button "vector: A list of numbers. A colour is a vector of 3 (red, green, blue). In this model every token becomes a vector of 576 numbers." [ref=f1e41]': vector
+          - text: ". Move the sliders: the numbers change the thing they describe."
+        - generic [ref=f1e44]:
+          - generic [ref=f1e45]:
+            - generic [ref=f1e46]:
+              - generic [ref=f1e47]: Red
+              - slider "Red" [ref=f1e48]: "212"
+              - status [ref=f1e49]: "212"
+            - generic [ref=f1e50]:
+              - generic [ref=f1e51]: Green
+              - slider "Green" [ref=f1e52]: "120"
+              - status [ref=f1e53]: "120"
+            - generic [ref=f1e54]:
+              - generic [ref=f1e55]: Blue
+              - slider "Blue" [ref=f1e56]: "40"
+              - status [ref=f1e57]: "40"
+          - paragraph [ref=f1e58]:
+            - text: "This colour as a vector:"
+            - code [ref=f1e59]: "[212, 120, 40]"
+        - generic [ref=f1e60]:
+          - paragraph [ref=f1e61]: "Language models describe each piece of text the same way, just with far more numbers. Two separate tables are involved, and both are looked up with the same ID number:"
+          - list [ref=f1e62]:
+            - listitem [ref=f1e63]:
+              - text: The
+              - 'button "vocabulary: The fixed list of every token the model knows, each with an ID. This model has 49,152." [ref=f1e64]': vocabulary
+              - text: (in
+              - code [ref=f1e65]: tokenizer.json
+              - text: ") only maps IDs to text: ID 3575 is the text “␣capital”. It contains no numbers about meaning."
+            - listitem [ref=f1e66]:
+              - text: The
+              - 'button "embedding table: The vector of numbers that stands for a token inside the model. It is looked up from a table using the token’s ID." [ref=f1e67]': embedding table
+              - text: (in the model file) gives every ID its own list of 576 numbers. That list is what the model actually works with.
+        - paragraph [ref=f1e70]:
+          - text: Why 576? It’s a size the model’s makers picked before training, called the
+          - emphasis [ref=f1e71]: hidden size
+          - text: . Bigger means more room to encode meaning, but every matrix grows with it, so the model gets slower and needs more memory. Small models use a few hundred; GPT-2 used 768, Llama 3 8B uses 4,096 and Llama 3 70B uses 8,192. Nobody decided what each of the 576 numbers means either. Training settled on values that make the model good at predicting text, so the numbers end up capturing things like “this is a city” or “this is plural”, spread across many positions at once.
+        - heading "Matrices and tensors are boxes of numbers" [level=3] [ref=f1e72]
+        - paragraph [ref=f1e74]:
+          - text: A
+          - 'button "matrix: A grid of numbers with rows and columns, like a spreadsheet. A 192 × 576 matrix has 192 rows of 576 numbers each." [ref=f1e75]': matrix
+          - text: "is a grid of numbers, like a spreadsheet: so many rows, so many columns."
+          - 'button "Tensor: The general name for a box of numbers with any number of directions: a vector has one (a list), a matrix has two (a grid), and a stack of matrices has three." [ref=f1e76]': Tensor
+          - text: is the catch-all word for a box of numbers with any number of directions. Files and code say “tensor” because they don’t care how many directions a box has.
+        - generic [ref=f1e77]:
+          - img "A single number, a vector drawn as a row of cells, a matrix drawn as a grid, and a tensor drawn as a stack of grids" [ref=f1e78]:
+            - generic [ref=f1e170]: a number
+            - generic [ref=f1e171]: no directions
+            - generic [ref=f1e172]: a vector
+            - generic [ref=f1e173]: "1 direction: a list"
+            - generic [ref=f1e174]: a matrix
+            - generic [ref=f1e175]: "2 directions: rows × columns"
+            - generic [ref=f1e176]: a 3-D tensor
+            - generic [ref=f1e177]: "3 directions: a stack of grids"
+          - table [ref=f1e178]:
+            - rowgroup [ref=f1e179]:
+              - row [ref=f1e180]:
+                - columnheader "In this model" [ref=f1e181]
+                - columnheader "Kind" [ref=f1e182]
+                - columnheader "Shape" [ref=f1e183]
+            - rowgroup [ref=f1e184]:
+              - row [ref=f1e185]:
+                - cell "One token’s meaning" [ref=f1e186]
+                - cell "vector" [ref=f1e187]
+                - cell "576 numbers" [ref=f1e188]
+              - row [ref=f1e189]:
+                - cell "Your whole prompt" [ref=f1e190]
+                - cell "matrix" [ref=f1e191]
+                - cell "T tokens × 576" [ref=f1e192]
+              - row [ref=f1e193]:
+                - cell "One weight matrix, e.g. the “query” maker" [ref=f1e194]
+                - cell "matrix" [ref=f1e195]
+                - cell "576 × 576" [ref=f1e196]
+              - row [ref=f1e197]:
+                - cell "The notes kept while writing (KV cache), keys only. Drawn below." [ref=f1e198]
+                - cell "4-D tensor" [ref=f1e199]
+                - cell "30 layers × T tokens × 3 heads × 64" [ref=f1e200]
+        - paragraph [ref=f1e202]: The last row is the trickiest, so here is its shape drawn out. Picture one sheet of numbers per layer. On each sheet, every token is a column, and the column holds 3 heads × 64 = 192 numbers. Stack 30 sheets and you have the keys; the values are a second stack of the same shape. Chapter 10 shows the real numbers.
+        - generic [ref=f1e203]:
+          - 'img "The keys in the KV cache: 30 stacked sheets, one per layer; on each sheet 37 token columns of 3 heads times 64 numbers" [ref=f1e204]':
+            - generic [ref=f1e209]: × 30 layers (one sheet each)
+            - generic [ref=f1e224]: head 0
+            - generic [ref=f1e225]: 64 numbers
+            - generic [ref=f1e240]: head 1
+            - generic [ref=f1e241]: 64 numbers
+            - generic [ref=f1e256]: head 2
+            - generic [ref=f1e257]: 64 numbers
+            - generic [ref=f1e258]: 37 tokens → (one column each; a new column is added for every word written)
+            - generic [ref=f1e259]: "One sheet = one layer’s keys: 37 × 3 × 64 = 7,104 numbers"
+            - generic [ref=f1e260]: ← newest token
+          - paragraph [ref=f1e261]: "Total keys: 30 × 37 × 3 × 64 = 213,120 numbers, and the same again for values. At 2 bytes per number (bf16), that’s 852 KB for this prompt."
+        - 'heading "The one operation: multiply a matrix by a vector" [level=3] [ref=f1e262]'
+        - paragraph [ref=f1e264]:
+          - text: Almost all of the model’s work is this. Take a vector in. For each row of the matrix, multiply the row and the vector number by number and add up the results. That sum is a
+          - 'button "dot product: Dot product: multiply two vectors number by number and add the results. A big positive answer means they point the same way, which is a way of measuring similarity." [ref=f1e265]': dot product
+          - text: ", and each row gives one output number. The result is a new vector. Click an output to see its arithmetic, and edit the input numbers."
+        - generic [ref=f1e266]:
+          - generic [ref=f1e267]:
+            - generic [ref=f1e268]:
+              - generic [ref=f1e269]: weights (3 × 4 matrix)
+              - table "Weight matrix" [ref=f1e270]:
+                - row [ref=f1e271]:
+                  - cell "1" [ref=f1e272]
+                  - cell "2" [ref=f1e273]
+                  - cell "0" [ref=f1e274]
+                  - cell "−1" [ref=f1e275]
+                - row [ref=f1e276]:
+                  - cell "0.5" [ref=f1e277]
+                  - cell "−1" [ref=f1e278]
+                  - cell "3" [ref=f1e279]
+                  - cell "0" [ref=f1e280]
+                - row [ref=f1e281]:
+                  - cell "−2" [ref=f1e282]
+                  - cell "0" [ref=f1e283]
+                  - cell "1" [ref=f1e284]
+                  - cell "1" [ref=f1e285]
+            - generic [aria-hidden] [ref=f1e286]: ×
+            - generic [ref=f1e287]:
+              - generic [ref=f1e288]: input vector
+              - generic [ref=f1e289]:
+                - spinbutton "Input number 1" [ref=f1e290]: "2"
+                - spinbutton "Input number 2" [ref=f1e291]: "1"
+                - spinbutton "Input number 3" [ref=f1e292]: "0.5"
+                - spinbutton "Input number 4" [ref=f1e293]: "3"
+            - generic [aria-hidden] [ref=f1e294]: =
+            - generic [ref=f1e295]:
+              - generic [ref=f1e296]: output vector
+              - generic [ref=f1e297]:
+                - button "1" [pressed] [ref=f1e298] [cursor=pointer]
+                - button "1.5" [ref=f1e299] [cursor=pointer]
+                - button "−0.5" [ref=f1e300] [cursor=pointer]
+          - paragraph [ref=f1e301]: Output 1 = row 1 · input = (1 × 2) + (2 × 1) + (0 × 0.5) + (−1 × 3) = 1
+          - paragraph [ref=f1e302]: Four numbers in, three out. Every arrow in a neural network diagram is one of these. The weights decide how much each input counts toward each output.
+        - paragraph [ref=f1e304]: The sizes always follow one rule. A matrix with m rows and n columns needs an input of exactly n numbers, one per column, and gives back m numbers, one per row. Feed it several input vectors side by side and you get that many output vectors in one go. That is how the model handles a whole prompt at once.
+        - generic [ref=f1e305]:
+          - generic [ref=f1e306]:
+            - generic [ref=f1e307]: The rule
+            - generic [ref=f1e308]: m × n
+            - generic [ref=f1e309]: ×
+            - generic [ref=f1e310]: n × 1
+            - generic [ref=f1e311]: =
+            - generic [ref=f1e312]: m × 1
+            - generic [ref=f1e313]: the two inner sizes must match
+          - generic [ref=f1e314]:
+            - generic [ref=f1e315]: The example above
+            - generic [ref=f1e316]: 3 × 4
+            - generic [ref=f1e317]: ×
+            - generic [ref=f1e318]: 4 × 1
+            - generic [ref=f1e319]: =
+            - generic [ref=f1e320]: 3 × 1
+            - generic [ref=f1e321]: 3 rows, so 3 outputs
+          - generic [ref=f1e322]:
+            - generic [ref=f1e323]: One token, one model matrix
+            - generic [ref=f1e324]: 1,536 × 576
+            - generic [ref=f1e325]: ×
+            - generic [ref=f1e326]: 576 × 1
+            - generic [ref=f1e327]: =
+            - generic [ref=f1e328]: 1,536 × 1
+            - generic [ref=f1e329]: feed-forward “up”, chapter 7
+          - generic [ref=f1e330]:
+            - generic [ref=f1e331]: Your whole prompt at once
+            - generic [ref=f1e332]: 1,536 × 576
+            - generic [ref=f1e333]: ×
+            - generic [ref=f1e334]: 576 × 37
+            - generic [ref=f1e335]: =
+            - generic [ref=f1e336]: 1,536 × 37
+            - generic [ref=f1e337]: "37 tokens side by side: this is prefill"
+          - paragraph [ref=f1e338]: m = rows of the matrix = how many numbers come out. n = columns = how many numbers go in. T = how many tokens are processed together.
+        - paragraph [ref=f1e340]: To produce a single word, this model performs about 134 million of these multiply-and-add steps.
+        - heading "Weights are the numbers inside the matrices" [level=3] [ref=f1e341]
+        - paragraph [ref=f1e343]:
+          - text: The numbers in the model’s matrices are its
+          - 'button "weights: The numbers inside the model’s matrices. Training chose them; during inference they never change. Also called parameters." [ref=f1e344]': weights
+          - text: ", also called"
+          - 'button "parameters: Another word for weights: the learned numbers in the model. “135M parameters” means 135 million of them." [ref=f1e345]': parameters
+          - text: . Training adjusted them over trillions of words of text until the model got good at guessing the next word. When you use the model, which is called
+          - emphasis [ref=f1e346]: inference
+          - text: ", the weights are frozen: nothing is learned and nothing changes. The 269 MB download is about 135 million of these numbers, and nothing else."
+        - 'heading "Where the weights come from: forward and backward" [level=3] [ref=f1e347]'
+        - generic [ref=f1e348]:
+          - paragraph [ref=f1e349]:
+            - text: Running numbers through a model from input to output is a
+            - 'button "forward pass: Forward pass: feeding an input through the model, layer by layer, to get its output. Inference is only forward passes." [ref=f1e350]': forward pass
+            - text: . That is all inference is, and all this page ever does.
+          - paragraph [ref=f1e351]:
+            - text: "Training adds a second direction. After each forward pass, the output is compared with the right answer: the word that actually came next in some real text. Then a"
+            - 'button "backward pass: Backpropagation: during training, working backwards from the error to find how each weight should change to make the right answer more likely." [ref=f1e352]': backward pass
+            - text: "(backpropagation) works out, for every single weight, which direction would have made the right answer a little more likely. Every weight gets nudged that way, and it repeats. SmolLM2 went through this with 2 trillion tokens of text. Try it on a model with 9 weights:"
+        - generic [ref=f1e353]:
+          - generic [ref=f1e354]:
+            - generic [ref=f1e355]:
+              - generic [ref=f1e356]: "input: “the cat”"
+              - generic [ref=f1e357]: "0.90"
+              - generic [ref=f1e358]: −0.50
+              - generic [ref=f1e359]: "0.60"
+            - generic [aria-hidden] [ref=f1e360]: →
+            - generic [ref=f1e361]:
+              - generic [ref=f1e362]: the 9 weights
+              - generic [ref=f1e363]:
+                - generic [ref=f1e364]: −0.40
+                - generic [ref=f1e365]: "0.30"
+                - generic [ref=f1e366]: "0.10"
+              - generic [ref=f1e367]:
+                - generic [ref=f1e368]: "0.50"
+                - generic [ref=f1e369]: −0.20
+                - generic [ref=f1e370]: "0.40"
+              - generic [ref=f1e371]:
+                - generic [ref=f1e372]: "0.20"
+                - generic [ref=f1e373]: "0.60"
+                - generic [ref=f1e374]: −0.30
+            - generic [aria-hidden] [ref=f1e375]: →
+            - generic [ref=f1e376]:
+              - generic [ref=f1e377]: "next word: chance"
+              - generic [ref=f1e378]:
+                - code [ref=f1e379]: sat
+                - generic [ref=f1e381]: "?"
+              - generic [ref=f1e382]:
+                - code [ref=f1e383]: flew
+                - generic [ref=f1e385]: "?"
+              - generic [ref=f1e386]:
+                - code [ref=f1e387]: barked
+                - generic [ref=f1e389]: "?"
+          - generic [ref=f1e390]:
+            - button "1. Forward" [ref=f1e391] [cursor=pointer]
+            - button "2. Backward" [disabled] [ref=f1e392]
+            - button "3. Update weights" [disabled] [ref=f1e393]
+            - button "Train 10 rounds" [ref=f1e394] [cursor=pointer]
+            - button "Reset" [ref=f1e395] [cursor=pointer]
+          - paragraph [ref=f1e396]: "A toy model: the context “the cat” is a vector of 3 numbers, and 9 weights turn it into a score for each of 3 possible next words. The right answer in our “training text” is “sat”. Press Forward."
+        - paragraph [ref=f1e398]: "A real model does exactly this, just with 135 million weights instead of 9, and with the error passed back through all 30 layers instead of one. When training is finished, the weights are frozen and published. Using the model only needs the forward half: no comparing, no nudging. That’s why running a model is so much cheaper than training it."
+        - 'heading "The machine: where the numbers live and move" [level=3] [ref=f1e399]'
+        - paragraph [ref=f1e401]:
+          - text: A server running a model has two very different processors. The
+          - 'button "CPU: The computer’s main processor. A few fast, flexible cores. Here it handles text: tokenizing, sampling and turning tokens back into text." [ref=f1e402]': CPU
+          - text: handles text and decisions. The
+          - 'button "GPU: Graphics processor: thousands of small cores built to do huge numbers of multiply-adds at once. This is where model math runs." [ref=f1e403]': GPU
+          - text: does the giant multiplications. Each has its own memory, and moving numbers between places takes time.
+        - generic [ref=f1e404]:
+          - generic [ref=f1e405]:
+            - generic [ref=f1e406]:
+              - term [ref=f1e408]: CPU
+              - paragraph [ref=f1e409]: "Handles text: splitting it into tokens and turning answers back into words."
+            - generic [ref=f1e410]:
+              - term [ref=f1e412]: RAM
+              - paragraph [ref=f1e413]: The computer’s main memory, next to the CPU.
+            - generic [ref=f1e414]:
+              - term [ref=f1e416]: PCIe
+              - paragraph [ref=f1e417]: The link between the computer and the GPU card.
+            - generic [ref=f1e418]:
+              - term [ref=f1e420]: HBM
+              - paragraph [ref=f1e421]: The GPU’s own memory. The weights live here.
+            - generic [ref=f1e422]:
+              - term [ref=f1e424]: Compute cores
+              - paragraph [ref=f1e425]: Thousands of small units on the GPU chip that do the multiplications.
+          - generic [ref=f1e426]:
+            - paragraph [ref=f1e427]: "The model’s weights (269 MB) make two different trips:"
+            - generic [ref=f1e428]:
+              - generic [ref=f1e429]:
+                - generic [ref=f1e430]: 1. Loading the model
+                - generic [ref=f1e431]: once, when the server starts
+              - generic [ref=f1e432]:
+                - generic [ref=f1e433]: CPU RAM
+                - generic [ref=f1e434]: —— over PCIe, 64 GB/s ——▶
+                - generic [ref=f1e435]: GPU memory (HBM)
+              - generic [ref=f1e436]: 4.2 ms
+            - generic [ref=f1e440]:
+              - generic [ref=f1e441]:
+                - generic [ref=f1e442]: 2. Generating each word
+                - generic [ref=f1e443]: again for every single token
+              - generic [ref=f1e444]:
+                - generic [ref=f1e445]: GPU memory (HBM)
+                - generic [ref=f1e446]: —— on the chip, 3,350 GB/s ——▶
+                - generic [ref=f1e447]: compute cores
+              - generic [ref=f1e448]: 80 µs
+            - paragraph [ref=f1e452]: Figures for an NVIDIA H100, a common data-centre GPU. Trip 1 is slow but happens once. Trip 2 is fast, but it repeats for every word the model writes, so it sets the speed limit.
+        - paragraph [ref=f1e454]: "The key fact for everything that follows: a modern GPU can multiply numbers much faster than it can fetch them from its own memory. Much of what makes inference fast or slow comes down to how many bytes have to move, not how much arithmetic there is. The map on the right (at the bottom on a phone) follows every chapter and lights up where each step happens."
+      - generic [ref=f1e455]:
+        - generic [ref=f1e456]:
+          - generic [aria-hidden] [ref=f1e457]: "1"
+          - generic [ref=f1e458]:
+            - heading "What you actually download" [level=2] [ref=f1e459]
+            - paragraph [ref=f1e460]:
+              - generic [ref=f1e461]: Disk → CPU RAM
+              - generic [ref=f1e462]: → GPU memory
+        - paragraph [ref=f1e463]: "A downloaded model isn’t a program. It is three files: a short description of the model’s shape, a dictionary of text pieces, and one big file of numbers. The software that runs it, called an inference engine, brings the code. Here it is a few hundred lines of JavaScript; on servers it’s vLLM, llama.cpp or similar."
+        - 'heading "The shape: config.json" [level=3] [ref=f1e464]'
+        - paragraph [ref=f1e466]:
+          - text: A handful of sizes fixes every matrix in the model. For example,
+          - code [ref=f1e467]: hidden_size
+          - text: of 576 means every token is a vector of 576 numbers, and
+          - code [ref=f1e468]: num_hidden_layers
+          - text: of 30 means the tower in the 3D view is 30 layers high.
+        - 'heading "The numbers: model.safetensors" [level=3] [ref=f1e470]'
+        - paragraph [ref=f1e472]:
+          - text: "This file is a table of contents followed by the numbers themselves, packed back to back. The table of contents lists every matrix by name and shape. Laid out as a tree, it gives the model’s whole anatomy. The key thing to see: each of the 30 layers has"
+          - emphasis [ref=f1e473]: its own
+          - text: copy of the same set of matrices. The shapes are identical, the numbers inside are different.
+        - paragraph [ref=f1e476]: "Adding it all up by type:"
+        - paragraph [ref=f1e478]: Pick any matrix below to see what it does and to look at its actual numbers.
+        - group [ref=f1e479]:
+          - 'generic "+ Go deeper: the file format and number precision" [ref=f1e480] [cursor=pointer]'
+        - button "Load the weights" [disabled] [ref=f1e482]
+      - generic [ref=f1e483]:
+        - generic [ref=f1e484]:
+          - generic [aria-hidden] [ref=f1e485]: "2"
+          - generic [ref=f1e486]:
+            - heading "Text becomes numbers" [level=2] [ref=f1e487]
+            - paragraph [ref=f1e488]:
+              - generic [ref=f1e489]: CPU
+        - paragraph [ref=f1e490]:
+          - text: The model can only do arithmetic, so your text first has to become numbers. The model comes with a fixed dictionary of 49,152 text pieces called
+          - 'button "tokens: A piece of text from the model’s fixed vocabulary: a whole word, part of a word, a punctuation mark or a single byte. Each has an ID number." [ref=f1e491]': tokens
+          - text: . Common words are a single piece, rarer words are built from several, and every piece has an ID number. The
+          - emphasis [ref=f1e492]: tokenizer
+          - text: chops your text into these pieces and looks up their IDs. It runs on the CPU, before the GPU does anything.
+        - heading "Look inside the dictionary" [level=3] [ref=f1e493]
+        - paragraph [ref=f1e495]:
+          - text: Search the model’s
+          - 'button "vocabulary: The fixed list of every token the model knows, each with an ID. This model has 49,152." [ref=f1e496]': vocabulary
+          - text: ", or browse parts of it. On this page"
+          - code [ref=f1e497]: ␣
+          - text: marks a space and
+          - code [ref=f1e498]: ↵
+          - text: "a new line. Spaces are part of tokens:"
+          - code [ref=f1e499]: ␣cat
+          - text: (as in “the cat”) is a different entry from
+          - code [ref=f1e500]: cat
+          - text: at the start of a line. The full list is in
+          - link "tokenizer.json on Hugging Face" [ref=f1e501] [cursor=pointer]:
+            - /url: https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct/raw/main/tokenizer.json
+          - text: (a 2 MB text file), and
+          - link "Tiktokenizer" [ref=f1e502] [cursor=pointer]:
+            - /url: https://tiktokenizer.vercel.app/
+          - text: lets you compare how different models split the same text.
+        - 'heading "Step 1: cut the text into words" [level=3] [ref=f1e504]'
+        - paragraph [ref=f1e506]:
+          - text: First the text is cut at spaces and punctuation, keeping each space attached to the word after it. Chat markers like
+          - code [ref=f1e507]: <|im_start|>
+          - text: ", shown in black, are special tokens with fixed IDs: they tell the model who is speaking. Edit the prompt above and watch these update."
+        - 'heading "Step 2: glue letters into dictionary pieces" [level=3] [ref=f1e509]'
+        - generic [ref=f1e510]:
+          - paragraph [ref=f1e511]:
+            - text: "This is the part that isn’t obvious: the tokenizer does"
+            - emphasis [ref=f1e512]: not
+            - text: "search the dictionary for your word. It follows a recipe:"
+          - list [ref=f1e513]:
+            - listitem [ref=f1e514]: Break the word into single letters (strictly, bytes). Every single byte is in the dictionary, so this always works, even for emoji or made-up words.
+            - listitem [ref=f1e515]:
+              - text: Look at each pair of neighbours. The dictionary file also stores a ranked list of 48,900
+              - emphasis [ref=f1e516]: glue rules
+              - text: ", such as “Ġ + t → Ġt” as rule #0. They were learned in training by repeatedly gluing the most common pair in a huge pile of text. Apply the highest-ranked rule that matches."
+            - listitem [ref=f1e517]: Repeat until no rule matches. Every glued piece is itself a dictionary entry, so whatever is left has an ID.
+          - paragraph [ref=f1e518]:
+            - text: Common words get glued all the way into one piece. Rare or made-up words run out of rules partway and stay as several pieces. This method is called
+            - 'button "Byte Pair Encoding: Byte Pair Encoding: build the vocabulary by repeatedly gluing together the most common neighbouring pair of pieces in a big pile of text." [ref=f1e519]': Byte Pair Encoding
+            - text: . In this view a space appears as
+            - code [ref=f1e520]: Ġ
+            - text: ", which is how the dictionary file writes it. Try the examples:"
+        - 'heading "Step 3: look up the IDs" [level=3] [ref=f1e522]'
+        - paragraph [ref=f1e524]: Each final piece is a dictionary entry with an ID. This list of integers, 4 bytes each, is all that gets sent to the GPU.
+      - generic [ref=f1e526]:
+        - generic [ref=f1e527]:
+          - generic [aria-hidden] [ref=f1e528]: "3"
+          - generic [ref=f1e529]:
+            - heading "Each ID becomes a vector" [level=2] [ref=f1e530]
+            - paragraph [ref=f1e531]:
+              - generic [ref=f1e532]: IDs over PCIe
+              - generic [ref=f1e533]: row reads from HBM
+        - paragraph [ref=f1e534]:
+          - text: An ID like 5992 is just a label, as meaningless as a locker number. So the model swaps each ID for a
+          - 'button "vector: A list of numbers. A colour is a vector of 3 (red, green, blue). In this model every token becomes a vector of 576 numbers." [ref=f1e535]': vector
+          - text: "of 576 numbers that it learned during training: the token’s"
+          - 'button "embedding: The vector of numbers that stands for a token inside the model. It is looked up from a table using the token’s ID." [ref=f1e536]': embedding
+          - text: . The vectors sit in one big table with a row per vocabulary entry, and ID 5992 simply means “take row 5992”. There is no calculation in this step, just lookups.
+        - paragraph [ref=f1e539]: "How to read this: the strip on the left is the whole table, all 49,152 rows squeezed to fit, with teal marks at the rows your prompt uses. On the right, each line is one of your tokens, with its 576 numbers drawn as coloured bars: blue for negative, red for positive, paler for close to zero. The patterns look random to us. To the model they encode what the token means and how it is used."
+        - paragraph [ref=f1e541]: "One way to check that these numbers mean something: tokens used in similar ways get similar vectors. Pick a token to find the rows closest to it in the table."
+        - group [ref=f1e542]:
+          - 'generic "+ Go deeper: shapes and sizes" [ref=f1e543] [cursor=pointer]'
+      - generic [ref=f1e544]:
+        - generic [ref=f1e545]:
+          - generic [aria-hidden] [ref=f1e546]: "4"
+          - generic [ref=f1e547]:
+            - heading "How the model knows word order" [level=2] [ref=f1e548]
+            - paragraph [ref=f1e549]:
+              - generic [ref=f1e550]: inside attention, on the GPU
+        - paragraph [ref=f1e551]: "Looking up vectors loses the word order: “dog bites man” and “man bites dog” fetch exactly the same three vectors. The model needs to know which word came where, or at least how far apart two words are."
+        - generic [ref=f1e552]:
+          - paragraph [ref=f1e553]: "Its trick is like clock hands. Picture each token’s vector as a clock hand. Before tokens are compared, every hand is turned by an amount that depends on the token’s position: the token at position 1 is turned a little, position 2 a little more, and so on."
+          - paragraph [ref=f1e554]:
+            - text: When the model compares two tokens, it effectively looks at the angle
+            - emphasis [ref=f1e555]: between
+            - text: their hands. That angle depends only on how far apart the tokens are, not on where they sit in the text. Words three apart look the same to the model at the start of a sentence or a thousand words in. The widget below uses the model’s real vectors. Move the positions, then shift both tokens later and watch the angle between them stay put.
+        - group [ref=f1e557]:
+          - 'generic "+ Go deeper: RoPE in detail" [ref=f1e558] [cursor=pointer]'
+      - generic [ref=f1e559]:
+        - generic [ref=f1e560]:
+          - generic [aria-hidden] [ref=f1e561]: "5"
+          - generic [ref=f1e562]:
+            - 'heading "The transformer: talk, think, repeat" [level=2] [ref=f1e563]'
+            - paragraph [ref=f1e564]:
+              - generic [ref=f1e565]: one layer’s weights at a time
+              - generic [ref=f1e566]: GPU
+        - paragraph [ref=f1e567]:
+          - text: Everything between the embeddings and the final scores is one block, repeated 30 times. Each block has two halves. First the tokens
+          - emphasis [ref=f1e568]: talk
+          - text: ": attention lets each token gather information from the tokens before it. Then each token"
+          - emphasis [ref=f1e569]: thinks on its own
+          - text: ": the feed-forward network processes what it just gathered. Both halves add their result to the token’s running vector, and the next block starts from there."
+        - paragraph [ref=f1e571]: That repeated block is what makes this a transformer, the design behind GPT, Llama, Qwen, Claude and this model. Step through it with Next, or let it autoplay, to watch a short sentence go through it.
+        - generic "Transformer loop animation. Left and right arrow keys step back and forward." [ref=f1e572]:
+          - 'img "Five tokens passing through one transformer layer after another: attention connects the tokens, the feed-forward network processes each token separately" [ref=f1e573]':
+            - generic [ref=f1e574] [cursor=pointer]
+            - generic [ref=f1e575] [cursor=pointer]
+            - generic [ref=f1e576] [cursor=pointer]
+            - generic [ref=f1e577] [cursor=pointer]
+            - generic [ref=f1e578] [cursor=pointer]
+            - generic [ref=f1e579] [cursor=pointer]
+            - generic [ref=f1e580] [cursor=pointer]
+            - generic [ref=f1e581] [cursor=pointer]
+            - generic [ref=f1e582] [cursor=pointer]
+            - generic [ref=f1e583] [cursor=pointer]
+            - generic [ref=f1e584] [cursor=pointer]
+            - generic [ref=f1e585] [cursor=pointer]
+            - generic [ref=f1e586] [cursor=pointer]
+            - generic [ref=f1e587] [cursor=pointer]
+            - generic [ref=f1e588] [cursor=pointer]
+            - generic [ref=f1e589] [cursor=pointer]
+            - generic [ref=f1e590] [cursor=pointer]
+            - generic [ref=f1e591] [cursor=pointer]
+            - generic [ref=f1e592] [cursor=pointer]
+            - generic [ref=f1e593] [cursor=pointer]
+            - generic [ref=f1e594] [cursor=pointer]
+            - generic [ref=f1e595] [cursor=pointer]
+            - generic [ref=f1e596] [cursor=pointer]
+            - generic [ref=f1e597] [cursor=pointer]
+            - generic [ref=f1e598] [cursor=pointer]
+            - generic [ref=f1e599] [cursor=pointer]
+            - generic [ref=f1e600] [cursor=pointer]
+            - generic [ref=f1e601] [cursor=pointer]
+            - generic [ref=f1e602] [cursor=pointer]
+            - generic [ref=f1e603] [cursor=pointer]
+            - generic [ref=f1e604]: layer 0
+            - generic [ref=f1e605]: layer 29
+            - generic [ref=f1e606]: Press Next or Autoplay
+            - generic [ref=f1e607]:
+              - generic [ref=f1e616]: The
+              - generic [ref=f1e617]: +
+            - generic [ref=f1e618]:
+              - generic [ref=f1e627]: ␣cat
+              - generic [ref=f1e628]: +
+            - generic [ref=f1e629]:
+              - generic [ref=f1e638]: ␣sat
+              - generic [ref=f1e639]: +
+            - generic [ref=f1e640]:
+              - generic [ref=f1e649]: ␣on
+              - generic [ref=f1e650]: +
+            - generic [ref=f1e651]:
+              - generic [ref=f1e660]: ␣the
+              - generic [ref=f1e661]: +
+            - generic [ref=f1e662]: each token’s running vector (a few of its 576 numbers)
+            - generic [ref=f1e663]:
+              - generic [ref=f1e666]: Last token’s vector → scores
+              - generic [ref=f1e667]: for all 49,152 tokens → next word
+          - generic [ref=f1e668]:
+            - button "◀ Back" [disabled] [ref=f1e669]
+            - button "Next ▶" [ref=f1e670] [cursor=pointer]
+            - button "Autoplay" [ref=f1e672] [cursor=pointer]
+            - generic [ref=f1e673]:
+              - text: Speed
+              - combobox "Autoplay speed" [ref=f1e674]:
+                - option "Slow"
+                - option "Normal" [selected]
+                - option "Fast"
+            - button "Skip to the end" [ref=f1e675] [cursor=pointer]
+            - button "Reset" [ref=f1e676] [cursor=pointer]
+          - paragraph [ref=f1e677]: Not started
+          - paragraph [ref=f1e678]: Five tokens, their running vectors drawn as coloured cells, and the tower of 30 layers on the left. Step through with Next, or press Autoplay. You can also click a layer in the tower, or use the ← and → keys.
+        - generic [ref=f1e679]:
+          - paragraph [ref=f1e680]: "Why both halves? They do different jobs, and each needs the other:"
+          - list [ref=f1e681]:
+            - listitem [ref=f1e682]: Attention moves information between tokens, but it only mixes and re-weights what is already there.
+            - listitem [ref=f1e683]: Feed-forward transforms each token, applying patterns stored in its weights, but it can’t see the other tokens.
+            - listitem [ref=f1e684]: "Alternating them 30 times lets the model build up meaning step by step. Roughly, early layers sort out nearby words and grammar, middle layers combine facts, and late layers settle on the next word. The logit lens in chapter 7 shows this with real numbers: the right answer usually appears only in the last third."
+          - paragraph [ref=f1e685]: The next two chapters zoom into each half. Chapter 9 replays this loop on your whole prompt at once, as a matrix with one row per token, with the real numbers.
+        - 'heading "Follow the shape: one token’s vector through the model" [level=3] [ref=f1e686]'
+        - paragraph [ref=f1e688]:
+          - text: Now zoom in on a single token and watch only the
+          - emphasis [ref=f1e689]: shape
+          - text: "of its vector. It enters as a column of 576 numbers. Each step multiplies it by a weight matrix, and the shape rule from chapter 0 decides what comes out: (m × n) × (n × 1) = (m × 1). The table underneath keeps count of every matrix the vector passes through, and adds up to the whole model. After you generate, the pictures use your prompt’s real vector and the model’s real weights."
+        - group [ref=f1e691]:
+          - 'generic "+ Go deeper: where the name comes from" [ref=f1e692] [cursor=pointer]'
+      - generic [ref=f1e693]:
+        - generic [ref=f1e694]:
+          - generic [aria-hidden] [ref=f1e695]: "6"
+          - generic [ref=f1e696]:
+            - 'heading "Attention: words look at each other" [level=2] [ref=f1e697]'
+            - paragraph [ref=f1e698]:
+              - generic [ref=f1e699]: weights + KV from HBM
+              - generic [ref=f1e700]: matmuls on tensor cores
+        - paragraph [ref=f1e701]:
+          - text: To understand “it” in “the cat sat because it was tired”, the model has to find what “it” refers to.
+          - 'button "Attention: The step where each token gathers information from earlier tokens, deciding how much to take from each." [ref=f1e702]': Attention
+          - text: is how each token gathers information from the tokens before it. The vectors now pass through 30
+          - 'button "layers: One repeated block of the model: attention followed by a feed-forward network. This model stacks 30 identical-shaped layers, each with its own weights." [ref=f1e703]': layers
+          - text: ", and each layer starts with an attention step."
+        - generic [ref=f1e704]:
+          - paragraph [ref=f1e705]:
+            - text: It works like a library search. Each token makes three new vectors by
+            - 'button "multiplying: Matrix multiplication: for every row of the matrix, take the dot product with the input vector. Each row gives one output number." [ref=f1e706]': multiplying
+            - text: "its own vector by three weight matrices:"
+          - list [ref=f1e707]:
+            - listitem [ref=f1e708]:
+              - text: a
+              - 'button "query: In attention, the vector a token uses to ask “what am I looking for?”" [ref=f1e709]': query
+              - text: ": what am I looking for?"
+            - listitem [ref=f1e710]:
+              - text: a
+              - 'button "key: In attention, the vector a token uses to advertise “this is what I contain.” Queries are compared against keys." [ref=f1e711]': key
+              - text: ": what do I contain? This is like a book’s title."
+            - listitem [ref=f1e712]:
+              - text: a
+              - 'button "value: In attention, the information a token hands over when another token pays attention to it." [ref=f1e713]': value
+              - text: ": what will I hand over if picked? This is like the book’s contents."
+          - paragraph [ref=f1e714]:
+            - text: Each token compares its query with the key of every earlier token (a
+            - 'button "dot product: Dot product: multiply two vectors number by number and add the results. A big positive answer means they point the same way, which is a way of measuring similarity." [ref=f1e715]': dot product
+            - text: ). Better matches get a bigger share of its attention, with shares adding up to 100%. The token then takes that mix of the earlier tokens’ values. A token can never look at tokens after it, because when generating text those don’t exist yet.
+          - paragraph [ref=f1e716]:
+            - text: Is this per layer? Yes. Each of the 30 layers has its own three matrices for this, plus a fourth (
+            - code [ref=f1e717]: o_proj
+            - text: ") that combines the results: 4 attention matrices × 30 layers = 120 separate matrices. They’re the four light tiles in every layer of the 3D model and the"
+            - code [ref=f1e718]: self_attn
+            - text: group in chapter 1’s anatomy. Every layer does the same steps with different numbers, so each layer looks for different things.
+        - 'heading "Heads: one query, cut into slices" [level=3] [ref=f1e719]'
+        - generic [ref=f1e720]:
+          - paragraph [ref=f1e721]:
+            - text: One more detail, because it explains the odd matrix sizes. The
+            - 'button "query: In attention, the vector a token uses to ask “what am I looking for?”" [ref=f1e722]': query
+            - text: isn’t used as one long list of 576 numbers. It is cut into 9 slices of 64, and each slice does its own attention, separately from the others. Each slice is called a
+            - 'button "head: Attention runs several times side by side with different weights. Each copy is a head and can track a different kind of relationship." [ref=f1e723]': head
+            - text: ". Nine heads means nine independent “searches” per layer: one head might track the previous word, another the subject of the sentence. That’s why the grid below changes when you change Head."
+          - paragraph [ref=f1e724]:
+            - text: Keys and values are cut the same way, but there are only 3 slices of them (3 × 64 = 192 numbers). Each key/value slice is shared by 3 query heads. That saves memory, and it’s exactly why
+            - code [ref=f1e725]: k_proj
+            - text: and
+            - code [ref=f1e726]: v_proj
+            - text: are 192 × 576 while
+            - code [ref=f1e727]: q_proj
+            - text: "is 576 × 576. Here are the real vectors for the last token of your prompt in layer 0, each number a coloured cell:"
+        - generic [ref=f1e732]:
+          - paragraph [ref=f1e733]: "How to read the grid: each row is one token, read left to right. That row’s shading shows how it split its attention across earlier tokens: dark means a lot. The empty top-right triangle is the “no looking ahead” rule. The list on the right spells out one row as percentages. Click a row to switch."
+          - paragraph [ref=f1e734]: "What to notice: many heads put most of their attention on the very first token. That’s a known habit called an attention sink: heads with nothing useful to look at park their attention there. Some heads look mostly at the previous word, which shows up as a dark line just left of the diagonal. Generate to find these in your own prompt."
+        - group [ref=f1e735]:
+          - 'generic "+ Go deeper: one layer with real shapes, heads, and timings" [ref=f1e736] [cursor=pointer]'
+      - generic [ref=f1e737]:
+        - generic [ref=f1e738]:
+          - generic [aria-hidden] [ref=f1e739]: "7"
+          - generic [ref=f1e740]:
+            - heading "Each word thinks on its own, and keeps a running total" [level=2] [ref=f1e741]
+            - paragraph [ref=f1e742]:
+              - generic [ref=f1e743]: most of each layer’s weights
+              - generic [ref=f1e744]: tensor cores
+        - paragraph [ref=f1e745]:
+          - text: After gathering context with attention, each token is processed on its own by a small network called the
+          - emphasis [ref=f1e746]: feed-forward
+          - text: network. It stretches the token’s 576 numbers out to 1,536, filters them, and squeezes them back to 576. These matrices hold 75% of each layer’s weights, and this is where much of the model’s learned knowledge is applied.
+        - paragraph [ref=f1e748]: "How to read this: each thin bar is one of the 1,536 intermediate numbers for the last token of your prompt, in the layer you pick. Most sit near zero and a few spike. Each spike is a learned pattern that recognised something in this context and fired."
+        - heading "Nothing is replaced, only added" [level=3] [ref=f1e750]
+        - paragraph [ref=f1e752]:
+          - text: Neither attention nor the feed-forward step overwrites a token’s vector. Each adds its result to the vector instead, like adding notes to a running total. That running vector is the
+          - 'button "residual stream: The running vector for each token. Each layer adds its contribution to it instead of replacing it." [ref=f1e753]': residual stream
+          - text: ", and it carries everything the token has picked up so far. How to read this: each line is one token of your prompt, showing how long its vector gets after each layer. The highlighted line is the last token, the one that will predict the next word."
+        - heading "Peek at the model’s guess after every layer" [level=3] [ref=f1e755]
+        - paragraph [ref=f1e757]: The running total can be read at any point to see what the model would say if it stopped there. This trick is called the logit lens. Early layers produce nonsense, and the real answer usually appears in the last third.
+        - group [ref=f1e759]:
+          - 'generic "+ Go deeper: SwiGLU" [ref=f1e760] [cursor=pointer]'
+      - generic [ref=f1e761]:
+        - generic [ref=f1e762]:
+          - generic [aria-hidden] [ref=f1e763]: "8"
+          - generic [ref=f1e764]:
+            - heading "Picking the next word" [level=2] [ref=f1e765]
+            - paragraph [ref=f1e766]:
+              - generic [ref=f1e767]: scores on the GPU
+              - generic [ref=f1e768]: 4 bytes back
+              - generic [ref=f1e769]: text on the CPU
+        - paragraph [ref=f1e770]:
+          - text: After the last layer, the model compares the last token’s vector against every one of the 49,152 dictionary entries and gives each a score. These scores are called
+          - 'button "logits: The raw score the model gives each vocabulary entry for being the next token, before turning scores into percentages." [ref=f1e771]': logits
+          - text: .
+          - 'button "Softmax: Turns a list of scores into percentages that add up to 100%. Higher scores get much bigger shares." [ref=f1e772]': Softmax
+          - text: "turns the scores into percentages. Then the computer rolls weighted dice: a token with 80% wins 8 times out of 10. The winner is the next token, and the whole process repeats with it added to the text."
+        - generic [ref=f1e773]:
+          - paragraph [ref=f1e774]: "You control the dice:"
+          - list [ref=f1e775]:
+            - listitem [ref=f1e776]: Temperature below 1 makes the favourite even more likely (safer, more repetitive). Above 1 evens the odds (more varied, more mistakes). At 0 the model always takes the top choice, called greedy.
+            - listitem [ref=f1e777]: Top-k only allows the k highest-scoring tokens.
+            - listitem [ref=f1e778]: Top-p only allows the smallest group of top tokens whose chances add up to p.
+          - paragraph [ref=f1e779]: Click any word of the answer above to see the choice behind it. Click another candidate below to swap it in and continue from there.
+        - heading "From ID back to text" [level=3] [ref=f1e781]
+        - paragraph [ref=f1e783]: "Only the winning ID, a single number, goes back to the CPU. The CPU reverses the tokenizer: it looks up the dictionary entry, turns it into bytes, and the bytes into characters."
+        - group [ref=f1e785]:
+          - 'generic "+ Go deeper: the LM head" [ref=f1e786] [cursor=pointer]'
+      - generic [ref=f1e787]:
+        - generic [ref=f1e788]:
+          - generic [aria-hidden] [ref=f1e789]: "9"
+          - generic [ref=f1e790]:
+            - heading "Your whole prompt through all 30 layers" [level=2] [ref=f1e791]
+            - paragraph [ref=f1e792]:
+              - generic [ref=f1e793]: each layer’s weights from HBM
+              - generic [ref=f1e794]: every step on the GPU
+        - paragraph [ref=f1e795]:
+          - text: Chapter 5 followed one token’s vector. During prefill, all the prompt’s tokens actually go through together, stacked as one
+          - 'button "matrix: A grid of numbers with rows and columns, like a spreadsheet. A 192 × 576 matrix has 192 rows of 576 numbers each." [ref=f1e796]': matrix
+          - text: "with one row per token: T × 576, where T is the number of tokens. Every layer takes that matrix in and hands on a matrix of exactly the same shape. Pick a layer and step through its six steps to watch each operation on your prompt’s real numbers."
+        - paragraph [ref=f1e798]: "How to read the pictures. Each picture is a matrix: one row per token of your prompt, labelled on the left, and one column per number. Red is positive, blue is negative, white is near zero. The bottom row, highlighted, is the last token, the one whose final row picks the next word. Hover over any cell to read its token, column and value. Shapes follow the rule from chapter 0, with T in amber. Only one step, attention, lets the rows talk to each other; everything else works on each row separately."
+      - generic [ref=f1e800]:
+        - generic [ref=f1e801]:
+          - generic [aria-hidden] [ref=f1e802]: "10"
+          - generic [ref=f1e803]:
+            - heading "One word at a time, with notes" [level=2] [ref=f1e804]
+            - paragraph [ref=f1e805]:
+              - generic [ref=f1e806]: KV cache lives in GPU memory
+              - generic [ref=f1e807]: one token per pass
+        - paragraph [ref=f1e808]:
+          - text: Your whole prompt went through the model in one go; this is called
+          - 'button "prefill: The first phase: the whole prompt goes through the model in one pass, all tokens at once." [ref=f1e809]': prefill
+          - text: . The answer can’t be produced that way. Each new token depends on the one chosen before it, so the model runs once per token, feeding in the token it just picked. This loop is called
+          - 'button "decode: The second phase: the model generates one token per pass, each pass feeding in the previous output." [ref=f1e810]': decode
+          - text: .
+        - generic [ref=f1e811]:
+          - paragraph [ref=f1e812]:
+            - text: On every pass, the new token needs to look back at all earlier tokens (chapter 6), using their
+            - 'button "keys: In attention, the vector a token uses to advertise “this is what I contain.” Queries are compared against keys." [ref=f1e813]': keys
+            - text: and
+            - 'button "values: In attention, the information a token hands over when another token pays attention to it." [ref=f1e814]': values
+            - text: . Those never change once computed, so instead of recomputing them on every pass the model keeps them, like notes, in GPU memory. These notes are the
+            - 'button "KV cache: KV cache: stored keys and values for every earlier token in every layer, so they don’t have to be recomputed for each new token." [ref=f1e815]': KV cache
+            - text: . Each pass adds one column of notes for the new token, in every layer.
+          - paragraph [ref=f1e816]: "How to read this: each column is one token and each row is one layer. Every small cell holds that token’s key and value for that layer. Amber cells came from your prompt; pink cells were added one by one as the answer was written."
+        - heading "Open one layer’s notes" [level=3] [ref=f1e818]
+        - paragraph [ref=f1e820]: "Here are the actual numbers inside one layer’s cache: the 4-D shape from chapter 0, with a single layer picked out. Each column is one token. Each column holds that token’s key (3 heads × 64 numbers) and, on the right, its value. Watch a new column appear for every word the model writes."
+        - heading "Turn the notes off and see the cost" [level=3] [ref=f1e822]
+        - paragraph [ref=f1e824]: Without the cache, every new word means redoing the work for the whole text so far. Untick the box and press Generate (or Continue). Each bar is the real time one step took in this tab.
+      - generic [ref=f1e826]:
+        - generic [ref=f1e827]:
+          - generic [aria-hidden] [ref=f1e828]: "11"
+          - generic [ref=f1e829]:
+            - heading "Why writing is slower than reading" [level=2] [ref=f1e830]
+            - paragraph [ref=f1e831]:
+              - generic [ref=f1e832]: memory speed
+              - generic [ref=f1e833]: vs arithmetic speed
+        - paragraph [ref=f1e834]:
+          - text: Think of the GPU as a very fast chef with a pantry down the hall. The ingredients are the model’s weights. To write each new word, the chef must fetch
+          - emphasis [ref=f1e835]: every
+          - text: ingredient (all 269 MB), does a few seconds of chopping, then fetches everything again for the next word. The chef spends most of the time walking, not cooking. That is what memory-bound means.
+        - generic [ref=f1e836]:
+          - paragraph [ref=f1e837]: Reading the prompt is different. The chef fetches each ingredient once and uses it for all the prompt’s tokens at once, so there is lots of chopping per trip. That is compute-bound, and it’s why prefill handles hundreds of tokens in the time decode writes a few.
+          - paragraph [ref=f1e838]:
+            - text: "Servers fix the walking problem by cooking many orders per trip: they"
+            - 'button "batch: Several requests processed together in one pass, so every weight fetched from memory is used for all of them." [ref=f1e839]': batch
+            - text: many users’ next words into one pass, so each weight fetched is used for all of them. Drag the sliders and watch the dots move toward the flat “compute” part of the chart, where the chef finally stops waiting.
+        - paragraph [ref=f1e842]: "How to read the chart: left to right is how much arithmetic is done per byte fetched from memory. Up is how fast the GPU can go. The sloped part of the roof is the memory limit and the flat part is the arithmetic limit. A dot on the slope is waiting on memory. An H100 needs about 295 operations per byte before its arithmetic units are kept busy. One user’s decode does about 1."
+        - heading "The same effect on your own computer" [level=3] [ref=f1e843]
+        - paragraph [ref=f1e845]: "This page’s own multiply code reuses each fetched weight for up to 4 tokens at once. Time it doing one token at a time (like decode) and 32 at a time (like prefill):"
+        - group [ref=f1e846]:
+          - 'generic "+ Go deeper: arithmetic intensity" [ref=f1e847] [cursor=pointer]'
+      - generic [ref=f1e848]:
+        - generic [ref=f1e849]:
+          - generic [aria-hidden] [ref=f1e850]: "12"
+          - generic [ref=f1e851]:
+            - heading "Reusing notes between requests" [level=2] [ref=f1e852]
+            - paragraph [ref=f1e853]:
+              - generic [ref=f1e854]: KV blocks stay in GPU memory
+        - paragraph [ref=f1e855]: "Most requests to a chatbot start with the same text: the hidden instructions (the system prompt) and the chat formatting. Their KV-cache notes come out identical every time, because each token’s notes depend only on the text before it. So servers keep those notes after a request ends and reuse them for the next request that starts the same way, skipping that part of prefill. This is prefix caching."
+        - generic [ref=f1e856]:
+          - paragraph [ref=f1e857]:
+            - text: Notes are kept in blocks of 16 tokens. A block is reused only if it
+            - emphasis [ref=f1e858]: and everything before it
+            - text: match exactly. Change one word early on and every block after it has to be recomputed. That’s why production apps keep their system prompt identical, byte for byte.
+          - paragraph [ref=f1e859]: "Try it: run a question, then press “Ask a different question”. Only the question changes, so the shared blocks are reused and the time to the first word drops. The default system prompt is short, so only one block can be shared. Switch to the longer one to see a bigger effect."
+        - generic [ref=f1e860]:
+          - generic [ref=f1e861] [cursor=pointer]:
+            - checkbox "Prefix caching on" [checked] [ref=f1e862]
+            - text: Prefix caching on
+          - button "Ask a different question" [ref=f1e863] [cursor=pointer]
+          - button "Use a longer system prompt" [ref=f1e864] [cursor=pointer]
+      - generic [ref=f1e866]:
+        - generic [ref=f1e867]:
+          - generic [aria-hidden] [ref=f1e868]: "13"
+          - generic [ref=f1e869]:
+            - heading "The whole trip, in one table" [level=2] [ref=f1e870]
+            - paragraph [ref=f1e871]:
+              - generic [ref=f1e872]: CPU
+              - generic [ref=f1e873]: PCIe
+              - generic [ref=f1e874]: HBM
+              - generic [ref=f1e875]: SM
+        - paragraph [ref=f1e876]: "Your last request, step by step: where each step ran, how much data it moved, and how long it took. “This tab” is what actually happened in your browser. “H100 estimate” is the least time the same work could take on one data-centre GPU, counting only memory and arithmetic limits."
+        - generic [ref=f1e877]:
+          - paragraph [ref=f1e878]: "Three limits set the speed of inference:"
+          - list [ref=f1e879]:
+            - listitem [ref=f1e880]: "Memory speed: every new word means reading all the weights again."
+            - listitem [ref=f1e881]: "Memory space: every word of every conversation adds to the KV cache."
+            - listitem [ref=f1e882]: "Arithmetic: reading a long prompt is one big multiplication."
+          - paragraph [ref=f1e883]: "Every speed-up you’ll read about attacks one of these: quantization, paged attention, batching, prefix caching, speculative decoding, and splitting prefill and decode onto different GPUs."
+      - paragraph [ref=f1e885]:
+        - text: "Engine: a Llama-architecture forward pass in plain JavaScript with a hand-written WebAssembly SIMD matmul, checked against the ONNX reference to within 10"
+        - superscript [ref=f1e886]: −4
+        - text: on the logits. Weights from
+        - link "Hugging Face TB" [ref=f1e887] [cursor=pointer]:
+          - /url: https://huggingface.co/HuggingFaceTB
+        - text: ". Further reading:"
+        - link "Inference Engineering" [ref=f1e888] [cursor=pointer]:
+          - /url: https://inferenceengineering.tech/chapters/
+        - text: ","
+        - link "What Is LLM Inference, Really?" [ref=f1e889] [cursor=pointer]:
+          - /url: https://kraghavan.ca/llm-infrastructure/inference/2026/04/14/re-introduction-to-inference.html
+    - complementary "Prompt and machine map" [ref=f1e890]:
+      - generic [ref=f1e891]:
+        - region "Your prompt" [ref=f1e893]:
+          - heading "Your prompt" [level=2] [ref=f1e895]
+          - generic [ref=f1e896]: Prompt
+          - textbox "Prompt" [ref=f1e897]: What is the capital of France?
+          - button "Load the model 269 MB" [disabled] [ref=f1e898]
+          - generic [ref=f1e899]:
+            - button "Generate" [disabled] [ref=f1e900]
+            - button "Step one token" [disabled] [ref=f1e901]
+            - button "Pause" [disabled] [ref=f1e902]
+          - paragraph [ref=f1e903]: Load the model to generate. The basics and the tokenizer already work.
+          - generic [ref=f1e904]: The model’s answer appears here, one token at a time.
+          - group [ref=f1e905]:
+            - generic "Options" [ref=f1e906] [cursor=pointer]
+        - paragraph [ref=f1e907]: Where this runs
+        - paragraph
+        - 'img "Diagram of a GPU server: disk, CPU, RAM, PCIe link, and a GPU with HBM, L2 cache and streaming multiprocessors" [ref=f1e909]':
+          - generic [ref=f1e911]: GPU (H100 SXM)
+          - generic [ref=f1e912]: PCIe 5 ×16 · 64 GB/s
+          - generic [ref=f1e913]: Disk or network
+          - 'generic "The computer’s main processor. A few fast, flexible cores. Here it handles text: tokenizing, sampling and turning tokens back into text." [ref=f1e916]':
+            - generic [ref=f1e918]: CPU
+            - generic [ref=f1e919]: tokenize · sample · text
+          - generic "The computer’s main memory, attached to the CPU. Large but far slower to reach from the GPU." [ref=f1e920]:
+            - generic [ref=f1e922]: CPU RAM
+            - generic [ref=f1e923]: staging copy
+          - 'generic "High-bandwidth memory: the GPU’s own memory, stacked right next to the chip. An H100 has 80 GB that it can read at 3.35 terabytes per second." [ref=f1e924]': HBM · 80 GB · 3.35 TB/s
+          - generic "A 50 MB cache shared by all SMs, sitting between them and HBM." [ref=f1e927]: L2 cache · 50 MB
+          - 'generic "Streaming multiprocessor: one of the GPU’s compute blocks. An H100 has 132, each with a little very fast on-chip memory (SRAM) and tensor cores for matrix math." [ref=f1e930]':
+            - generic [ref=f1e932]: 132 SMs
+            - generic [ref=f1e933]: 256 KB SRAM each + tensor cores
+        - group [ref=f1e936]:
+          - generic "What plays each part in this tab?" [ref=f1e937] [cursor=pointer]

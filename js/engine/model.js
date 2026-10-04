@@ -295,6 +295,80 @@ export class LlamaModel {
     return { logits, trace: tr, ms: performance.now() - t0 };
   }
 
+  // ---- Inspection (chapter 9): the prompt as one T × D matrix, layer by layer.
+  // Uses its own keys and values for positions 0..T-1 and never touches the KV cache.
+
+  // One layer on the T × D residual `xIn`. The result is left in this.s.x. With `keep`,
+  // returns every intermediate matrix of the layer (row-major, one row per token).
+  inspectLayer(l, xIn, T, keep) {
+    const { D, H, KVH, HD, I, eps, rt } = this;
+    const kvDim = KVH * HD, group = H / KVH, scale = 1 / Math.sqrt(HD);
+    const s = this.s, W = this.layers[l];
+    const x = s.x.subarray(0, T * D), h = s.h.subarray(0, T * D), q = s.q.subarray(0, T * D);
+    const att = s.att.subarray(0, T * D), ao = s.ao.subarray(0, T * D);
+    const k = s.k.subarray(0, T * kvDim), v = s.v.subarray(0, T * kvDim);
+    const gate = s.gate.subarray(0, T * I), up = s.up.subarray(0, T * I);
+    const out = keep ? { x: xIn.slice() } : null;
+    x.set(xIn);
+    rmsnorm(h, x, W.inNorm, T, D, eps);
+    rt.matmul(q, h, W.wq, T, D, D);
+    rt.matmul(k, h, W.wk, T, D, kvDim);
+    rt.matmul(v, h, W.wv, T, D, kvDim);
+    if (out) { out.h = h.slice(); out.qPre = q.slice(); out.kPre = k.slice(); out.v = v.slice(); }
+    this.rope(q, T, H, 0);
+    this.rope(k, T, KVH, 0);
+    if (out) { out.q = q.slice(); out.k = k.slice(); out.attn = new Float32Array(H * T * T); }
+    const scores = new Float32Array(T);
+    att.fill(0);
+    for (let hh = 0; hh < H; hh++) {
+      const kvo = ((hh / group) | 0) * HD;
+      for (let t = 0; t < T; t++) {
+        attendOne(q, t * D + hh * HD, k, v, kvo, kvDim, HD, t, scale, scores, att);
+        if (out) out.attn.set(scores.subarray(0, t + 1), (hh * T + t) * T);
+      }
+    }
+    rt.matmul(ao, att, W.wo, T, D, D);
+    if (out) { out.mix = att.slice(); out.o = ao.slice(); }
+    for (let i = 0; i < T * D; i++) x[i] += ao[i];
+    if (out) out.xmid = x.slice();
+    rmsnorm(h, x, W.postNorm, T, D, eps);
+    rt.matmul(gate, h, W.wg, T, D, I);
+    rt.matmul(up, h, W.wu, T, D, I);
+    if (out) { out.h2 = h.slice(); out.gate = gate.slice(); out.up = up.slice(); }
+    for (let i = 0; i < T * I; i++) { const g = gate[i]; gate[i] = (g / (1 + Math.exp(-g))) * up[i]; }
+    if (out) out.act = gate.slice();
+    rt.matmul(ao, gate, W.wd, T, I, D);
+    for (let i = 0; i < T * D; i++) x[i] += ao[i];
+    if (out) { out.down = ao.slice(); out.xout = x.slice(); }
+    return out;
+  }
+
+  // The whole prompt: the residual matrix entering every layer (and after the last),
+  // plus each row's top guesses for the token that follows it.
+  inspectPrompt(tokens) {
+    const { D, L, V, eps, rt } = this;
+    const T = tokens.length;
+    if (T > MAX_TOKENS_PER_PASS) throw new Error(`The matrix view handles prompts up to ${MAX_TOKENS_PER_PASS} tokens`);
+    const resid = new Float32Array((L + 1) * T * D);
+    for (let t = 0; t < T; t++) resid.set(this.embed.subarray(tokens[t] * D, tokens[t] * D + D), t * D);
+    for (let l = 0; l < L; l++) {
+      this.inspectLayer(l, resid.subarray(l * T * D, (l + 1) * T * D), T, false);
+      resid.set(this.s.x.subarray(0, T * D), (l + 1) * T * D);
+    }
+    // Final norm + scores for every row, 16 rows at a time (the scratch holds 16 × V).
+    const B = Math.min(16, Math.floor(this.s.gate.length / V));
+    const nrm = this.s.h, sc = this.s.gate;
+    const guesses = [];
+    const fin = resid.subarray(L * T * D);
+    for (let t0 = 0; t0 < T; t0 += B) {
+      const n = Math.min(B, T - t0);
+      rmsnorm(nrm, fin.subarray(t0 * D, (t0 + n) * D), this.finalNorm, n, D, eps);
+      rt.matmul(sc, nrm, this.lmHead, n, D, V);
+      for (let r = 0; r < n; r++) guesses.push(topk(softmax(sc.subarray(r * V, (r + 1) * V)), 3));
+    }
+    return { T, resid, guesses };
+  }
+
   // "Logit lens": what would the model predict if we stopped after layer l?
   logitLens(hidden, topK = 5) {
     const { D, L, V } = this;

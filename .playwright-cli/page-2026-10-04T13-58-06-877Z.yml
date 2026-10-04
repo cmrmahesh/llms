@@ -1,0 +1,2845 @@
+- generic [active] [ref=f3e1]:
+  - link "Skip to the prompt" [ref=f3e2] [cursor=pointer]:
+    - /url: "#prompt"
+  - banner [ref=f3e3]:
+    - link "Inference, opened" [ref=f3e4] [cursor=pointer]:
+      - /url: "#top"
+    - generic [ref=f3e5]:
+      - generic [ref=f3e6]: Model
+      - combobox "Model" [ref=f3e7]:
+        - option "SmolLM2-135M-Instruct" [selected]
+        - option "SmolLM2-135M (base)"
+        - option "SmolLM2-360M-Instruct"
+    - status [ref=f3e8]: Downloading weights…
+  - generic [ref=f3e9]:
+    - main [ref=f3e10]:
+      - generic [ref=f3e11]:
+        - generic [ref=f3e12]:
+          - heading "Every number between your prompt and its answer" [level=1] [ref=f3e13]
+          - paragraph [ref=f3e14]: "A real language model, SmolLM2-135M-Instruct, runs inside this tab. Type a question and follow it step by step, from your words to the model’s answer, using the model’s actual numbers. No background needed: the first section covers the few ideas everything else builds on, and every underlined term explains itself when you point at it."
+          - generic [ref=f3e15]:
+            - button "Loading… 269 MB" [disabled] [ref=f3e938]
+            - link "Start with the basics" [ref=f3e17] [cursor=pointer]:
+              - /url: "#ch-primer"
+          - paragraph [ref=f3e18]: The model downloads from Hugging Face once and stays in your browser. Nothing you type leaves this page.
+        - figure [ref=f3e19]:
+          - generic "Three-dimensional view of every weight matrix in the model, drawn to scale" [ref=f3e20]:
+            - generic [aria-hidden]:
+              - generic: Layer 0 (first)
+              - generic: Layer 29 (last)
+              - generic: Attention
+              - generic: Feed-forward
+              - generic: Vocabulary table, 49,152 rows →
+          - generic [ref=f3e22]:
+            - text: This is the whole model. Each flat tile is one
+            - 'button "matrix: A grid of numbers with rows and columns, like a spreadsheet. A 192 × 576 matrix has 192 rows of 576 numbers each." [ref=f3e23]': matrix
+            - text: of learned numbers, sized by how many numbers it holds.
+            - list [ref=f3e24]:
+              - listitem [ref=f3e25]:
+                - text: "The tower: 30"
+                - 'button "layers: One repeated block of the model: attention followed by a feed-forward network. This model stacks 30 identical-shaped layers, each with its own weights." [ref=f3e26]': layers
+                - text: stacked bottom to top. Every layer has the same 7 tiles, each filled with different numbers. Your text passes through them in order.
+              - listitem [ref=f3e27]: Light tiles are attention, where words look at each other. Dark, wide tiles are the feed-forward network, where each word is processed on its own.
+              - listitem [ref=f3e28]: "The long strip along the bottom is the vocabulary table: one row for each of the 49,152 tokens. It is as big as 8 whole layers. Teal marks are the rows your prompt uses."
+              - listitem [ref=f3e29]: "Once loaded, the colours are the real numbers: blue below zero, red above. Drag to turn the model; point at a tile to name it."
+      - generic [ref=f3e30]:
+        - generic [ref=f3e31]:
+          - generic [aria-hidden] [ref=f3e32]: "0"
+          - generic [ref=f3e33]:
+            - heading "The ideas you need first" [level=2] [ref=f3e34]
+            - paragraph [ref=f3e35]:
+              - generic [ref=f3e36]: No model needed
+        - paragraph [ref=f3e37]: A language model is a very large pile of numbers and one simple operation repeated over and over. Five ideas are enough to follow the rest of this page.
+        - heading "A vector is a list of numbers that describes something" [level=3] [ref=f3e38]
+        - paragraph [ref=f3e40]:
+          - text: "Here is a colour described by three numbers: how much red, green and blue. That list of three is a"
+          - 'button "vector: A list of numbers. A colour is a vector of 3 (red, green, blue). In this model every token becomes a vector of 576 numbers." [ref=f3e41]': vector
+          - text: ". Move the sliders: the numbers change the thing they describe."
+        - generic [ref=f3e44]:
+          - generic [ref=f3e45]:
+            - generic [ref=f3e46]:
+              - generic [ref=f3e47]: Red
+              - slider "Red" [ref=f3e48]: "212"
+              - status [ref=f3e49]: "212"
+            - generic [ref=f3e50]:
+              - generic [ref=f3e51]: Green
+              - slider "Green" [ref=f3e52]: "120"
+              - status [ref=f3e53]: "120"
+            - generic [ref=f3e54]:
+              - generic [ref=f3e55]: Blue
+              - slider "Blue" [ref=f3e56]: "40"
+              - status [ref=f3e57]: "40"
+          - paragraph [ref=f3e58]:
+            - text: "This colour as a vector:"
+            - code [ref=f3e59]: "[212, 120, 40]"
+        - generic [ref=f3e60]:
+          - paragraph [ref=f3e61]: "Language models describe each piece of text the same way, just with far more numbers. Two separate tables are involved, and both are looked up with the same ID number:"
+          - list [ref=f3e62]:
+            - listitem [ref=f3e63]:
+              - text: The
+              - 'button "vocabulary: The fixed list of every token the model knows, each with an ID. This model has 49,152." [ref=f3e64]': vocabulary
+              - text: (in
+              - code [ref=f3e65]: tokenizer.json
+              - text: ") only maps IDs to text: ID 3575 is the text “␣capital”. It contains no numbers about meaning."
+            - listitem [ref=f3e66]:
+              - text: The
+              - 'button "embedding table: The vector of numbers that stands for a token inside the model. It is looked up from a table using the token’s ID." [ref=f3e67]': embedding table
+              - text: (in the model file) gives every ID its own list of 576 numbers. That list is what the model actually works with.
+        - generic [ref=f3e68]:
+          - generic [ref=f3e939]:
+            - generic [ref=f3e940]: token ID
+            - generic [ref=f3e941]: "3575"
+          - generic [ref=f3e942]:
+            - generic [ref=f3e943]:
+              - generic [ref=f3e944]:
+                - text: Vocabulary
+                - generic [ref=f3e945]: tokenizer.json
+              - generic [ref=f3e946]: →
+              - code [ref=f3e947]: “␣capital”
+            - generic [ref=f3e948]:
+              - generic [ref=f3e949]:
+                - text: Embedding table
+                - generic [ref=f3e950]: model.safetensors, row 3575
+              - generic [ref=f3e951]: →
+              - generic [ref=f3e952]:
+                - code [ref=f3e953]: "[ … load the model to see them … ]"
+                - generic [ref=f3e955]: 576 numbers, drawn as coloured bars
+        - paragraph [ref=f3e70]:
+          - text: Why 576? It’s a size the model’s makers picked before training, called the
+          - emphasis [ref=f3e71]: hidden size
+          - text: . Bigger means more room to encode meaning, but every matrix grows with it, so the model gets slower and needs more memory. Small models use a few hundred; GPT-2 used 768, Llama 3 8B uses 4,096 and Llama 3 70B uses 8,192. Nobody decided what each of the 576 numbers means either. Training settled on values that make the model good at predicting text, so the numbers end up capturing things like “this is a city” or “this is plural”, spread across many positions at once.
+        - heading "Matrices and tensors are boxes of numbers" [level=3] [ref=f3e72]
+        - paragraph [ref=f3e74]:
+          - text: A
+          - 'button "matrix: A grid of numbers with rows and columns, like a spreadsheet. A 192 × 576 matrix has 192 rows of 576 numbers each." [ref=f3e75]': matrix
+          - text: "is a grid of numbers, like a spreadsheet: so many rows, so many columns."
+          - 'button "Tensor: The general name for a box of numbers with any number of directions: a vector has one (a list), a matrix has two (a grid), and a stack of matrices has three." [ref=f3e76]': Tensor
+          - text: is the catch-all word for a box of numbers with any number of directions. Files and code say “tensor” because they don’t care how many directions a box has.
+        - generic [ref=f3e77]:
+          - img "A single number, a vector drawn as a row of cells, a matrix drawn as a grid, and a tensor drawn as a stack of grids" [ref=f3e956]:
+            - generic [ref=f3e1048]: a number
+            - generic [ref=f3e1049]: no directions
+            - generic [ref=f3e1050]: a vector
+            - generic [ref=f3e1051]: "1 direction: a list"
+            - generic [ref=f3e1052]: a matrix
+            - generic [ref=f3e1053]: "2 directions: rows × columns"
+            - generic [ref=f3e1054]: a 3-D tensor
+            - generic [ref=f3e1055]: "3 directions: a stack of grids"
+          - table [ref=f3e1056]:
+            - rowgroup [ref=f3e1057]:
+              - row [ref=f3e1058]:
+                - columnheader "In this model" [ref=f3e1059]
+                - columnheader "Kind" [ref=f3e1060]
+                - columnheader "Shape" [ref=f3e1061]
+            - rowgroup [ref=f3e1062]:
+              - row [ref=f3e1063]:
+                - cell "One token’s meaning" [ref=f3e1064]
+                - cell "vector" [ref=f3e1065]
+                - cell "576 numbers" [ref=f3e1066]
+              - row [ref=f3e1067]:
+                - cell "Your whole prompt" [ref=f3e1068]
+                - cell "matrix" [ref=f3e1069]
+                - cell "37 tokens × 576" [ref=f3e1070]
+              - row [ref=f3e1071]:
+                - cell "One weight matrix, e.g. the “query” maker" [ref=f3e1072]
+                - cell "matrix" [ref=f3e1073]
+                - cell "576 × 576" [ref=f3e1074]
+              - row [ref=f3e1075]:
+                - cell "The notes kept while writing (KV cache), keys only. Drawn below." [ref=f3e1076]
+                - cell "4-D tensor" [ref=f3e1077]
+                - cell "30 layers × 37 tokens × 3 heads × 64" [ref=f3e1078]
+        - paragraph [ref=f3e202]: The last row is the trickiest, so here is its shape drawn out. Picture one sheet of numbers per layer. On each sheet, every token is a column, and the column holds 3 heads × 64 = 192 numbers. Stack 30 sheets and you have the keys; the values are a second stack of the same shape. Chapter 10 shows the real numbers.
+        - generic [ref=f3e203]:
+          - 'img "The keys in the KV cache: 30 stacked sheets, one per layer; on each sheet 37 token columns of 3 heads times 64 numbers" [ref=f3e1079]':
+            - generic [ref=f3e1084]: × 30 layers (one sheet each)
+            - generic [ref=f3e1099]: head 0
+            - generic [ref=f3e1100]: 64 numbers
+            - generic [ref=f3e1115]: head 1
+            - generic [ref=f3e1116]: 64 numbers
+            - generic [ref=f3e1131]: head 2
+            - generic [ref=f3e1132]: 64 numbers
+            - generic [ref=f3e1133]: 37 tokens → (one column each; a new column is added for every word written)
+            - generic [ref=f3e1134]: "One sheet = one layer’s keys: 37 × 3 × 64 = 7,104 numbers"
+            - generic [ref=f3e1135]: ← newest token
+          - paragraph [ref=f3e1136]: "Total keys: 30 × 37 × 3 × 64 = 213,120 numbers, and the same again for values. At 2 bytes per number (bf16), that’s 852 KB for this prompt."
+        - 'heading "The one operation: multiply a matrix by a vector" [level=3] [ref=f3e262]'
+        - paragraph [ref=f3e264]:
+          - text: Almost all of the model’s work is this. Take a vector in. For each row of the matrix, multiply the row and the vector number by number and add up the results. That sum is a
+          - 'button "dot product: Dot product: multiply two vectors number by number and add the results. A big positive answer means they point the same way, which is a way of measuring similarity." [ref=f3e265]': dot product
+          - text: ", and each row gives one output number. The result is a new vector. Click an output to see its arithmetic, and edit the input numbers."
+        - generic [ref=f3e266]:
+          - generic [ref=f3e267]:
+            - generic [ref=f3e268]:
+              - generic [ref=f3e269]: weights (3 × 4 matrix)
+              - table "Weight matrix" [ref=f3e270]:
+                - row [ref=f3e271]:
+                  - cell "1" [ref=f3e272]
+                  - cell "2" [ref=f3e273]
+                  - cell "0" [ref=f3e274]
+                  - cell "−1" [ref=f3e275]
+                - row [ref=f3e276]:
+                  - cell "0.5" [ref=f3e277]
+                  - cell "−1" [ref=f3e278]
+                  - cell "3" [ref=f3e279]
+                  - cell "0" [ref=f3e280]
+                - row [ref=f3e281]:
+                  - cell "−2" [ref=f3e282]
+                  - cell "0" [ref=f3e283]
+                  - cell "1" [ref=f3e284]
+                  - cell "1" [ref=f3e285]
+            - generic [aria-hidden] [ref=f3e286]: ×
+            - generic [ref=f3e287]:
+              - generic [ref=f3e288]: input vector
+              - generic [ref=f3e289]:
+                - spinbutton "Input number 1" [ref=f3e290]: "2"
+                - spinbutton "Input number 2" [ref=f3e291]: "1"
+                - spinbutton "Input number 3" [ref=f3e292]: "0.5"
+                - spinbutton "Input number 4" [ref=f3e293]: "3"
+            - generic [aria-hidden] [ref=f3e294]: =
+            - generic [ref=f3e295]:
+              - generic [ref=f3e296]: output vector
+              - generic [ref=f3e297]:
+                - button "1" [pressed] [ref=f3e298] [cursor=pointer]
+                - button "1.5" [ref=f3e299] [cursor=pointer]
+                - button "−0.5" [ref=f3e300] [cursor=pointer]
+          - paragraph [ref=f3e301]: Output 1 = row 1 · input = (1 × 2) + (2 × 1) + (0 × 0.5) + (−1 × 3) = 1
+          - paragraph [ref=f3e302]: Four numbers in, three out. Every arrow in a neural network diagram is one of these. The weights decide how much each input counts toward each output.
+        - paragraph [ref=f3e304]: The sizes always follow one rule. A matrix with m rows and n columns needs an input of exactly n numbers, one per column, and gives back m numbers, one per row. Feed it several input vectors side by side and you get that many output vectors in one go. That is how the model handles a whole prompt at once.
+        - generic [ref=f3e305]:
+          - generic [ref=f3e1137]:
+            - generic [ref=f3e1138]: The rule
+            - generic [ref=f3e1139]: m × n
+            - generic [ref=f3e1140]: ×
+            - generic [ref=f3e1141]: n × 1
+            - generic [ref=f3e1142]: =
+            - generic [ref=f3e1143]: m × 1
+            - generic [ref=f3e1144]: the two inner sizes must match
+          - generic [ref=f3e1145]:
+            - generic [ref=f3e1146]: The example above
+            - generic [ref=f3e1147]: 3 × 4
+            - generic [ref=f3e1148]: ×
+            - generic [ref=f3e1149]: 4 × 1
+            - generic [ref=f3e1150]: =
+            - generic [ref=f3e1151]: 3 × 1
+            - generic [ref=f3e1152]: 3 rows, so 3 outputs
+          - generic [ref=f3e1153]:
+            - generic [ref=f3e1154]: One token, one model matrix
+            - generic [ref=f3e1155]: 1,536 × 576
+            - generic [ref=f3e1156]: ×
+            - generic [ref=f3e1157]: 576 × 1
+            - generic [ref=f3e1158]: =
+            - generic [ref=f3e1159]: 1,536 × 1
+            - generic [ref=f3e1160]: feed-forward “up”, chapter 7
+          - generic [ref=f3e1161]:
+            - generic [ref=f3e1162]: Your whole prompt at once
+            - generic [ref=f3e1163]: 1,536 × 576
+            - generic [ref=f3e1164]: ×
+            - generic [ref=f3e1165]: 576 × 37
+            - generic [ref=f3e1166]: =
+            - generic [ref=f3e1167]: 1,536 × 37
+            - generic [ref=f3e1168]: "37 tokens side by side: this is prefill"
+          - paragraph [ref=f3e1169]: m = rows of the matrix = how many numbers come out. n = columns = how many numbers go in. T = how many tokens are processed together.
+        - paragraph [ref=f3e340]: To produce a single word, this model performs about 135 million of these multiply-and-add steps.
+        - heading "Weights are the numbers inside the matrices" [level=3] [ref=f3e341]
+        - paragraph [ref=f3e343]:
+          - text: The numbers in the model’s matrices are its
+          - 'button "weights: The numbers inside the model’s matrices. Training chose them; during inference they never change. Also called parameters." [ref=f3e344]': weights
+          - text: ", also called"
+          - 'button "parameters: Another word for weights: the learned numbers in the model. “135M parameters” means 135 million of them." [ref=f3e345]': parameters
+          - text: . Training adjusted them over trillions of words of text until the model got good at guessing the next word. When you use the model, which is called
+          - emphasis [ref=f3e346]: inference
+          - text: ", the weights are frozen: nothing is learned and nothing changes. The 269 MB download is about 135 million of these numbers, and nothing else."
+        - 'heading "Where the weights come from: forward and backward" [level=3] [ref=f3e347]'
+        - generic [ref=f3e348]:
+          - paragraph [ref=f3e349]:
+            - text: Running numbers through a model from input to output is a
+            - 'button "forward pass: Forward pass: feeding an input through the model, layer by layer, to get its output. Inference is only forward passes." [ref=f3e350]': forward pass
+            - text: . That is all inference is, and all this page ever does.
+          - paragraph [ref=f3e351]:
+            - text: "Training adds a second direction. After each forward pass, the output is compared with the right answer: the word that actually came next in some real text. Then a"
+            - 'button "backward pass: Backpropagation: during training, working backwards from the error to find how each weight should change to make the right answer more likely." [ref=f3e352]': backward pass
+            - text: "(backpropagation) works out, for every single weight, which direction would have made the right answer a little more likely. Every weight gets nudged that way, and it repeats. SmolLM2 went through this with 2 trillion tokens of text. Try it on a model with 9 weights:"
+        - generic [ref=f3e353]:
+          - generic [ref=f3e354]:
+            - generic [ref=f3e355]:
+              - generic [ref=f3e356]: "input: “the cat”"
+              - generic [ref=f3e357]: "0.90"
+              - generic [ref=f3e358]: −0.50
+              - generic [ref=f3e359]: "0.60"
+            - generic [aria-hidden] [ref=f3e360]: →
+            - generic [ref=f3e361]:
+              - generic [ref=f3e362]: the 9 weights
+              - generic [ref=f3e363]:
+                - generic [ref=f3e364]: −0.40
+                - generic [ref=f3e365]: "0.30"
+                - generic [ref=f3e366]: "0.10"
+              - generic [ref=f3e367]:
+                - generic [ref=f3e368]: "0.50"
+                - generic [ref=f3e369]: −0.20
+                - generic [ref=f3e370]: "0.40"
+              - generic [ref=f3e371]:
+                - generic [ref=f3e372]: "0.20"
+                - generic [ref=f3e373]: "0.60"
+                - generic [ref=f3e374]: −0.30
+            - generic [aria-hidden] [ref=f3e375]: →
+            - generic [ref=f3e376]:
+              - generic [ref=f3e377]: "next word: chance"
+              - generic [ref=f3e378]:
+                - code [ref=f3e379]: sat
+                - generic [ref=f3e381]: "?"
+              - generic [ref=f3e382]:
+                - code [ref=f3e383]: flew
+                - generic [ref=f3e385]: "?"
+              - generic [ref=f3e386]:
+                - code [ref=f3e387]: barked
+                - generic [ref=f3e389]: "?"
+          - generic [ref=f3e390]:
+            - button "1. Forward" [ref=f3e391] [cursor=pointer]
+            - button "2. Backward" [disabled] [ref=f3e392]
+            - button "3. Update weights" [disabled] [ref=f3e393]
+            - button "Train 10 rounds" [ref=f3e394] [cursor=pointer]
+            - button "Reset" [ref=f3e395] [cursor=pointer]
+          - paragraph [ref=f3e396]: "A toy model: the context “the cat” is a vector of 3 numbers, and 9 weights turn it into a score for each of 3 possible next words. The right answer in our “training text” is “sat”. Press Forward."
+        - paragraph [ref=f3e398]: "A real model does exactly this, just with 135 million weights instead of 9, and with the error passed back through all 30 layers instead of one. When training is finished, the weights are frozen and published. Using the model only needs the forward half: no comparing, no nudging. That’s why running a model is so much cheaper than training it."
+        - 'heading "The machine: where the numbers live and move" [level=3] [ref=f3e399]'
+        - paragraph [ref=f3e401]:
+          - text: A server running a model has two very different processors. The
+          - 'button "CPU: The computer’s main processor. A few fast, flexible cores. Here it handles text: tokenizing, sampling and turning tokens back into text." [ref=f3e402]': CPU
+          - text: handles text and decisions. The
+          - 'button "GPU: Graphics processor: thousands of small cores built to do huge numbers of multiply-adds at once. This is where model math runs." [ref=f3e403]': GPU
+          - text: does the giant multiplications. Each has its own memory, and moving numbers between places takes time.
+        - generic [ref=f3e404]:
+          - generic [ref=f3e1170]:
+            - generic [ref=f3e1171]:
+              - term [ref=f3e1173]: CPU
+              - paragraph [ref=f3e1174]: "Handles text: splitting it into tokens and turning answers back into words."
+            - generic [ref=f3e1175]:
+              - term [ref=f3e1177]: RAM
+              - paragraph [ref=f3e1178]: The computer’s main memory, next to the CPU.
+            - generic [ref=f3e1179]:
+              - term [ref=f3e1181]: PCIe
+              - paragraph [ref=f3e1182]: The link between the computer and the GPU card.
+            - generic [ref=f3e1183]:
+              - term [ref=f3e1185]: HBM
+              - paragraph [ref=f3e1186]: The GPU’s own memory. The weights live here.
+            - generic [ref=f3e1187]:
+              - term [ref=f3e1189]: Compute cores
+              - paragraph [ref=f3e1190]: Thousands of small units on the GPU chip that do the multiplications.
+          - generic [ref=f3e1191]:
+            - paragraph [ref=f3e1192]: "The model’s weights (269 MB) make two different trips:"
+            - generic [ref=f3e1193]:
+              - generic [ref=f3e1194]:
+                - generic [ref=f3e1195]: 1. Loading the model
+                - generic [ref=f3e1196]: once, when the server starts
+              - generic [ref=f3e1197]:
+                - generic [ref=f3e1198]: CPU RAM
+                - generic [ref=f3e1199]: —— over PCIe, 64 GB/s ——▶
+                - generic [ref=f3e1200]: GPU memory (HBM)
+              - generic [ref=f3e1201]: 4.2 ms
+            - generic [ref=f3e1205]:
+              - generic [ref=f3e1206]:
+                - generic [ref=f3e1207]: 2. Generating each word
+                - generic [ref=f3e1208]: again for every single token
+              - generic [ref=f3e1209]:
+                - generic [ref=f3e1210]: GPU memory (HBM)
+                - generic [ref=f3e1211]: —— on the chip, 3,350 GB/s ——▶
+                - generic [ref=f3e1212]: compute cores
+              - generic [ref=f3e1213]: 80 µs
+            - paragraph [ref=f3e1217]: Figures for an NVIDIA H100, a common data-centre GPU. Trip 1 is slow but happens once. Trip 2 is fast, but it repeats for every word the model writes, so it sets the speed limit. Reading 269 MB in 80 µs caps this model at about 12,452 words per second per GPU. An 8-billion-parameter model is 16 GB, which caps it near 209.
+        - paragraph [ref=f3e454]: "The key fact for everything that follows: a modern GPU can multiply numbers much faster than it can fetch them from its own memory. Much of what makes inference fast or slow comes down to how many bytes have to move, not how much arithmetic there is. The map on the right (at the bottom on a phone) follows every chapter and lights up where each step happens."
+      - generic [ref=f3e455]:
+        - generic [ref=f3e456]:
+          - generic [aria-hidden] [ref=f3e457]: "1"
+          - generic [ref=f3e458]:
+            - heading "What you actually download" [level=2] [ref=f3e459]
+            - paragraph [ref=f3e460]:
+              - generic [ref=f3e461]: Disk → CPU RAM
+              - generic [ref=f3e462]: → GPU memory
+        - paragraph [ref=f3e463]: "A downloaded model isn’t a program. It is three files: a short description of the model’s shape, a dictionary of text pieces, and one big file of numbers. The software that runs it, called an inference engine, brings the code. Here it is a few hundred lines of JavaScript; on servers it’s vLLM, llama.cpp or similar."
+        - generic [ref=f3e1218]:
+          - generic [ref=f3e1219]:
+            - generic [ref=f3e1220]: config.json
+            - generic [ref=f3e1221]: 861 B
+            - paragraph [ref=f3e1222]: Architecture name and the handful of sizes below.
+          - generic [ref=f3e1223]:
+            - generic [ref=f3e1224]: tokenizer.json
+            - generic [ref=f3e1225]: 2.0 MB
+            - paragraph [ref=f3e1226]: 49,152 vocabulary entries and 48,900 merge rules.
+          - generic [ref=f3e1227]:
+            - generic [ref=f3e1228]: model.safetensors
+            - generic [ref=f3e1229]: 269 MB
+            - paragraph [ref=f3e1230]: 272 tensors, 134,515,008 numbers. That's 99.3% of the download.
+        - 'heading "The shape: config.json" [level=3] [ref=f3e464]'
+        - paragraph [ref=f3e466]:
+          - text: A handful of sizes fixes every matrix in the model. For example,
+          - code [ref=f3e467]: hidden_size
+          - text: of 576 means every token is a vector of 576 numbers, and
+          - code [ref=f3e468]: num_hidden_layers
+          - text: of 30 means the tower in the 3D view is 30 layers high.
+        - generic [ref=f3e469]:
+          - generic [ref=f3e1231]:
+            - generic [ref=f3e1232]: hidden_size
+            - generic [ref=f3e1233]: "576"
+            - generic [ref=f3e1234]: Width of every token vector (D)
+          - generic [ref=f3e1235]:
+            - generic [ref=f3e1236]: num_hidden_layers
+            - generic [ref=f3e1237]: "30"
+            - generic [ref=f3e1238]: Transformer layers stacked (L)
+          - generic [ref=f3e1239]:
+            - generic [ref=f3e1240]: num_attention_heads
+            - generic [ref=f3e1241]: "9"
+            - generic [ref=f3e1242]: Query heads per layer (H)
+          - generic [ref=f3e1243]:
+            - generic [ref=f3e1244]: num_key_value_heads
+            - generic [ref=f3e1245]: "3"
+            - generic [ref=f3e1246]: Key/value heads, shared by query heads
+          - generic [ref=f3e1247]:
+            - generic [ref=f3e1248]: intermediate_size
+            - generic [ref=f3e1249]: 1,536
+            - generic [ref=f3e1250]: Feed-forward width (I)
+          - generic [ref=f3e1251]:
+            - generic [ref=f3e1252]: vocab_size
+            - generic [ref=f3e1253]: 49,152
+            - generic [ref=f3e1254]: Vocabulary entries (V)
+          - generic [ref=f3e1255]:
+            - generic [ref=f3e1256]: max_position_embeddings
+            - generic [ref=f3e1257]: 8,192
+            - generic [ref=f3e1258]: Longest context trained for
+          - generic [ref=f3e1259]:
+            - generic [ref=f3e1260]: rope_theta
+            - generic [ref=f3e1261]: 100,000
+            - generic [ref=f3e1262]: RoPE base frequency
+          - generic [ref=f3e1263]:
+            - generic [ref=f3e1264]: tie_word_embeddings
+            - generic [ref=f3e1265]: "true"
+            - generic [ref=f3e1266]: LM head reuses the embedding table
+          - generic [ref=f3e1267]:
+            - generic [ref=f3e1268]: torch_dtype
+            - generic [ref=f3e1269]: bfloat16
+            - generic [ref=f3e1270]: Number format of the weights
+        - 'heading "The numbers: model.safetensors" [level=3] [ref=f3e470]'
+        - paragraph [ref=f3e472]:
+          - text: "This file is a table of contents followed by the numbers themselves, packed back to back. The table of contents lists every matrix by name and shape. Laid out as a tree, it gives the model’s whole anatomy. The key thing to see: each of the 30 layers has"
+          - emphasis [ref=f3e473]: its own
+          - text: copy of the same set of matrices. The shapes are identical, the numbers inside are different.
+        - generic [ref=f3e474]:
+          - generic [ref=f3e1271]:
+            - generic [ref=f3e1272]: Name
+            - generic [ref=f3e1273]: Shape
+            - generic [ref=f3e1274]: Drawn to scale
+            - generic [ref=f3e1275]: Numbers
+          - 'button "embed_tokens.weight 49,152 × 576 28,311,552 the vocabulary table (too long to draw: 49,152 rows)" [ref=f3e1276] [cursor=pointer]':
+            - generic [ref=f3e1277]: embed_tokens.weight
+            - generic [ref=f3e1278]: 49,152 × 576
+            - generic [ref=f3e1281]: 28,311,552
+            - generic [ref=f3e1282]: "the vocabulary table (too long to draw: 49,152 rows)"
+          - generic [ref=f3e1283]:
+            - generic [ref=f3e1284]:
+              - generic [ref=f3e1285]: model.layers.12
+              - generic [ref=f3e1286]:
+                - text: Pick a layer
+                - slider "Which layer" [ref=f3e1287]: "12"
+                - status [ref=f3e1288]: "12"
+              - generic [ref=f3e1289]: One of 30. Every layer has exactly this list.
+            - button "input_layernorm.weight 576 576 rescales the vector first" [ref=f3e1290] [cursor=pointer]:
+              - generic [ref=f3e1291]: input_layernorm.weight
+              - generic [ref=f3e1292]: "576"
+              - generic [ref=f3e1295]: "576"
+              - generic [ref=f3e1296]: rescales the vector first
+            - generic [ref=f3e1297]: "self_attn: attention (chapter 6)"
+            - button "q_proj.weight 576 × 576 331,776 makes queries" [ref=f3e1298] [cursor=pointer]:
+              - generic [ref=f3e1299]: q_proj.weight
+              - generic [ref=f3e1300]: 576 × 576
+              - generic [ref=f3e1303]: 331,776
+              - generic [ref=f3e1304]: makes queries
+            - 'button "k_proj.weight 192 × 576 110,592 makes keys (narrower: shared by heads)" [ref=f3e1305] [cursor=pointer]':
+              - generic [ref=f3e1306]: k_proj.weight
+              - generic [ref=f3e1307]: 192 × 576
+              - generic [ref=f3e1310]: 110,592
+              - generic [ref=f3e1311]: "makes keys (narrower: shared by heads)"
+            - 'button "v_proj.weight 192 × 576 110,592 makes values (narrower: shared by heads)" [ref=f3e1312] [cursor=pointer]':
+              - generic [ref=f3e1313]: v_proj.weight
+              - generic [ref=f3e1314]: 192 × 576
+              - generic [ref=f3e1317]: 110,592
+              - generic [ref=f3e1318]: "makes values (narrower: shared by heads)"
+            - button "o_proj.weight 576 × 576 331,776 combines the heads’ results" [ref=f3e1319] [cursor=pointer]:
+              - generic [ref=f3e1320]: o_proj.weight
+              - generic [ref=f3e1321]: 576 × 576
+              - generic [ref=f3e1324]: 331,776
+              - generic [ref=f3e1325]: combines the heads’ results
+            - generic [ref=f3e1326]: "Attention in this layer: 884,736 numbers"
+            - button "post_attention_layernorm.weight 576 576 rescales again" [ref=f3e1327] [cursor=pointer]:
+              - generic [ref=f3e1328]: post_attention_layernorm.weight
+              - generic [ref=f3e1329]: "576"
+              - generic [ref=f3e1332]: "576"
+              - generic [ref=f3e1333]: rescales again
+            - generic [ref=f3e1334]: "mlp: feed-forward (chapter 7)"
+            - button "gate_proj.weight 1,536 × 576 884,736 stretch 576 → 1,536" [ref=f3e1335] [cursor=pointer]:
+              - generic [ref=f3e1336]: gate_proj.weight
+              - generic [ref=f3e1337]: 1,536 × 576
+              - generic [ref=f3e1340]: 884,736
+              - generic [ref=f3e1341]: stretch 576 → 1,536
+            - button "up_proj.weight 1,536 × 576 884,736 stretch 576 → 1,536" [ref=f3e1342] [cursor=pointer]:
+              - generic [ref=f3e1343]: up_proj.weight
+              - generic [ref=f3e1344]: 1,536 × 576
+              - generic [ref=f3e1347]: 884,736
+              - generic [ref=f3e1348]: stretch 576 → 1,536
+            - button "down_proj.weight 576 × 1,536 884,736 squeeze 1,536 → 576" [ref=f3e1349] [cursor=pointer]:
+              - generic [ref=f3e1350]: down_proj.weight
+              - generic [ref=f3e1351]: 576 × 1,536
+              - generic [ref=f3e1354]: 884,736
+              - generic [ref=f3e1355]: squeeze 1,536 → 576
+            - generic [ref=f3e1356]: "Feed-forward in this layer: 2,654,208 numbers"
+          - paragraph [ref=f3e1357]: "… then model.layers.13, and so on: 30 layers in all, each with its own copy of these 9 tensors."
+          - button "norm.weight 576 576 one last rescale before scoring" [ref=f3e1358] [cursor=pointer]:
+            - generic [ref=f3e1359]: norm.weight
+            - generic [ref=f3e1360]: "576"
+            - generic [ref=f3e1363]: "576"
+            - generic [ref=f3e1364]: one last rescale before scoring
+          - generic [ref=f3e1365]:
+            - generic [ref=f3e1366]:
+              - generic [ref=f3e1367]: All attention matrices
+              - generic [ref=f3e1368]: 884,736 × 30 layers = 26,542,080
+              - generic [ref=f3e1369]: ← the attention share in the bar below
+            - generic [ref=f3e1370]:
+              - generic [ref=f3e1371]: All feed-forward matrices
+              - generic [ref=f3e1372]: 2,654,208 × 30 layers = 79,626,240
+            - generic [ref=f3e1374]:
+              - generic [ref=f3e1375]: Embedding table
+              - generic [ref=f3e1376]: 49,152 × 576 = 28,311,552
+              - generic [ref=f3e1377]: also used as the final scoring table
+        - paragraph [ref=f3e476]: "Adding it all up by type:"
+        - generic [ref=f3e1378]:
+          - img "Embedding table 21.0%, Attention (Q, K, V, O) 19.7%, Feed-forward (gate, up, down) 59.2%, Norms 0.0%" [ref=f3e1379]:
+            - generic [ref=f3e1380]: 21%
+            - generic [ref=f3e1381]: 20%
+            - generic [ref=f3e1382]: 59%
+          - generic [ref=f3e1384]:
+            - generic [ref=f3e1385]: "Embedding table: 28,311,552 (21.0%)"
+            - generic [ref=f3e1387]: "Attention (Q, K, V, O): 26,542,080 (19.7%)"
+            - generic [ref=f3e1389]: "Feed-forward (gate, up, down): 79,626,240 (59.2%)"
+            - generic [ref=f3e1391]: "Norms: 35,136 (0.0%)"
+          - paragraph [ref=f3e1393]: In a model this small, the vocabulary table is a fifth of all weights. In an 8B model it is closer to 7%.
+          - paragraph [ref=f3e1394]: "Real header: 30,528 bytes of JSON after the 8-byte length prefix."
+        - paragraph [ref=f3e478]: Pick any matrix below to see what it does and to look at its actual numbers.
+        - generic [ref=f3e1395]:
+          - list [ref=f3e1396]:
+            - generic [ref=f3e1397]: Embedding
+            - button "embed_tokens.weight 49152 × 576" [ref=f3e1398] [cursor=pointer]:
+              - generic [ref=f3e1399]: embed_tokens.weight
+              - generic [ref=f3e1400]: 49152 × 576
+            - generic [ref=f3e1401]: Layer 0
+            - button "input_layernorm.weight 576" [ref=f3e1402] [cursor=pointer]:
+              - generic [ref=f3e1403]: input_layernorm.weight
+              - generic [ref=f3e1404]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1405] [cursor=pointer]:
+              - generic [ref=f3e1406]: mlp.down_proj.weight
+              - generic [ref=f3e1407]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1408] [cursor=pointer]:
+              - generic [ref=f3e1409]: mlp.gate_proj.weight
+              - generic [ref=f3e1410]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1411] [cursor=pointer]:
+              - generic [ref=f3e1412]: mlp.up_proj.weight
+              - generic [ref=f3e1413]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1414] [cursor=pointer]:
+              - generic [ref=f3e1415]: post_attention_layernorm.weight
+              - generic [ref=f3e1416]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1417] [cursor=pointer]:
+              - generic [ref=f3e1418]: self_attn.k_proj.weight
+              - generic [ref=f3e1419]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1420] [cursor=pointer]:
+              - generic [ref=f3e1421]: self_attn.o_proj.weight
+              - generic [ref=f3e1422]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [pressed] [ref=f3e1423] [cursor=pointer]:
+              - generic [ref=f3e1424]: self_attn.q_proj.weight
+              - generic [ref=f3e1425]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1426] [cursor=pointer]:
+              - generic [ref=f3e1427]: self_attn.v_proj.weight
+              - generic [ref=f3e1428]: 192 × 576
+            - generic [ref=f3e1429]: Layer 1
+            - button "input_layernorm.weight 576" [ref=f3e1430] [cursor=pointer]:
+              - generic [ref=f3e1431]: input_layernorm.weight
+              - generic [ref=f3e1432]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1433] [cursor=pointer]:
+              - generic [ref=f3e1434]: mlp.down_proj.weight
+              - generic [ref=f3e1435]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1436] [cursor=pointer]:
+              - generic [ref=f3e1437]: mlp.gate_proj.weight
+              - generic [ref=f3e1438]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1439] [cursor=pointer]:
+              - generic [ref=f3e1440]: mlp.up_proj.weight
+              - generic [ref=f3e1441]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1442] [cursor=pointer]:
+              - generic [ref=f3e1443]: post_attention_layernorm.weight
+              - generic [ref=f3e1444]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1445] [cursor=pointer]:
+              - generic [ref=f3e1446]: self_attn.k_proj.weight
+              - generic [ref=f3e1447]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1448] [cursor=pointer]:
+              - generic [ref=f3e1449]: self_attn.o_proj.weight
+              - generic [ref=f3e1450]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1451] [cursor=pointer]:
+              - generic [ref=f3e1452]: self_attn.q_proj.weight
+              - generic [ref=f3e1453]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1454] [cursor=pointer]:
+              - generic [ref=f3e1455]: self_attn.v_proj.weight
+              - generic [ref=f3e1456]: 192 × 576
+            - generic [ref=f3e1457]: Layer 10
+            - button "input_layernorm.weight 576" [ref=f3e1458] [cursor=pointer]:
+              - generic [ref=f3e1459]: input_layernorm.weight
+              - generic [ref=f3e1460]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1461] [cursor=pointer]:
+              - generic [ref=f3e1462]: mlp.down_proj.weight
+              - generic [ref=f3e1463]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1464] [cursor=pointer]:
+              - generic [ref=f3e1465]: mlp.gate_proj.weight
+              - generic [ref=f3e1466]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1467] [cursor=pointer]:
+              - generic [ref=f3e1468]: mlp.up_proj.weight
+              - generic [ref=f3e1469]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1470] [cursor=pointer]:
+              - generic [ref=f3e1471]: post_attention_layernorm.weight
+              - generic [ref=f3e1472]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1473] [cursor=pointer]:
+              - generic [ref=f3e1474]: self_attn.k_proj.weight
+              - generic [ref=f3e1475]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1476] [cursor=pointer]:
+              - generic [ref=f3e1477]: self_attn.o_proj.weight
+              - generic [ref=f3e1478]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1479] [cursor=pointer]:
+              - generic [ref=f3e1480]: self_attn.q_proj.weight
+              - generic [ref=f3e1481]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1482] [cursor=pointer]:
+              - generic [ref=f3e1483]: self_attn.v_proj.weight
+              - generic [ref=f3e1484]: 192 × 576
+            - generic [ref=f3e1485]: Layer 11
+            - button "input_layernorm.weight 576" [ref=f3e1486] [cursor=pointer]:
+              - generic [ref=f3e1487]: input_layernorm.weight
+              - generic [ref=f3e1488]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1489] [cursor=pointer]:
+              - generic [ref=f3e1490]: mlp.down_proj.weight
+              - generic [ref=f3e1491]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1492] [cursor=pointer]:
+              - generic [ref=f3e1493]: mlp.gate_proj.weight
+              - generic [ref=f3e1494]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1495] [cursor=pointer]:
+              - generic [ref=f3e1496]: mlp.up_proj.weight
+              - generic [ref=f3e1497]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1498] [cursor=pointer]:
+              - generic [ref=f3e1499]: post_attention_layernorm.weight
+              - generic [ref=f3e1500]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1501] [cursor=pointer]:
+              - generic [ref=f3e1502]: self_attn.k_proj.weight
+              - generic [ref=f3e1503]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1504] [cursor=pointer]:
+              - generic [ref=f3e1505]: self_attn.o_proj.weight
+              - generic [ref=f3e1506]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1507] [cursor=pointer]:
+              - generic [ref=f3e1508]: self_attn.q_proj.weight
+              - generic [ref=f3e1509]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1510] [cursor=pointer]:
+              - generic [ref=f3e1511]: self_attn.v_proj.weight
+              - generic [ref=f3e1512]: 192 × 576
+            - generic [ref=f3e1513]: Layer 12
+            - button "input_layernorm.weight 576" [ref=f3e1514] [cursor=pointer]:
+              - generic [ref=f3e1515]: input_layernorm.weight
+              - generic [ref=f3e1516]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1517] [cursor=pointer]:
+              - generic [ref=f3e1518]: mlp.down_proj.weight
+              - generic [ref=f3e1519]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1520] [cursor=pointer]:
+              - generic [ref=f3e1521]: mlp.gate_proj.weight
+              - generic [ref=f3e1522]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1523] [cursor=pointer]:
+              - generic [ref=f3e1524]: mlp.up_proj.weight
+              - generic [ref=f3e1525]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1526] [cursor=pointer]:
+              - generic [ref=f3e1527]: post_attention_layernorm.weight
+              - generic [ref=f3e1528]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1529] [cursor=pointer]:
+              - generic [ref=f3e1530]: self_attn.k_proj.weight
+              - generic [ref=f3e1531]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1532] [cursor=pointer]:
+              - generic [ref=f3e1533]: self_attn.o_proj.weight
+              - generic [ref=f3e1534]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1535] [cursor=pointer]:
+              - generic [ref=f3e1536]: self_attn.q_proj.weight
+              - generic [ref=f3e1537]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1538] [cursor=pointer]:
+              - generic [ref=f3e1539]: self_attn.v_proj.weight
+              - generic [ref=f3e1540]: 192 × 576
+            - generic [ref=f3e1541]: Layer 13
+            - button "input_layernorm.weight 576" [ref=f3e1542] [cursor=pointer]:
+              - generic [ref=f3e1543]: input_layernorm.weight
+              - generic [ref=f3e1544]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1545] [cursor=pointer]:
+              - generic [ref=f3e1546]: mlp.down_proj.weight
+              - generic [ref=f3e1547]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1548] [cursor=pointer]:
+              - generic [ref=f3e1549]: mlp.gate_proj.weight
+              - generic [ref=f3e1550]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1551] [cursor=pointer]:
+              - generic [ref=f3e1552]: mlp.up_proj.weight
+              - generic [ref=f3e1553]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1554] [cursor=pointer]:
+              - generic [ref=f3e1555]: post_attention_layernorm.weight
+              - generic [ref=f3e1556]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1557] [cursor=pointer]:
+              - generic [ref=f3e1558]: self_attn.k_proj.weight
+              - generic [ref=f3e1559]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1560] [cursor=pointer]:
+              - generic [ref=f3e1561]: self_attn.o_proj.weight
+              - generic [ref=f3e1562]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1563] [cursor=pointer]:
+              - generic [ref=f3e1564]: self_attn.q_proj.weight
+              - generic [ref=f3e1565]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1566] [cursor=pointer]:
+              - generic [ref=f3e1567]: self_attn.v_proj.weight
+              - generic [ref=f3e1568]: 192 × 576
+            - generic [ref=f3e1569]: Layer 14
+            - button "input_layernorm.weight 576" [ref=f3e1570] [cursor=pointer]:
+              - generic [ref=f3e1571]: input_layernorm.weight
+              - generic [ref=f3e1572]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1573] [cursor=pointer]:
+              - generic [ref=f3e1574]: mlp.down_proj.weight
+              - generic [ref=f3e1575]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1576] [cursor=pointer]:
+              - generic [ref=f3e1577]: mlp.gate_proj.weight
+              - generic [ref=f3e1578]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1579] [cursor=pointer]:
+              - generic [ref=f3e1580]: mlp.up_proj.weight
+              - generic [ref=f3e1581]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1582] [cursor=pointer]:
+              - generic [ref=f3e1583]: post_attention_layernorm.weight
+              - generic [ref=f3e1584]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1585] [cursor=pointer]:
+              - generic [ref=f3e1586]: self_attn.k_proj.weight
+              - generic [ref=f3e1587]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1588] [cursor=pointer]:
+              - generic [ref=f3e1589]: self_attn.o_proj.weight
+              - generic [ref=f3e1590]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1591] [cursor=pointer]:
+              - generic [ref=f3e1592]: self_attn.q_proj.weight
+              - generic [ref=f3e1593]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1594] [cursor=pointer]:
+              - generic [ref=f3e1595]: self_attn.v_proj.weight
+              - generic [ref=f3e1596]: 192 × 576
+            - generic [ref=f3e1597]: Layer 15
+            - button "input_layernorm.weight 576" [ref=f3e1598] [cursor=pointer]:
+              - generic [ref=f3e1599]: input_layernorm.weight
+              - generic [ref=f3e1600]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1601] [cursor=pointer]:
+              - generic [ref=f3e1602]: mlp.down_proj.weight
+              - generic [ref=f3e1603]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1604] [cursor=pointer]:
+              - generic [ref=f3e1605]: mlp.gate_proj.weight
+              - generic [ref=f3e1606]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1607] [cursor=pointer]:
+              - generic [ref=f3e1608]: mlp.up_proj.weight
+              - generic [ref=f3e1609]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1610] [cursor=pointer]:
+              - generic [ref=f3e1611]: post_attention_layernorm.weight
+              - generic [ref=f3e1612]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1613] [cursor=pointer]:
+              - generic [ref=f3e1614]: self_attn.k_proj.weight
+              - generic [ref=f3e1615]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1616] [cursor=pointer]:
+              - generic [ref=f3e1617]: self_attn.o_proj.weight
+              - generic [ref=f3e1618]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1619] [cursor=pointer]:
+              - generic [ref=f3e1620]: self_attn.q_proj.weight
+              - generic [ref=f3e1621]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1622] [cursor=pointer]:
+              - generic [ref=f3e1623]: self_attn.v_proj.weight
+              - generic [ref=f3e1624]: 192 × 576
+            - generic [ref=f3e1625]: Layer 16
+            - button "input_layernorm.weight 576" [ref=f3e1626] [cursor=pointer]:
+              - generic [ref=f3e1627]: input_layernorm.weight
+              - generic [ref=f3e1628]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1629] [cursor=pointer]:
+              - generic [ref=f3e1630]: mlp.down_proj.weight
+              - generic [ref=f3e1631]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1632] [cursor=pointer]:
+              - generic [ref=f3e1633]: mlp.gate_proj.weight
+              - generic [ref=f3e1634]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1635] [cursor=pointer]:
+              - generic [ref=f3e1636]: mlp.up_proj.weight
+              - generic [ref=f3e1637]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1638] [cursor=pointer]:
+              - generic [ref=f3e1639]: post_attention_layernorm.weight
+              - generic [ref=f3e1640]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1641] [cursor=pointer]:
+              - generic [ref=f3e1642]: self_attn.k_proj.weight
+              - generic [ref=f3e1643]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1644] [cursor=pointer]:
+              - generic [ref=f3e1645]: self_attn.o_proj.weight
+              - generic [ref=f3e1646]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1647] [cursor=pointer]:
+              - generic [ref=f3e1648]: self_attn.q_proj.weight
+              - generic [ref=f3e1649]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1650] [cursor=pointer]:
+              - generic [ref=f3e1651]: self_attn.v_proj.weight
+              - generic [ref=f3e1652]: 192 × 576
+            - generic [ref=f3e1653]: Layer 17
+            - button "input_layernorm.weight 576" [ref=f3e1654] [cursor=pointer]:
+              - generic [ref=f3e1655]: input_layernorm.weight
+              - generic [ref=f3e1656]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1657] [cursor=pointer]:
+              - generic [ref=f3e1658]: mlp.down_proj.weight
+              - generic [ref=f3e1659]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1660] [cursor=pointer]:
+              - generic [ref=f3e1661]: mlp.gate_proj.weight
+              - generic [ref=f3e1662]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1663] [cursor=pointer]:
+              - generic [ref=f3e1664]: mlp.up_proj.weight
+              - generic [ref=f3e1665]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1666] [cursor=pointer]:
+              - generic [ref=f3e1667]: post_attention_layernorm.weight
+              - generic [ref=f3e1668]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1669] [cursor=pointer]:
+              - generic [ref=f3e1670]: self_attn.k_proj.weight
+              - generic [ref=f3e1671]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1672] [cursor=pointer]:
+              - generic [ref=f3e1673]: self_attn.o_proj.weight
+              - generic [ref=f3e1674]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1675] [cursor=pointer]:
+              - generic [ref=f3e1676]: self_attn.q_proj.weight
+              - generic [ref=f3e1677]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1678] [cursor=pointer]:
+              - generic [ref=f3e1679]: self_attn.v_proj.weight
+              - generic [ref=f3e1680]: 192 × 576
+            - generic [ref=f3e1681]: Layer 18
+            - button "input_layernorm.weight 576" [ref=f3e1682] [cursor=pointer]:
+              - generic [ref=f3e1683]: input_layernorm.weight
+              - generic [ref=f3e1684]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1685] [cursor=pointer]:
+              - generic [ref=f3e1686]: mlp.down_proj.weight
+              - generic [ref=f3e1687]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1688] [cursor=pointer]:
+              - generic [ref=f3e1689]: mlp.gate_proj.weight
+              - generic [ref=f3e1690]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1691] [cursor=pointer]:
+              - generic [ref=f3e1692]: mlp.up_proj.weight
+              - generic [ref=f3e1693]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1694] [cursor=pointer]:
+              - generic [ref=f3e1695]: post_attention_layernorm.weight
+              - generic [ref=f3e1696]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1697] [cursor=pointer]:
+              - generic [ref=f3e1698]: self_attn.k_proj.weight
+              - generic [ref=f3e1699]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1700] [cursor=pointer]:
+              - generic [ref=f3e1701]: self_attn.o_proj.weight
+              - generic [ref=f3e1702]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1703] [cursor=pointer]:
+              - generic [ref=f3e1704]: self_attn.q_proj.weight
+              - generic [ref=f3e1705]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1706] [cursor=pointer]:
+              - generic [ref=f3e1707]: self_attn.v_proj.weight
+              - generic [ref=f3e1708]: 192 × 576
+            - generic [ref=f3e1709]: Layer 19
+            - button "input_layernorm.weight 576" [ref=f3e1710] [cursor=pointer]:
+              - generic [ref=f3e1711]: input_layernorm.weight
+              - generic [ref=f3e1712]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1713] [cursor=pointer]:
+              - generic [ref=f3e1714]: mlp.down_proj.weight
+              - generic [ref=f3e1715]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1716] [cursor=pointer]:
+              - generic [ref=f3e1717]: mlp.gate_proj.weight
+              - generic [ref=f3e1718]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1719] [cursor=pointer]:
+              - generic [ref=f3e1720]: mlp.up_proj.weight
+              - generic [ref=f3e1721]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1722] [cursor=pointer]:
+              - generic [ref=f3e1723]: post_attention_layernorm.weight
+              - generic [ref=f3e1724]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1725] [cursor=pointer]:
+              - generic [ref=f3e1726]: self_attn.k_proj.weight
+              - generic [ref=f3e1727]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1728] [cursor=pointer]:
+              - generic [ref=f3e1729]: self_attn.o_proj.weight
+              - generic [ref=f3e1730]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1731] [cursor=pointer]:
+              - generic [ref=f3e1732]: self_attn.q_proj.weight
+              - generic [ref=f3e1733]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1734] [cursor=pointer]:
+              - generic [ref=f3e1735]: self_attn.v_proj.weight
+              - generic [ref=f3e1736]: 192 × 576
+            - generic [ref=f3e1737]: Layer 2
+            - button "input_layernorm.weight 576" [ref=f3e1738] [cursor=pointer]:
+              - generic [ref=f3e1739]: input_layernorm.weight
+              - generic [ref=f3e1740]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1741] [cursor=pointer]:
+              - generic [ref=f3e1742]: mlp.down_proj.weight
+              - generic [ref=f3e1743]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1744] [cursor=pointer]:
+              - generic [ref=f3e1745]: mlp.gate_proj.weight
+              - generic [ref=f3e1746]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1747] [cursor=pointer]:
+              - generic [ref=f3e1748]: mlp.up_proj.weight
+              - generic [ref=f3e1749]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1750] [cursor=pointer]:
+              - generic [ref=f3e1751]: post_attention_layernorm.weight
+              - generic [ref=f3e1752]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1753] [cursor=pointer]:
+              - generic [ref=f3e1754]: self_attn.k_proj.weight
+              - generic [ref=f3e1755]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1756] [cursor=pointer]:
+              - generic [ref=f3e1757]: self_attn.o_proj.weight
+              - generic [ref=f3e1758]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1759] [cursor=pointer]:
+              - generic [ref=f3e1760]: self_attn.q_proj.weight
+              - generic [ref=f3e1761]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1762] [cursor=pointer]:
+              - generic [ref=f3e1763]: self_attn.v_proj.weight
+              - generic [ref=f3e1764]: 192 × 576
+            - generic [ref=f3e1765]: Layer 20
+            - button "input_layernorm.weight 576" [ref=f3e1766] [cursor=pointer]:
+              - generic [ref=f3e1767]: input_layernorm.weight
+              - generic [ref=f3e1768]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1769] [cursor=pointer]:
+              - generic [ref=f3e1770]: mlp.down_proj.weight
+              - generic [ref=f3e1771]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1772] [cursor=pointer]:
+              - generic [ref=f3e1773]: mlp.gate_proj.weight
+              - generic [ref=f3e1774]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1775] [cursor=pointer]:
+              - generic [ref=f3e1776]: mlp.up_proj.weight
+              - generic [ref=f3e1777]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1778] [cursor=pointer]:
+              - generic [ref=f3e1779]: post_attention_layernorm.weight
+              - generic [ref=f3e1780]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1781] [cursor=pointer]:
+              - generic [ref=f3e1782]: self_attn.k_proj.weight
+              - generic [ref=f3e1783]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1784] [cursor=pointer]:
+              - generic [ref=f3e1785]: self_attn.o_proj.weight
+              - generic [ref=f3e1786]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1787] [cursor=pointer]:
+              - generic [ref=f3e1788]: self_attn.q_proj.weight
+              - generic [ref=f3e1789]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1790] [cursor=pointer]:
+              - generic [ref=f3e1791]: self_attn.v_proj.weight
+              - generic [ref=f3e1792]: 192 × 576
+            - generic [ref=f3e1793]: Layer 21
+            - button "input_layernorm.weight 576" [ref=f3e1794] [cursor=pointer]:
+              - generic [ref=f3e1795]: input_layernorm.weight
+              - generic [ref=f3e1796]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1797] [cursor=pointer]:
+              - generic [ref=f3e1798]: mlp.down_proj.weight
+              - generic [ref=f3e1799]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1800] [cursor=pointer]:
+              - generic [ref=f3e1801]: mlp.gate_proj.weight
+              - generic [ref=f3e1802]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1803] [cursor=pointer]:
+              - generic [ref=f3e1804]: mlp.up_proj.weight
+              - generic [ref=f3e1805]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1806] [cursor=pointer]:
+              - generic [ref=f3e1807]: post_attention_layernorm.weight
+              - generic [ref=f3e1808]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1809] [cursor=pointer]:
+              - generic [ref=f3e1810]: self_attn.k_proj.weight
+              - generic [ref=f3e1811]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1812] [cursor=pointer]:
+              - generic [ref=f3e1813]: self_attn.o_proj.weight
+              - generic [ref=f3e1814]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1815] [cursor=pointer]:
+              - generic [ref=f3e1816]: self_attn.q_proj.weight
+              - generic [ref=f3e1817]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1818] [cursor=pointer]:
+              - generic [ref=f3e1819]: self_attn.v_proj.weight
+              - generic [ref=f3e1820]: 192 × 576
+            - generic [ref=f3e1821]: Layer 22
+            - button "input_layernorm.weight 576" [ref=f3e1822] [cursor=pointer]:
+              - generic [ref=f3e1823]: input_layernorm.weight
+              - generic [ref=f3e1824]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1825] [cursor=pointer]:
+              - generic [ref=f3e1826]: mlp.down_proj.weight
+              - generic [ref=f3e1827]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1828] [cursor=pointer]:
+              - generic [ref=f3e1829]: mlp.gate_proj.weight
+              - generic [ref=f3e1830]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1831] [cursor=pointer]:
+              - generic [ref=f3e1832]: mlp.up_proj.weight
+              - generic [ref=f3e1833]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1834] [cursor=pointer]:
+              - generic [ref=f3e1835]: post_attention_layernorm.weight
+              - generic [ref=f3e1836]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1837] [cursor=pointer]:
+              - generic [ref=f3e1838]: self_attn.k_proj.weight
+              - generic [ref=f3e1839]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1840] [cursor=pointer]:
+              - generic [ref=f3e1841]: self_attn.o_proj.weight
+              - generic [ref=f3e1842]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1843] [cursor=pointer]:
+              - generic [ref=f3e1844]: self_attn.q_proj.weight
+              - generic [ref=f3e1845]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1846] [cursor=pointer]:
+              - generic [ref=f3e1847]: self_attn.v_proj.weight
+              - generic [ref=f3e1848]: 192 × 576
+            - generic [ref=f3e1849]: Layer 23
+            - button "input_layernorm.weight 576" [ref=f3e1850] [cursor=pointer]:
+              - generic [ref=f3e1851]: input_layernorm.weight
+              - generic [ref=f3e1852]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1853] [cursor=pointer]:
+              - generic [ref=f3e1854]: mlp.down_proj.weight
+              - generic [ref=f3e1855]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1856] [cursor=pointer]:
+              - generic [ref=f3e1857]: mlp.gate_proj.weight
+              - generic [ref=f3e1858]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1859] [cursor=pointer]:
+              - generic [ref=f3e1860]: mlp.up_proj.weight
+              - generic [ref=f3e1861]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1862] [cursor=pointer]:
+              - generic [ref=f3e1863]: post_attention_layernorm.weight
+              - generic [ref=f3e1864]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1865] [cursor=pointer]:
+              - generic [ref=f3e1866]: self_attn.k_proj.weight
+              - generic [ref=f3e1867]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1868] [cursor=pointer]:
+              - generic [ref=f3e1869]: self_attn.o_proj.weight
+              - generic [ref=f3e1870]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1871] [cursor=pointer]:
+              - generic [ref=f3e1872]: self_attn.q_proj.weight
+              - generic [ref=f3e1873]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1874] [cursor=pointer]:
+              - generic [ref=f3e1875]: self_attn.v_proj.weight
+              - generic [ref=f3e1876]: 192 × 576
+            - generic [ref=f3e1877]: Layer 24
+            - button "input_layernorm.weight 576" [ref=f3e1878] [cursor=pointer]:
+              - generic [ref=f3e1879]: input_layernorm.weight
+              - generic [ref=f3e1880]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1881] [cursor=pointer]:
+              - generic [ref=f3e1882]: mlp.down_proj.weight
+              - generic [ref=f3e1883]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1884] [cursor=pointer]:
+              - generic [ref=f3e1885]: mlp.gate_proj.weight
+              - generic [ref=f3e1886]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1887] [cursor=pointer]:
+              - generic [ref=f3e1888]: mlp.up_proj.weight
+              - generic [ref=f3e1889]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1890] [cursor=pointer]:
+              - generic [ref=f3e1891]: post_attention_layernorm.weight
+              - generic [ref=f3e1892]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1893] [cursor=pointer]:
+              - generic [ref=f3e1894]: self_attn.k_proj.weight
+              - generic [ref=f3e1895]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1896] [cursor=pointer]:
+              - generic [ref=f3e1897]: self_attn.o_proj.weight
+              - generic [ref=f3e1898]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1899] [cursor=pointer]:
+              - generic [ref=f3e1900]: self_attn.q_proj.weight
+              - generic [ref=f3e1901]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1902] [cursor=pointer]:
+              - generic [ref=f3e1903]: self_attn.v_proj.weight
+              - generic [ref=f3e1904]: 192 × 576
+            - generic [ref=f3e1905]: Layer 25
+            - button "input_layernorm.weight 576" [ref=f3e1906] [cursor=pointer]:
+              - generic [ref=f3e1907]: input_layernorm.weight
+              - generic [ref=f3e1908]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1909] [cursor=pointer]:
+              - generic [ref=f3e1910]: mlp.down_proj.weight
+              - generic [ref=f3e1911]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1912] [cursor=pointer]:
+              - generic [ref=f3e1913]: mlp.gate_proj.weight
+              - generic [ref=f3e1914]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1915] [cursor=pointer]:
+              - generic [ref=f3e1916]: mlp.up_proj.weight
+              - generic [ref=f3e1917]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1918] [cursor=pointer]:
+              - generic [ref=f3e1919]: post_attention_layernorm.weight
+              - generic [ref=f3e1920]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1921] [cursor=pointer]:
+              - generic [ref=f3e1922]: self_attn.k_proj.weight
+              - generic [ref=f3e1923]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1924] [cursor=pointer]:
+              - generic [ref=f3e1925]: self_attn.o_proj.weight
+              - generic [ref=f3e1926]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1927] [cursor=pointer]:
+              - generic [ref=f3e1928]: self_attn.q_proj.weight
+              - generic [ref=f3e1929]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1930] [cursor=pointer]:
+              - generic [ref=f3e1931]: self_attn.v_proj.weight
+              - generic [ref=f3e1932]: 192 × 576
+            - generic [ref=f3e1933]: Layer 26
+            - button "input_layernorm.weight 576" [ref=f3e1934] [cursor=pointer]:
+              - generic [ref=f3e1935]: input_layernorm.weight
+              - generic [ref=f3e1936]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1937] [cursor=pointer]:
+              - generic [ref=f3e1938]: mlp.down_proj.weight
+              - generic [ref=f3e1939]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1940] [cursor=pointer]:
+              - generic [ref=f3e1941]: mlp.gate_proj.weight
+              - generic [ref=f3e1942]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1943] [cursor=pointer]:
+              - generic [ref=f3e1944]: mlp.up_proj.weight
+              - generic [ref=f3e1945]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1946] [cursor=pointer]:
+              - generic [ref=f3e1947]: post_attention_layernorm.weight
+              - generic [ref=f3e1948]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1949] [cursor=pointer]:
+              - generic [ref=f3e1950]: self_attn.k_proj.weight
+              - generic [ref=f3e1951]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1952] [cursor=pointer]:
+              - generic [ref=f3e1953]: self_attn.o_proj.weight
+              - generic [ref=f3e1954]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1955] [cursor=pointer]:
+              - generic [ref=f3e1956]: self_attn.q_proj.weight
+              - generic [ref=f3e1957]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1958] [cursor=pointer]:
+              - generic [ref=f3e1959]: self_attn.v_proj.weight
+              - generic [ref=f3e1960]: 192 × 576
+            - generic [ref=f3e1961]: Layer 27
+            - button "input_layernorm.weight 576" [ref=f3e1962] [cursor=pointer]:
+              - generic [ref=f3e1963]: input_layernorm.weight
+              - generic [ref=f3e1964]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1965] [cursor=pointer]:
+              - generic [ref=f3e1966]: mlp.down_proj.weight
+              - generic [ref=f3e1967]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1968] [cursor=pointer]:
+              - generic [ref=f3e1969]: mlp.gate_proj.weight
+              - generic [ref=f3e1970]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1971] [cursor=pointer]:
+              - generic [ref=f3e1972]: mlp.up_proj.weight
+              - generic [ref=f3e1973]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e1974] [cursor=pointer]:
+              - generic [ref=f3e1975]: post_attention_layernorm.weight
+              - generic [ref=f3e1976]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e1977] [cursor=pointer]:
+              - generic [ref=f3e1978]: self_attn.k_proj.weight
+              - generic [ref=f3e1979]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e1980] [cursor=pointer]:
+              - generic [ref=f3e1981]: self_attn.o_proj.weight
+              - generic [ref=f3e1982]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e1983] [cursor=pointer]:
+              - generic [ref=f3e1984]: self_attn.q_proj.weight
+              - generic [ref=f3e1985]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e1986] [cursor=pointer]:
+              - generic [ref=f3e1987]: self_attn.v_proj.weight
+              - generic [ref=f3e1988]: 192 × 576
+            - generic [ref=f3e1989]: Layer 28
+            - button "input_layernorm.weight 576" [ref=f3e1990] [cursor=pointer]:
+              - generic [ref=f3e1991]: input_layernorm.weight
+              - generic [ref=f3e1992]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e1993] [cursor=pointer]:
+              - generic [ref=f3e1994]: mlp.down_proj.weight
+              - generic [ref=f3e1995]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e1996] [cursor=pointer]:
+              - generic [ref=f3e1997]: mlp.gate_proj.weight
+              - generic [ref=f3e1998]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e1999] [cursor=pointer]:
+              - generic [ref=f3e2000]: mlp.up_proj.weight
+              - generic [ref=f3e2001]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e2002] [cursor=pointer]:
+              - generic [ref=f3e2003]: post_attention_layernorm.weight
+              - generic [ref=f3e2004]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e2005] [cursor=pointer]:
+              - generic [ref=f3e2006]: self_attn.k_proj.weight
+              - generic [ref=f3e2007]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e2008] [cursor=pointer]:
+              - generic [ref=f3e2009]: self_attn.o_proj.weight
+              - generic [ref=f3e2010]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e2011] [cursor=pointer]:
+              - generic [ref=f3e2012]: self_attn.q_proj.weight
+              - generic [ref=f3e2013]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e2014] [cursor=pointer]:
+              - generic [ref=f3e2015]: self_attn.v_proj.weight
+              - generic [ref=f3e2016]: 192 × 576
+            - generic [ref=f3e2017]: Layer 29
+            - button "input_layernorm.weight 576" [ref=f3e2018] [cursor=pointer]:
+              - generic [ref=f3e2019]: input_layernorm.weight
+              - generic [ref=f3e2020]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e2021] [cursor=pointer]:
+              - generic [ref=f3e2022]: mlp.down_proj.weight
+              - generic [ref=f3e2023]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e2024] [cursor=pointer]:
+              - generic [ref=f3e2025]: mlp.gate_proj.weight
+              - generic [ref=f3e2026]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e2027] [cursor=pointer]:
+              - generic [ref=f3e2028]: mlp.up_proj.weight
+              - generic [ref=f3e2029]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e2030] [cursor=pointer]:
+              - generic [ref=f3e2031]: post_attention_layernorm.weight
+              - generic [ref=f3e2032]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e2033] [cursor=pointer]:
+              - generic [ref=f3e2034]: self_attn.k_proj.weight
+              - generic [ref=f3e2035]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e2036] [cursor=pointer]:
+              - generic [ref=f3e2037]: self_attn.o_proj.weight
+              - generic [ref=f3e2038]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e2039] [cursor=pointer]:
+              - generic [ref=f3e2040]: self_attn.q_proj.weight
+              - generic [ref=f3e2041]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e2042] [cursor=pointer]:
+              - generic [ref=f3e2043]: self_attn.v_proj.weight
+              - generic [ref=f3e2044]: 192 × 576
+            - generic [ref=f3e2045]: Layer 3
+            - button "input_layernorm.weight 576" [ref=f3e2046] [cursor=pointer]:
+              - generic [ref=f3e2047]: input_layernorm.weight
+              - generic [ref=f3e2048]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e2049] [cursor=pointer]:
+              - generic [ref=f3e2050]: mlp.down_proj.weight
+              - generic [ref=f3e2051]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e2052] [cursor=pointer]:
+              - generic [ref=f3e2053]: mlp.gate_proj.weight
+              - generic [ref=f3e2054]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e2055] [cursor=pointer]:
+              - generic [ref=f3e2056]: mlp.up_proj.weight
+              - generic [ref=f3e2057]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e2058] [cursor=pointer]:
+              - generic [ref=f3e2059]: post_attention_layernorm.weight
+              - generic [ref=f3e2060]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e2061] [cursor=pointer]:
+              - generic [ref=f3e2062]: self_attn.k_proj.weight
+              - generic [ref=f3e2063]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e2064] [cursor=pointer]:
+              - generic [ref=f3e2065]: self_attn.o_proj.weight
+              - generic [ref=f3e2066]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e2067] [cursor=pointer]:
+              - generic [ref=f3e2068]: self_attn.q_proj.weight
+              - generic [ref=f3e2069]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e2070] [cursor=pointer]:
+              - generic [ref=f3e2071]: self_attn.v_proj.weight
+              - generic [ref=f3e2072]: 192 × 576
+            - generic [ref=f3e2073]: Layer 4
+            - button "input_layernorm.weight 576" [ref=f3e2074] [cursor=pointer]:
+              - generic [ref=f3e2075]: input_layernorm.weight
+              - generic [ref=f3e2076]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e2077] [cursor=pointer]:
+              - generic [ref=f3e2078]: mlp.down_proj.weight
+              - generic [ref=f3e2079]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e2080] [cursor=pointer]:
+              - generic [ref=f3e2081]: mlp.gate_proj.weight
+              - generic [ref=f3e2082]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e2083] [cursor=pointer]:
+              - generic [ref=f3e2084]: mlp.up_proj.weight
+              - generic [ref=f3e2085]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e2086] [cursor=pointer]:
+              - generic [ref=f3e2087]: post_attention_layernorm.weight
+              - generic [ref=f3e2088]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e2089] [cursor=pointer]:
+              - generic [ref=f3e2090]: self_attn.k_proj.weight
+              - generic [ref=f3e2091]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e2092] [cursor=pointer]:
+              - generic [ref=f3e2093]: self_attn.o_proj.weight
+              - generic [ref=f3e2094]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e2095] [cursor=pointer]:
+              - generic [ref=f3e2096]: self_attn.q_proj.weight
+              - generic [ref=f3e2097]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e2098] [cursor=pointer]:
+              - generic [ref=f3e2099]: self_attn.v_proj.weight
+              - generic [ref=f3e2100]: 192 × 576
+            - generic [ref=f3e2101]: Layer 5
+            - button "input_layernorm.weight 576" [ref=f3e2102] [cursor=pointer]:
+              - generic [ref=f3e2103]: input_layernorm.weight
+              - generic [ref=f3e2104]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e2105] [cursor=pointer]:
+              - generic [ref=f3e2106]: mlp.down_proj.weight
+              - generic [ref=f3e2107]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e2108] [cursor=pointer]:
+              - generic [ref=f3e2109]: mlp.gate_proj.weight
+              - generic [ref=f3e2110]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e2111] [cursor=pointer]:
+              - generic [ref=f3e2112]: mlp.up_proj.weight
+              - generic [ref=f3e2113]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e2114] [cursor=pointer]:
+              - generic [ref=f3e2115]: post_attention_layernorm.weight
+              - generic [ref=f3e2116]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e2117] [cursor=pointer]:
+              - generic [ref=f3e2118]: self_attn.k_proj.weight
+              - generic [ref=f3e2119]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e2120] [cursor=pointer]:
+              - generic [ref=f3e2121]: self_attn.o_proj.weight
+              - generic [ref=f3e2122]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e2123] [cursor=pointer]:
+              - generic [ref=f3e2124]: self_attn.q_proj.weight
+              - generic [ref=f3e2125]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e2126] [cursor=pointer]:
+              - generic [ref=f3e2127]: self_attn.v_proj.weight
+              - generic [ref=f3e2128]: 192 × 576
+            - generic [ref=f3e2129]: Layer 6
+            - button "input_layernorm.weight 576" [ref=f3e2130] [cursor=pointer]:
+              - generic [ref=f3e2131]: input_layernorm.weight
+              - generic [ref=f3e2132]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e2133] [cursor=pointer]:
+              - generic [ref=f3e2134]: mlp.down_proj.weight
+              - generic [ref=f3e2135]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e2136] [cursor=pointer]:
+              - generic [ref=f3e2137]: mlp.gate_proj.weight
+              - generic [ref=f3e2138]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e2139] [cursor=pointer]:
+              - generic [ref=f3e2140]: mlp.up_proj.weight
+              - generic [ref=f3e2141]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e2142] [cursor=pointer]:
+              - generic [ref=f3e2143]: post_attention_layernorm.weight
+              - generic [ref=f3e2144]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e2145] [cursor=pointer]:
+              - generic [ref=f3e2146]: self_attn.k_proj.weight
+              - generic [ref=f3e2147]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e2148] [cursor=pointer]:
+              - generic [ref=f3e2149]: self_attn.o_proj.weight
+              - generic [ref=f3e2150]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e2151] [cursor=pointer]:
+              - generic [ref=f3e2152]: self_attn.q_proj.weight
+              - generic [ref=f3e2153]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e2154] [cursor=pointer]:
+              - generic [ref=f3e2155]: self_attn.v_proj.weight
+              - generic [ref=f3e2156]: 192 × 576
+            - generic [ref=f3e2157]: Layer 7
+            - button "input_layernorm.weight 576" [ref=f3e2158] [cursor=pointer]:
+              - generic [ref=f3e2159]: input_layernorm.weight
+              - generic [ref=f3e2160]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e2161] [cursor=pointer]:
+              - generic [ref=f3e2162]: mlp.down_proj.weight
+              - generic [ref=f3e2163]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e2164] [cursor=pointer]:
+              - generic [ref=f3e2165]: mlp.gate_proj.weight
+              - generic [ref=f3e2166]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e2167] [cursor=pointer]:
+              - generic [ref=f3e2168]: mlp.up_proj.weight
+              - generic [ref=f3e2169]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e2170] [cursor=pointer]:
+              - generic [ref=f3e2171]: post_attention_layernorm.weight
+              - generic [ref=f3e2172]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e2173] [cursor=pointer]:
+              - generic [ref=f3e2174]: self_attn.k_proj.weight
+              - generic [ref=f3e2175]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e2176] [cursor=pointer]:
+              - generic [ref=f3e2177]: self_attn.o_proj.weight
+              - generic [ref=f3e2178]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e2179] [cursor=pointer]:
+              - generic [ref=f3e2180]: self_attn.q_proj.weight
+              - generic [ref=f3e2181]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e2182] [cursor=pointer]:
+              - generic [ref=f3e2183]: self_attn.v_proj.weight
+              - generic [ref=f3e2184]: 192 × 576
+            - generic [ref=f3e2185]: Layer 8
+            - button "input_layernorm.weight 576" [ref=f3e2186] [cursor=pointer]:
+              - generic [ref=f3e2187]: input_layernorm.weight
+              - generic [ref=f3e2188]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e2189] [cursor=pointer]:
+              - generic [ref=f3e2190]: mlp.down_proj.weight
+              - generic [ref=f3e2191]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e2192] [cursor=pointer]:
+              - generic [ref=f3e2193]: mlp.gate_proj.weight
+              - generic [ref=f3e2194]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e2195] [cursor=pointer]:
+              - generic [ref=f3e2196]: mlp.up_proj.weight
+              - generic [ref=f3e2197]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e2198] [cursor=pointer]:
+              - generic [ref=f3e2199]: post_attention_layernorm.weight
+              - generic [ref=f3e2200]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e2201] [cursor=pointer]:
+              - generic [ref=f3e2202]: self_attn.k_proj.weight
+              - generic [ref=f3e2203]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e2204] [cursor=pointer]:
+              - generic [ref=f3e2205]: self_attn.o_proj.weight
+              - generic [ref=f3e2206]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e2207] [cursor=pointer]:
+              - generic [ref=f3e2208]: self_attn.q_proj.weight
+              - generic [ref=f3e2209]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e2210] [cursor=pointer]:
+              - generic [ref=f3e2211]: self_attn.v_proj.weight
+              - generic [ref=f3e2212]: 192 × 576
+            - generic [ref=f3e2213]: Layer 9
+            - button "input_layernorm.weight 576" [ref=f3e2214] [cursor=pointer]:
+              - generic [ref=f3e2215]: input_layernorm.weight
+              - generic [ref=f3e2216]: "576"
+            - button "mlp.down_proj.weight 576 × 1536" [ref=f3e2217] [cursor=pointer]:
+              - generic [ref=f3e2218]: mlp.down_proj.weight
+              - generic [ref=f3e2219]: 576 × 1536
+            - button "mlp.gate_proj.weight 1536 × 576" [ref=f3e2220] [cursor=pointer]:
+              - generic [ref=f3e2221]: mlp.gate_proj.weight
+              - generic [ref=f3e2222]: 1536 × 576
+            - button "mlp.up_proj.weight 1536 × 576" [ref=f3e2223] [cursor=pointer]:
+              - generic [ref=f3e2224]: mlp.up_proj.weight
+              - generic [ref=f3e2225]: 1536 × 576
+            - button "post_attention_layernorm.weight 576" [ref=f3e2226] [cursor=pointer]:
+              - generic [ref=f3e2227]: post_attention_layernorm.weight
+              - generic [ref=f3e2228]: "576"
+            - button "self_attn.k_proj.weight 192 × 576" [ref=f3e2229] [cursor=pointer]:
+              - generic [ref=f3e2230]: self_attn.k_proj.weight
+              - generic [ref=f3e2231]: 192 × 576
+            - button "self_attn.o_proj.weight 576 × 576" [ref=f3e2232] [cursor=pointer]:
+              - generic [ref=f3e2233]: self_attn.o_proj.weight
+              - generic [ref=f3e2234]: 576 × 576
+            - button "self_attn.q_proj.weight 576 × 576" [ref=f3e2235] [cursor=pointer]:
+              - generic [ref=f3e2236]: self_attn.q_proj.weight
+              - generic [ref=f3e2237]: 576 × 576
+            - button "self_attn.v_proj.weight 192 × 576" [ref=f3e2238] [cursor=pointer]:
+              - generic [ref=f3e2239]: self_attn.v_proj.weight
+              - generic [ref=f3e2240]: 192 × 576
+            - generic [ref=f3e2241]: Output
+            - button "norm.weight 576" [ref=f3e2242] [cursor=pointer]:
+              - generic [ref=f3e2243]: norm.weight
+              - generic [ref=f3e2244]: "576"
+          - generic [ref=f3e2245]:
+            - heading "model.layers.0.self_attn.q_proj.weight" [level=4] [ref=f3e2246]
+            - paragraph [ref=f3e2247]: "Turns each token’s vector into its query: “what am I looking for?” (chapter 6)."
+            - paragraph [ref=f3e2248]: "576 rows × 576 columns: takes in a vector of 576 numbers and gives out 576. That's 331,776 numbers, 664 KB in the file."
+            - paragraph [ref=f3e2249]: Load the weights to see the actual numbers.
+        - group [ref=f3e479]:
+          - 'generic "+ Go deeper: the file format and number precision" [ref=f3e480] [cursor=pointer]'
+        - generic [ref=f3e481]:
+          - button "Load the weights (269 MB)" [disabled] [ref=f3e2250]
+          - paragraph [ref=f3e2254]: Reading from browser cache…
+      - generic [ref=f3e483]:
+        - generic [ref=f3e484]:
+          - generic [aria-hidden] [ref=f3e485]: "2"
+          - generic [ref=f3e486]:
+            - heading "Text becomes numbers" [level=2] [ref=f3e487]
+            - paragraph [ref=f3e488]:
+              - generic [ref=f3e489]: CPU
+        - paragraph [ref=f3e490]:
+          - text: The model can only do arithmetic, so your text first has to become numbers. The model comes with a fixed dictionary of 49,152 text pieces called
+          - 'button "tokens: A piece of text from the model’s fixed vocabulary: a whole word, part of a word, a punctuation mark or a single byte. Each has an ID number." [ref=f3e491]': tokens
+          - text: . Common words are a single piece, rarer words are built from several, and every piece has an ID number. The
+          - emphasis [ref=f3e492]: tokenizer
+          - text: chops your text into these pieces and looks up their IDs. It runs on the CPU, before the GPU does anything.
+        - heading "Look inside the dictionary" [level=3] [ref=f3e493]
+        - paragraph [ref=f3e495]:
+          - text: Search the model’s
+          - 'button "vocabulary: The fixed list of every token the model knows, each with an ID. This model has 49,152." [ref=f3e496]': vocabulary
+          - text: ", or browse parts of it. On this page"
+          - code [ref=f3e497]: ␣
+          - text: marks a space and
+          - code [ref=f3e498]: ↵
+          - text: "a new line. Spaces are part of tokens:"
+          - code [ref=f3e499]: ␣cat
+          - text: (as in “the cat”) is a different entry from
+          - code [ref=f3e500]: cat
+          - text: at the start of a line. The full list is in
+          - link "tokenizer.json on Hugging Face" [ref=f3e501] [cursor=pointer]:
+            - /url: https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct/raw/main/tokenizer.json
+          - text: (a 2 MB text file), and
+          - link "Tiktokenizer" [ref=f3e502] [cursor=pointer]:
+            - /url: https://tiktokenizer.vercel.app/
+          - text: lets you compare how different models split the same text.
+        - generic [ref=f3e503]:
+          - generic [ref=f3e2255]:
+            - searchbox "Search the vocabulary" [ref=f3e2256]
+            - button "Common pieces" [pressed] [ref=f3e2257] [cursor=pointer]
+            - button "Special tokens" [ref=f3e2258] [cursor=pointer]
+            - button "Longest" [ref=f3e2259] [cursor=pointer]
+            - button "Random 40" [ref=f3e2260] [cursor=pointer]
+          - generic [ref=f3e2261]:
+            - generic "ID 300" [ref=f3e2262]:
+              - generic [ref=f3e2263]: om
+              - generic [ref=f3e2264]: "300"
+            - generic "ID 301" [ref=f3e2265]:
+              - generic [ref=f3e2266]: il
+              - generic [ref=f3e2267]: "301"
+            - generic "ID 302" [ref=f3e2268]:
+              - generic [ref=f3e2269]: st
+              - generic [ref=f3e2270]: "302"
+            - generic "ID 303" [ref=f3e2271]:
+              - generic [ref=f3e2272]: ␣l
+              - generic [ref=f3e2273]: "303"
+            - generic "ID 304" [ref=f3e2274]:
+              - generic [ref=f3e2275]: ␣n
+              - generic [ref=f3e2276]: "304"
+            - generic "ID 305" [ref=f3e2277]:
+              - generic [ref=f3e2278]: et
+              - generic [ref=f3e2279]: "305"
+            - generic "ID 306" [ref=f3e2280]:
+              - generic [ref=f3e2281]: im
+              - generic [ref=f3e2282]: "306"
+            - generic "ID 307" [ref=f3e2283]:
+              - generic [ref=f3e2284]: ve
+              - generic [ref=f3e2285]: "307"
+            - generic "ID 308" [ref=f3e2286]:
+              - generic [ref=f3e2287]: ol
+              - generic [ref=f3e2288]: "308"
+            - generic "ID 309" [ref=f3e2289]:
+              - generic [ref=f3e2290]: ation
+              - generic [ref=f3e2291]: "309"
+            - generic "ID 310" [ref=f3e2292]:
+              - generic [ref=f3e2293]: ␣g
+              - generic [ref=f3e2294]: "310"
+            - generic "ID 311" [ref=f3e2295]:
+              - generic [ref=f3e2296]: id
+              - generic [ref=f3e2297]: "311"
+            - generic "ID 312" [ref=f3e2298]:
+              - generic [ref=f3e2299]: ␣T
+              - generic [ref=f3e2300]: "312"
+            - generic "ID 313" [ref=f3e2301]:
+              - generic [ref=f3e2302]: se
+              - generic [ref=f3e2303]: "313"
+            - generic "ID 314" [ref=f3e2304]:
+              - generic [ref=f3e2305]: ␣is
+              - generic [ref=f3e2306]: "314"
+            - generic "ID 315" [ref=f3e2307]:
+              - generic [ref=f3e2308]: ur
+              - generic [ref=f3e2309]: "315"
+            - generic "ID 316" [ref=f3e2310]:
+              - generic [ref=f3e2311]: ut
+              - generic [ref=f3e2312]: "316"
+            - generic "ID 317" [ref=f3e2313]:
+              - generic [ref=f3e2314]: ra
+              - generic [ref=f3e2315]: "317"
+            - generic "ID 318" [ref=f3e2316]:
+              - generic [ref=f3e2317]: ly
+              - generic [ref=f3e2318]: "318"
+            - generic "ID 319" [ref=f3e2319]:
+              - generic [ref=f3e2320]: ce
+              - generic [ref=f3e2321]: "319"
+            - generic "ID 320" [ref=f3e2322]:
+              - generic [ref=f3e2323]: ot
+              - generic [ref=f3e2324]: "320"
+            - generic "ID 321" [ref=f3e2325]:
+              - generic [ref=f3e2326]: �
+              - generic [ref=f3e2327]: "321"
+            - generic "ID 322" [ref=f3e2328]:
+              - generic [ref=f3e2329]: ch
+              - generic [ref=f3e2330]: "322"
+            - generic "ID 323" [ref=f3e2331]:
+              - generic [ref=f3e2332]: ow
+              - generic [ref=f3e2333]: "323"
+            - generic "ID 324" [ref=f3e2334]:
+              - generic [ref=f3e2335]: ig
+              - generic [ref=f3e2336]: "324"
+            - generic "ID 325" [ref=f3e2337]:
+              - generic [ref=f3e2338]: ␣be
+              - generic [ref=f3e2339]: "325"
+            - generic "ID 326" [ref=f3e2340]:
+              - generic [ref=f3e2341]: ␣u
+              - generic [ref=f3e2342]: "326"
+            - generic "ID 327" [ref=f3e2343]:
+              - generic [ref=f3e2344]: ␣for
+              - generic [ref=f3e2345]: "327"
+            - generic "ID 328" [ref=f3e2346]:
+              - generic [ref=f3e2347]: ␣st
+              - generic [ref=f3e2348]: "328"
+            - generic "ID 329" [ref=f3e2349]:
+              - generic [ref=f3e2350]: ␣y
+              - generic [ref=f3e2351]: "329"
+            - generic "ID 330" [ref=f3e2352]:
+              - generic [ref=f3e2353]: ␣A
+              - generic [ref=f3e2354]: "330"
+            - generic "ID 331" [ref=f3e2355]:
+              - generic [ref=f3e2356]: ver
+              - generic [ref=f3e2357]: "331"
+            - generic "ID 332" [ref=f3e2358]:
+              - generic [ref=f3e2359]: am
+              - generic [ref=f3e2360]: "332"
+            - generic "ID 333" [ref=f3e2361]:
+              - generic [ref=f3e2362]: ␣␣␣
+              - generic [ref=f3e2363]: "333"
+            - generic "ID 334" [ref=f3e2364]:
+              - generic [ref=f3e2365]: ␣S
+              - generic [ref=f3e2366]: "334"
+            - generic "ID 335" [ref=f3e2367]:
+              - generic [ref=f3e2368]: ␣on
+              - generic [ref=f3e2369]: "335"
+            - generic "ID 336" [ref=f3e2370]:
+              - generic [ref=f3e2371]: ul
+              - generic [ref=f3e2372]: "336"
+            - generic "ID 337" [ref=f3e2373]:
+              - generic [ref=f3e2374]: ir
+              - generic [ref=f3e2375]: "337"
+            - generic "ID 338" [ref=f3e2376]:
+              - generic [ref=f3e2377]: ␣that
+              - generic [ref=f3e2378]: "338"
+            - generic "ID 339" [ref=f3e2379]:
+              - generic [ref=f3e2380]: ␣I
+              - generic [ref=f3e2381]: "339"
+            - generic "ID 340" [ref=f3e2382]:
+              - generic [ref=f3e2383]: ␣C
+              - generic [ref=f3e2384]: "340"
+            - generic "ID 341" [ref=f3e2385]:
+              - generic [ref=f3e2386]: ay
+              - generic [ref=f3e2387]: "341"
+            - generic "ID 342" [ref=f3e2388]:
+              - generic [ref=f3e2389]: if
+              - generic [ref=f3e2390]: "342"
+            - generic "ID 343" [ref=f3e2391]:
+              - generic [ref=f3e2392]: ith
+              - generic [ref=f3e2393]: "343"
+            - generic "ID 344" [ref=f3e2394]:
+              - generic [ref=f3e2395]: ad
+              - generic [ref=f3e2396]: "344"
+            - generic "ID 345" [ref=f3e2397]:
+              - generic [ref=f3e2398]: ␣con
+              - generic [ref=f3e2399]: "345"
+            - generic "ID 346" [ref=f3e2400]:
+              - generic [ref=f3e2401]: ␣you
+              - generic [ref=f3e2402]: "346"
+            - generic "ID 347" [ref=f3e2403]:
+              - generic [ref=f3e2404]: ␣as
+              - generic [ref=f3e2405]: "347"
+            - generic "ID 348" [ref=f3e2406]:
+              - generic [ref=f3e2407]: ␣pro
+              - generic [ref=f3e2408]: "348"
+            - generic "ID 349" [ref=f3e2409]:
+              - generic [ref=f3e2410]: her
+              - generic [ref=f3e2411]: "349"
+            - generic "ID 350" [ref=f3e2412]:
+              - generic [ref=f3e2413]: od
+              - generic [ref=f3e2414]: "350"
+            - generic "ID 351" [ref=f3e2415]:
+              - generic [ref=f3e2416]: ␣with
+              - generic [ref=f3e2417]: "351"
+            - generic "ID 352" [ref=f3e2418]:
+              - generic [ref=f3e2419]: ter
+              - generic [ref=f3e2420]: "352"
+            - generic "ID 353" [ref=f3e2421]:
+              - generic [ref=f3e2422]: ␣␣␣␣␣␣␣␣
+              - generic [ref=f3e2423]: "353"
+            - generic "ID 354" [ref=f3e2424]:
+              - generic [ref=f3e2425]: ␣an
+              - generic [ref=f3e2426]: "354"
+            - generic "ID 355" [ref=f3e2427]:
+              - generic [ref=f3e2428]: ␣or
+              - generic [ref=f3e2429]: "355"
+            - generic "ID 356" [ref=f3e2430]:
+              - generic [ref=f3e2431]: ␣wh
+              - generic [ref=f3e2432]: "356"
+            - generic "ID 357" [ref=f3e2433]:
+              - generic [ref=f3e2434]: ␣it
+              - generic [ref=f3e2435]: "357"
+            - generic "ID 358" [ref=f3e2436]:
+              - generic [ref=f3e2437]: ment
+              - generic [ref=f3e2438]: "358"
+            - generic "ID 359" [ref=f3e2439]:
+              - generic [ref=f3e2440]: ␣are
+              - generic [ref=f3e2441]: "359"
+            - generic "ID 360" [ref=f3e2442]:
+              - generic [ref=f3e2443]: ␣al
+              - generic [ref=f3e2444]: "360"
+            - generic "ID 361" [ref=f3e2445]:
+              - generic [ref=f3e2446]: ge
+              - generic [ref=f3e2447]: "361"
+            - generic "ID 362" [ref=f3e2448]:
+              - generic [ref=f3e2449]: ess
+              - generic [ref=f3e2450]: "362"
+            - generic "ID 363" [ref=f3e2451]:
+              - generic [ref=f3e2452]: ist
+              - generic [ref=f3e2453]: "363"
+            - generic "ID 364" [ref=f3e2454]:
+              - generic [ref=f3e2455]: ␣ex
+              - generic [ref=f3e2456]: "364"
+            - generic "ID 365" [ref=f3e2457]:
+              - generic [ref=f3e2458]: ␣(
+              - generic [ref=f3e2459]: "365"
+            - generic "ID 366" [ref=f3e2460]:
+              - generic [ref=f3e2461]: ers
+              - generic [ref=f3e2462]: "366"
+            - generic "ID 367" [ref=f3e2463]:
+              - generic [ref=f3e2464]: ␣de
+              - generic [ref=f3e2465]: "367"
+            - generic "ID 368" [ref=f3e2466]:
+              - generic [ref=f3e2467]: ate
+              - generic [ref=f3e2468]: "368"
+            - generic "ID 369" [ref=f3e2469]:
+              - generic [ref=f3e2470]: ab
+              - generic [ref=f3e2471]: "369"
+            - generic "ID 370" [ref=f3e2472]:
+              - generic [ref=f3e2473]: ies
+              - generic [ref=f3e2474]: "370"
+            - generic "ID 371" [ref=f3e2475]:
+              - generic [ref=f3e2476]: op
+              - generic [ref=f3e2477]: "371"
+            - generic "ID 372" [ref=f3e2478]:
+              - generic [ref=f3e2479]: ␣M
+              - generic [ref=f3e2480]: "372"
+            - generic "ID 373" [ref=f3e2481]:
+              - generic [ref=f3e2482]: th
+              - generic [ref=f3e2483]: "373"
+            - generic "ID 374" [ref=f3e2484]:
+              - generic [ref=f3e2485]: ect
+              - generic [ref=f3e2486]: "374"
+            - generic "ID 375" [ref=f3e2487]:
+              - generic [ref=f3e2488]: res
+              - generic [ref=f3e2489]: "375"
+            - generic "ID 376" [ref=f3e2490]:
+              - generic [ref=f3e2491]: us
+              - generic [ref=f3e2492]: "376"
+            - generic "ID 377" [ref=f3e2493]:
+              - generic [ref=f3e2494]: ␣P
+              - generic [ref=f3e2495]: "377"
+            - generic "ID 378" [ref=f3e2496]:
+              - generic [ref=f3e2497]: ␣The
+              - generic [ref=f3e2498]: "378"
+            - generic "ID 379" [ref=f3e2499]:
+              - generic [ref=f3e2500]: ␣com
+              - generic [ref=f3e2501]: "379"
+          - paragraph [ref=f3e2502]: "IDs roughly follow the order pieces were learned: low IDs are pieces that showed up most often in the training text. These are IDs 300–379."
+        - 'heading "Step 1: cut the text into words" [level=3] [ref=f3e504]'
+        - paragraph [ref=f3e506]:
+          - text: First the text is cut at spaces and punctuation, keeping each space attached to the word after it. Chat markers like
+          - code [ref=f3e507]: <|im_start|>
+          - text: ", shown in black, are special tokens with fixed IDs: they tell the model who is speaking. Edit the prompt above and watch these update."
+        - generic [ref=f3e508]:
+          - button "<|im_start|>" [ref=f3e2503] [cursor=pointer]
+          - button "system" [ref=f3e2504] [cursor=pointer]
+          - button "↵" [ref=f3e2505] [cursor=pointer]
+          - button "You" [ref=f3e2506] [cursor=pointer]
+          - button "␣are" [ref=f3e2507] [cursor=pointer]
+          - button "␣a" [ref=f3e2508] [cursor=pointer]
+          - button "␣helpful" [ref=f3e2509] [cursor=pointer]
+          - button "␣AI" [ref=f3e2510] [cursor=pointer]
+          - button "␣assistant" [ref=f3e2511] [cursor=pointer]
+          - button "␣named" [ref=f3e2512] [cursor=pointer]
+          - button "␣SmolLM" [ref=f3e2513] [cursor=pointer]
+          - button "," [ref=f3e2514] [cursor=pointer]
+          - button "␣trained" [ref=f3e2515] [cursor=pointer]
+          - button "␣by" [ref=f3e2516] [cursor=pointer]
+          - button "␣Hugging" [ref=f3e2517] [cursor=pointer]
+          - button "␣Face" [ref=f3e2518] [cursor=pointer]
+          - button "<|im_end|>" [ref=f3e2519] [cursor=pointer]
+          - button "↵" [ref=f3e2520] [cursor=pointer]
+          - button "<|im_start|>" [ref=f3e2521] [cursor=pointer]
+          - button "user" [ref=f3e2522] [cursor=pointer]
+          - button "↵" [ref=f3e2523] [cursor=pointer]
+          - button "What" [ref=f3e2524] [cursor=pointer]
+          - button "␣is" [ref=f3e2525] [cursor=pointer]
+          - button "␣the" [ref=f3e2526] [cursor=pointer]
+          - button "␣capital" [pressed] [ref=f3e2527] [cursor=pointer]
+          - button "␣of" [ref=f3e2528] [cursor=pointer]
+          - button "␣France" [ref=f3e2529] [cursor=pointer]
+          - button "?" [ref=f3e2530] [cursor=pointer]
+          - button "<|im_end|>" [ref=f3e2531] [cursor=pointer]
+          - button "↵" [ref=f3e2532] [cursor=pointer]
+          - button "<|im_start|>" [ref=f3e2533] [cursor=pointer]
+          - button "assistant" [ref=f3e2534] [cursor=pointer]
+          - button "↵" [ref=f3e2535] [cursor=pointer]
+        - 'heading "Step 2: glue letters into dictionary pieces" [level=3] [ref=f3e509]'
+        - generic [ref=f3e510]:
+          - paragraph [ref=f3e511]:
+            - text: "This is the part that isn’t obvious: the tokenizer does"
+            - emphasis [ref=f3e512]: not
+            - text: "search the dictionary for your word. It follows a recipe:"
+          - list [ref=f3e513]:
+            - listitem [ref=f3e514]: Break the word into single letters (strictly, bytes). Every single byte is in the dictionary, so this always works, even for emoji or made-up words.
+            - listitem [ref=f3e515]:
+              - text: Look at each pair of neighbours. The dictionary file also stores a ranked list of 48,900
+              - emphasis [ref=f3e516]: glue rules
+              - text: ", such as “Ġ + t → Ġt” as rule #0. They were learned in training by repeatedly gluing the most common pair in a huge pile of text. Apply the highest-ranked rule that matches."
+            - listitem [ref=f3e517]: Repeat until no rule matches. Every glued piece is itself a dictionary entry, so whatever is left has an ID.
+          - paragraph [ref=f3e518]:
+            - text: Common words get glued all the way into one piece. Rare or made-up words run out of rules partway and stay as several pieces. This method is called
+            - 'button "Byte Pair Encoding: Byte Pair Encoding: build the vocabulary by repeatedly gluing together the most common neighbouring pair of pieces in a big pile of text." [ref=f3e519]': Byte Pair Encoding
+            - text: . In this view a space appears as
+            - code [ref=f3e520]: Ġ
+            - text: ", which is how the dictionary file writes it. Try the examples:"
+        - generic [ref=f3e521]:
+          - generic [ref=f3e2536]:
+            - searchbox "Try any word" [ref=f3e2537]
+            - button "cat" [ref=f3e2538] [cursor=pointer]
+            - button "tokenization" [ref=f3e2539] [cursor=pointer]
+            - button "unbelievably" [ref=f3e2540] [cursor=pointer]
+            - button "SmolLM" [ref=f3e2541] [cursor=pointer]
+            - button "2026" [ref=f3e2542] [cursor=pointer]
+            - button "antidisestablishmentarianism" [ref=f3e2543] [cursor=pointer]
+          - generic [ref=f3e2544]:
+            - paragraph [ref=f3e2545]:
+              - text: Showing
+              - code [ref=f3e2546]: ␣capital
+              - text: from your prompt. Type a word or pick an example to try others.
+            - generic [ref=f3e2547]:
+              - generic [ref=f3e2548]:
+                - generic [ref=f3e2549]: "Start: 8 bytes"
+                - generic [ref=f3e2550]:
+                  - generic [ref=f3e2551]: Ġ
+                  - generic [ref=f3e2552]: c
+                  - generic [ref=f3e2553]: a
+                  - generic [ref=f3e2554]: p
+                  - generic [ref=f3e2555]: i
+                  - generic [ref=f3e2556]: t
+                  - generic [ref=f3e2557]: a
+                  - generic [ref=f3e2558]: l
+              - generic [ref=f3e2559]:
+                - generic [ref=f3e2560]:
+                  - text: "Glue 1:"
+                  - code [ref=f3e2561]: Ġ
+                  - text: +
+                  - code [ref=f3e2562]: c
+                  - text: "rule #13"
+                - generic [ref=f3e2563]:
+                  - generic [ref=f3e2564]: Ġc
+                  - generic [ref=f3e2565]: a
+                  - generic [ref=f3e2566]: p
+                  - generic [ref=f3e2567]: i
+                  - generic [ref=f3e2568]: t
+                  - generic [ref=f3e2569]: a
+                  - generic [ref=f3e2570]: l
+              - generic [ref=f3e2571]:
+                - generic [ref=f3e2572]:
+                  - text: "Glue 2:"
+                  - code [ref=f3e2573]: i
+                  - text: +
+                  - code [ref=f3e2574]: t
+                  - text: "rule #17"
+                - generic [ref=f3e2575]:
+                  - generic [ref=f3e2576]: Ġc
+                  - generic [ref=f3e2577]: a
+                  - generic [ref=f3e2578]: p
+                  - generic [ref=f3e2579]: it
+                  - generic [ref=f3e2580]: a
+                  - generic [ref=f3e2581]: l
+              - generic [ref=f3e2582]:
+                - generic [ref=f3e2583]:
+                  - text: "Glue 3:"
+                  - code [ref=f3e2584]: a
+                  - text: +
+                  - code [ref=f3e2585]: l
+                  - text: "rule #20"
+                - generic [ref=f3e2586]:
+                  - generic [ref=f3e2587]: Ġc
+                  - generic [ref=f3e2588]: a
+                  - generic [ref=f3e2589]: p
+                  - generic [ref=f3e2590]: it
+                  - generic [ref=f3e2591]: al
+              - generic [ref=f3e2592]:
+                - generic [ref=f3e2593]:
+                  - text: "Glue 4:"
+                  - code [ref=f3e2594]: a
+                  - text: +
+                  - code [ref=f3e2595]: p
+                  - text: "rule #260"
+                - generic [ref=f3e2596]:
+                  - generic [ref=f3e2597]: Ġc
+                  - generic [ref=f3e2598]: ap
+                  - generic [ref=f3e2599]: it
+                  - generic [ref=f3e2600]: al
+              - generic [ref=f3e2601]:
+                - generic [ref=f3e2602]:
+                  - text: "Glue 5:"
+                  - code [ref=f3e2603]: it
+                  - text: +
+                  - code [ref=f3e2604]: al
+                  - text: "rule #949"
+                - generic [ref=f3e2605]:
+                  - generic [ref=f3e2606]: Ġc
+                  - generic [ref=f3e2607]: ap
+                  - generic [ref=f3e2608]: ital
+              - generic [ref=f3e2609]:
+                - generic [ref=f3e2610]:
+                  - text: "Glue 6:"
+                  - code [ref=f3e2611]: Ġc
+                  - text: +
+                  - code [ref=f3e2612]: ap
+                  - text: "rule #1,156"
+                - generic [ref=f3e2613]:
+                  - generic [ref=f3e2614]: Ġcap
+                  - generic [ref=f3e2615]: ital
+              - generic [ref=f3e2616]:
+                - generic [ref=f3e2617]:
+                  - text: "Glue 7:"
+                  - code [ref=f3e2618]: Ġcap
+                  - text: +
+                  - code [ref=f3e2619]: ital
+                  - text: "rule #3,323"
+                - generic [ref=f3e2620]: Ġcapital
+              - generic [ref=f3e2622]:
+                - generic [ref=f3e2623]: No rule applies any more.
+                - generic [ref=f3e2624]:
+                  - generic [ref=f3e2625]:
+                    - generic [ref=f3e2626]: Ġcapital
+                    - generic [ref=f3e2627]: "3575"
+                  - generic [ref=f3e2628]: → 1 token
+        - 'heading "Step 3: look up the IDs" [level=3] [ref=f3e522]'
+        - paragraph [ref=f3e524]: Each final piece is a dictionary entry with an ID. This list of integers, 4 bytes each, is all that gets sent to the GPU.
+        - generic [ref=f3e525]:
+          - generic "Position 0" [ref=f3e2629]:
+            - generic [ref=f3e2630]: <|im_start|>
+            - generic [ref=f3e2631]: "1"
+          - generic "Position 1" [ref=f3e2632]:
+            - generic [ref=f3e2633]: system
+            - generic [ref=f3e2634]: "9690"
+          - generic "Position 2" [ref=f3e2635]:
+            - generic [ref=f3e2636]: ↵
+            - generic [ref=f3e2637]: "198"
+          - generic "Position 3" [ref=f3e2638]:
+            - generic [ref=f3e2639]: You
+            - generic [ref=f3e2640]: "2683"
+          - generic "Position 4" [ref=f3e2641]:
+            - generic [ref=f3e2642]: ␣are
+            - generic [ref=f3e2643]: "359"
+          - generic "Position 5" [ref=f3e2644]:
+            - generic [ref=f3e2645]: ␣a
+            - generic [ref=f3e2646]: "253"
+          - generic "Position 6" [ref=f3e2647]:
+            - generic [ref=f3e2648]: ␣helpful
+            - generic [ref=f3e2649]: "5356"
+          - generic "Position 7" [ref=f3e2650]:
+            - generic [ref=f3e2651]: ␣AI
+            - generic [ref=f3e2652]: "5646"
+          - generic "Position 8" [ref=f3e2653]:
+            - generic [ref=f3e2654]: ␣assistant
+            - generic [ref=f3e2655]: "11173"
+          - generic "Position 9" [ref=f3e2656]:
+            - generic [ref=f3e2657]: ␣named
+            - generic [ref=f3e2658]: "3365"
+          - generic "Position 10" [ref=f3e2659]:
+            - generic [ref=f3e2660]: ␣Sm
+            - generic [ref=f3e2661]: "3511"
+          - generic "Position 11" [ref=f3e2662]:
+            - generic [ref=f3e2663]: ol
+            - generic [ref=f3e2664]: "308"
+          - generic "Position 12" [ref=f3e2665]:
+            - generic [ref=f3e2666]: LM
+            - generic [ref=f3e2667]: "34519"
+          - generic "Position 13" [ref=f3e2668]:
+            - generic [ref=f3e2669]: ","
+            - generic [ref=f3e2670]: "28"
+          - generic "Position 14" [ref=f3e2671]:
+            - generic [ref=f3e2672]: ␣trained
+            - generic [ref=f3e2673]: "7018"
+          - generic "Position 15" [ref=f3e2674]:
+            - generic [ref=f3e2675]: ␣by
+            - generic [ref=f3e2676]: "411"
+          - generic "Position 16" [ref=f3e2677]:
+            - generic [ref=f3e2678]: ␣H
+            - generic [ref=f3e2679]: "407"
+          - generic "Position 17" [ref=f3e2680]:
+            - generic [ref=f3e2681]: ugging
+            - generic [ref=f3e2682]: "19712"
+          - generic "Position 18" [ref=f3e2683]:
+            - generic [ref=f3e2684]: ␣Face
+            - generic [ref=f3e2685]: "8182"
+          - generic "Position 19" [ref=f3e2686]:
+            - generic [ref=f3e2687]: <|im_end|>
+            - generic [ref=f3e2688]: "2"
+          - generic "Position 20" [ref=f3e2689]:
+            - generic [ref=f3e2690]: ↵
+            - generic [ref=f3e2691]: "198"
+          - generic "Position 21" [ref=f3e2692]:
+            - generic [ref=f3e2693]: <|im_start|>
+            - generic [ref=f3e2694]: "1"
+          - generic "Position 22" [ref=f3e2695]:
+            - generic [ref=f3e2696]: user
+            - generic [ref=f3e2697]: "4093"
+          - generic "Position 23" [ref=f3e2698]:
+            - generic [ref=f3e2699]: ↵
+            - generic [ref=f3e2700]: "198"
+          - generic "Position 24" [ref=f3e2701]:
+            - generic [ref=f3e2702]: What
+            - generic [ref=f3e2703]: "1780"
+          - generic "Position 25" [ref=f3e2704]:
+            - generic [ref=f3e2705]: ␣is
+            - generic [ref=f3e2706]: "314"
+          - generic "Position 26" [ref=f3e2707]:
+            - generic [ref=f3e2708]: ␣the
+            - generic [ref=f3e2709]: "260"
+          - generic "Position 27" [ref=f3e2710]:
+            - generic [ref=f3e2711]: ␣capital
+            - generic [ref=f3e2712]: "3575"
+          - generic "Position 28" [ref=f3e2713]:
+            - generic [ref=f3e2714]: ␣of
+            - generic [ref=f3e2715]: "282"
+          - generic "Position 29" [ref=f3e2716]:
+            - generic [ref=f3e2717]: ␣France
+            - generic [ref=f3e2718]: "4649"
+          - generic "Position 30" [ref=f3e2719]:
+            - generic [ref=f3e2720]: "?"
+            - generic [ref=f3e2721]: "47"
+          - generic "Position 31" [ref=f3e2722]:
+            - generic [ref=f3e2723]: <|im_end|>
+            - generic [ref=f3e2724]: "2"
+          - generic "Position 32" [ref=f3e2725]:
+            - generic [ref=f3e2726]: ↵
+            - generic [ref=f3e2727]: "198"
+          - generic "Position 33" [ref=f3e2728]:
+            - generic [ref=f3e2729]: <|im_start|>
+            - generic [ref=f3e2730]: "1"
+          - generic "Position 34" [ref=f3e2731]:
+            - generic [ref=f3e2732]: ass
+            - generic [ref=f3e2733]: "520"
+          - generic "Position 35" [ref=f3e2734]:
+            - generic [ref=f3e2735]: istant
+            - generic [ref=f3e2736]: "9531"
+          - generic "Position 36" [ref=f3e2737]:
+            - generic [ref=f3e2738]: ↵
+            - generic [ref=f3e2739]: "198"
+        - generic [ref=f3e2740]:
+          - generic [ref=f3e2741]: Characters 178
+          - generic [ref=f3e2742]: UTF-8 bytes 178
+          - generic [ref=f3e2743]: Tokens 37
+          - generic [ref=f3e2744]: Bytes per token 4.81
+          - generic [ref=f3e2745]: Tokenized in 3.9 ms
+          - generic [ref=f3e2746]: Sent to the GPU 148 bytes
+      - generic [ref=f3e526]:
+        - generic [ref=f3e527]:
+          - generic [aria-hidden] [ref=f3e528]: "3"
+          - generic [ref=f3e529]:
+            - heading "Each ID becomes a vector" [level=2] [ref=f3e530]
+            - paragraph [ref=f3e531]:
+              - generic [ref=f3e532]: IDs over PCIe
+              - generic [ref=f3e533]: row reads from HBM
+        - paragraph [ref=f3e534]:
+          - text: An ID like 5992 is just a label, as meaningless as a locker number. So the model swaps each ID for a
+          - 'button "vector: A list of numbers. A colour is a vector of 3 (red, green, blue). In this model every token becomes a vector of 576 numbers." [ref=f3e535]': vector
+          - text: "of 576 numbers that it learned during training: the token’s"
+          - 'button "embedding: The vector of numbers that stands for a token inside the model. It is looked up from a table using the token’s ID." [ref=f3e536]': embedding
+          - text: . The vectors sit in one big table with a row per vocabulary entry, and ID 5992 simply means “take row 5992”. There is no calculation in this step, just lookups.
+        - generic [ref=f3e537]:
+          - generic [ref=f3e2747]:
+            - generic "The embedding table, with a mark at each row your prompt reads" [ref=f3e2748]
+            - paragraph [ref=f3e2749]: 49,152 rows
+          - generic [ref=f3e2750]:
+            - generic [ref=f3e2751]:
+              - generic "<|im_start|>" [ref=f3e2752]
+              - generic [ref=f3e2753]: "1"
+            - generic [ref=f3e2755]:
+              - generic "system" [ref=f3e2756]
+              - generic [ref=f3e2757]: "9690"
+            - generic [ref=f3e2759]:
+              - generic [ref=f3e2760]: ↵
+              - generic [ref=f3e2761]: "198"
+            - generic [ref=f3e2763]:
+              - generic "You" [ref=f3e2764]
+              - generic [ref=f3e2765]: "2683"
+            - generic [ref=f3e2767]:
+              - generic "are" [ref=f3e2768]: ␣are
+              - generic [ref=f3e2769]: "359"
+            - generic [ref=f3e2771]:
+              - generic "a" [ref=f3e2772]: ␣a
+              - generic [ref=f3e2773]: "253"
+            - generic [ref=f3e2775]:
+              - generic "helpful" [ref=f3e2776]: ␣helpful
+              - generic [ref=f3e2777]: "5356"
+            - generic [ref=f3e2779]:
+              - generic "AI" [ref=f3e2780]: ␣AI
+              - generic [ref=f3e2781]: "5646"
+            - generic [ref=f3e2783]:
+              - generic "assistant" [ref=f3e2784]: ␣assistant
+              - generic [ref=f3e2785]: "11173"
+            - generic [ref=f3e2787]:
+              - generic "named" [ref=f3e2788]: ␣named
+              - generic [ref=f3e2789]: "3365"
+            - generic [ref=f3e2791]:
+              - generic "Sm" [ref=f3e2792]: ␣Sm
+              - generic [ref=f3e2793]: "3511"
+            - generic [ref=f3e2795]:
+              - generic "ol" [ref=f3e2796]
+              - generic [ref=f3e2797]: "308"
+            - generic [ref=f3e2799]:
+              - generic "LM" [ref=f3e2800]
+              - generic [ref=f3e2801]: "34519"
+            - generic [ref=f3e2803]:
+              - generic "," [ref=f3e2804]
+              - generic [ref=f3e2805]: "28"
+            - generic [ref=f3e2807]:
+              - generic "trained" [ref=f3e2808]: ␣trained
+              - generic [ref=f3e2809]: "7018"
+            - generic [ref=f3e2811]:
+              - generic "by" [ref=f3e2812]: ␣by
+              - generic [ref=f3e2813]: "411"
+            - generic [ref=f3e2815]:
+              - generic "H" [ref=f3e2816]: ␣H
+              - generic [ref=f3e2817]: "407"
+            - generic [ref=f3e2819]:
+              - generic "ugging" [ref=f3e2820]
+              - generic [ref=f3e2821]: "19712"
+            - generic [ref=f3e2823]:
+              - generic "Face" [ref=f3e2824]: ␣Face
+              - generic [ref=f3e2825]: "8182"
+            - generic [ref=f3e2827]:
+              - generic "<|im_end|>" [ref=f3e2828]
+              - generic [ref=f3e2829]: "2"
+            - generic [ref=f3e2831]:
+              - generic [ref=f3e2832]: ↵
+              - generic [ref=f3e2833]: "198"
+            - generic [ref=f3e2835]:
+              - generic "<|im_start|>" [ref=f3e2836]
+              - generic [ref=f3e2837]: "1"
+            - generic [ref=f3e2839]:
+              - generic "user" [ref=f3e2840]
+              - generic [ref=f3e2841]: "4093"
+            - generic [ref=f3e2843]:
+              - generic [ref=f3e2844]: ↵
+              - generic [ref=f3e2845]: "198"
+            - generic [ref=f3e2847]:
+              - generic "What" [ref=f3e2848]
+              - generic [ref=f3e2849]: "1780"
+            - generic [ref=f3e2851]:
+              - generic "is" [ref=f3e2852]: ␣is
+              - generic [ref=f3e2853]: "314"
+            - generic [ref=f3e2855]:
+              - generic "the" [ref=f3e2856]: ␣the
+              - generic [ref=f3e2857]: "260"
+            - generic [ref=f3e2859]:
+              - generic "capital" [ref=f3e2860]: ␣capital
+              - generic [ref=f3e2861]: "3575"
+            - generic [ref=f3e2863]:
+              - generic "of" [ref=f3e2864]: ␣of
+              - generic [ref=f3e2865]: "282"
+            - generic [ref=f3e2867]:
+              - generic "France" [ref=f3e2868]: ␣France
+              - generic [ref=f3e2869]: "4649"
+            - generic [ref=f3e2871]:
+              - generic "?" [ref=f3e2872]
+              - generic [ref=f3e2873]: "47"
+            - generic [ref=f3e2875]:
+              - generic "<|im_end|>" [ref=f3e2876]
+              - generic [ref=f3e2877]: "2"
+            - generic [ref=f3e2879]:
+              - generic [ref=f3e2880]: ↵
+              - generic [ref=f3e2881]: "198"
+            - generic [ref=f3e2883]:
+              - generic "<|im_start|>" [ref=f3e2884]
+              - generic [ref=f3e2885]: "1"
+            - generic [ref=f3e2887]:
+              - generic "ass" [ref=f3e2888]
+              - generic [ref=f3e2889]: "520"
+            - generic [ref=f3e2891]:
+              - generic "istant" [ref=f3e2892]
+              - generic [ref=f3e2893]: "9531"
+            - generic [ref=f3e2895]:
+              - generic [ref=f3e2896]: ↵
+              - generic [ref=f3e2897]: "198"
+          - paragraph [ref=f3e2899]: Load the weights to fill in the 576 numbers of each row. The marks on the left show which of the 49,152 rows your prompt touches.
+        - paragraph [ref=f3e539]: "How to read this: the strip on the left is the whole table, all 49,152 rows squeezed to fit, with teal marks at the rows your prompt uses. On the right, each line is one of your tokens, with its 576 numbers drawn as coloured bars: blue for negative, red for positive, paler for close to zero. The patterns look random to us. To the model they encode what the token means and how it is used."
+        - paragraph [ref=f3e541]: "One way to check that these numbers mean something: tokens used in similar ways get similar vectors. Pick a token to find the rows closest to it in the table."
+        - generic [ref=f3e2900]:
+          - generic [ref=f3e2901]:
+            - text: Nearest rows to
+            - combobox "Token to compare" [ref=f3e2902]:
+              - option "system (9690)"
+              - option "You (2683)"
+              - option "␣are (359)"
+              - option "␣helpful (5356)"
+              - option "␣AI (5646)"
+              - option "␣assistant (11173)"
+              - option "␣named (3365)"
+              - option "␣Sm (3511)"
+              - option "ol (308)"
+              - option "LM (34519)"
+              - option "␣trained (7018)"
+              - option "␣by (411)"
+              - option "ugging (19712)"
+              - option "␣Face (8182)"
+              - option "user (4093)"
+              - option "What (1780)"
+              - option "␣is (314)"
+              - option "␣the (260)"
+              - option "␣capital (3575)"
+              - option "␣of (282)"
+              - option "␣France (4649)"
+              - option "ass (520)"
+              - option "istant (9531)" [selected]
+          - paragraph [ref=f3e2903]: Load the weights to search the table.
+        - group [ref=f3e542]:
+          - 'generic "+ Go deeper: shapes and sizes" [ref=f3e543] [cursor=pointer]'
+      - generic [ref=f3e544]:
+        - generic [ref=f3e545]:
+          - generic [aria-hidden] [ref=f3e546]: "4"
+          - generic [ref=f3e547]:
+            - heading "How the model knows word order" [level=2] [ref=f3e548]
+            - paragraph [ref=f3e549]:
+              - generic [ref=f3e550]: inside attention, on the GPU
+        - paragraph [ref=f3e551]: "Looking up vectors loses the word order: “dog bites man” and “man bites dog” fetch exactly the same three vectors. The model needs to know which word came where, or at least how far apart two words are."
+        - generic [ref=f3e552]:
+          - paragraph [ref=f3e553]: "Its trick is like clock hands. Picture each token’s vector as a clock hand. Before tokens are compared, every hand is turned by an amount that depends on the token’s position: the token at position 1 is turned a little, position 2 a little more, and so on."
+          - paragraph [ref=f3e554]:
+            - text: When the model compares two tokens, it effectively looks at the angle
+            - emphasis [ref=f3e555]: between
+            - text: their hands. That angle depends only on how far apart the tokens are, not on where they sit in the text. Words three apart look the same to the model at the start of a sentence or a thousand words in. The widget below uses the model’s real vectors. Move the positions, then shift both tokens later and watch the angle between them stay put.
+        - generic [ref=f3e556]:
+          - img "Two clock hands; the angle between them is 86 degrees" [ref=f3e2905]:
+            - generic [ref=f3e2919]: "Angle between: 86°"
+            - generic [ref=f3e2920]: query, position 12
+            - generic [ref=f3e2921]: key, position 9
+          - generic [ref=f3e2922]:
+            - generic [ref=f3e2923]:
+              - text: Position of the word asking (query)
+              - status "Position of the word asking (query)" [ref=f3e2924]: "12"
+            - slider "Position of the word asking (query)" [ref=f3e2925]: "12"
+            - generic [ref=f3e2926]:
+              - text: Position of the earlier word (key)
+              - status "Position of the earlier word (key)" [ref=f3e2927]: "9"
+            - slider "Position of the earlier word (key)" [ref=f3e2928]: "9"
+            - generic [ref=f3e2929]:
+              - text: Which pair of numbers
+              - status "Which pair of numbers (0 turns fastest)" [ref=f3e2930]: "0"
+              - text: (0 turns fastest)
+            - slider "Which pair of numbers" [ref=f3e2931]: "0"
+            - button "Move both words 1,000 positions later" [ref=f3e2933] [cursor=pointer]
+            - generic [ref=f3e2934]:
+              - paragraph [ref=f3e2935]: This pair turns 57.3° per position, a full circle every 6.3 positions.
+              - paragraph [ref=f3e2936]: "The two words are 3 positions apart. Press the button: both hands spin to new places, but the angle between them stays the same."
+              - paragraph [ref=f3e2937]: "How strongly the query matches the key, using all 32 pairs together: -0.722 (1,000 positions later: -0.722, the same)"
+              - paragraph [ref=f3e2938]: Example vectors for now. After you generate, these become the model’s real query and key.
+        - group [ref=f3e557]:
+          - 'generic "+ Go deeper: RoPE in detail" [ref=f3e558] [cursor=pointer]'
+      - generic [ref=f3e559]:
+        - generic [ref=f3e560]:
+          - generic [aria-hidden] [ref=f3e561]: "5"
+          - generic [ref=f3e562]:
+            - 'heading "The transformer: talk, think, repeat" [level=2] [ref=f3e563]'
+            - paragraph [ref=f3e564]:
+              - generic [ref=f3e565]: one layer’s weights at a time
+              - generic [ref=f3e566]: GPU
+        - paragraph [ref=f3e567]:
+          - text: Everything between the embeddings and the final scores is one block, repeated 30 times. Each block has two halves. First the tokens
+          - emphasis [ref=f3e568]: talk
+          - text: ": attention lets each token gather information from the tokens before it. Then each token"
+          - emphasis [ref=f3e569]: thinks on its own
+          - text: ": the feed-forward network processes what it just gathered. Both halves add their result to the token’s running vector, and the next block starts from there."
+        - paragraph [ref=f3e571]: That repeated block is what makes this a transformer, the design behind GPT, Llama, Qwen, Claude and this model. Step through it with Next, or let it autoplay, to watch a short sentence go through it.
+        - generic "Transformer loop animation. Left and right arrow keys step back and forward." [ref=f3e572]:
+          - 'img "Five tokens passing through one transformer layer after another: attention connects the tokens, the feed-forward network processes each token separately" [ref=f3e2939]':
+            - generic [ref=f3e2940] [cursor=pointer]
+            - generic [ref=f3e2941] [cursor=pointer]
+            - generic [ref=f3e2942] [cursor=pointer]
+            - generic [ref=f3e2943] [cursor=pointer]
+            - generic [ref=f3e2944] [cursor=pointer]
+            - generic [ref=f3e2945] [cursor=pointer]
+            - generic [ref=f3e2946] [cursor=pointer]
+            - generic [ref=f3e2947] [cursor=pointer]
+            - generic [ref=f3e2948] [cursor=pointer]
+            - generic [ref=f3e2949] [cursor=pointer]
+            - generic [ref=f3e2950] [cursor=pointer]
+            - generic [ref=f3e2951] [cursor=pointer]
+            - generic [ref=f3e2952] [cursor=pointer]
+            - generic [ref=f3e2953] [cursor=pointer]
+            - generic [ref=f3e2954] [cursor=pointer]
+            - generic [ref=f3e2955] [cursor=pointer]
+            - generic [ref=f3e2956] [cursor=pointer]
+            - generic [ref=f3e2957] [cursor=pointer]
+            - generic [ref=f3e2958] [cursor=pointer]
+            - generic [ref=f3e2959] [cursor=pointer]
+            - generic [ref=f3e2960] [cursor=pointer]
+            - generic [ref=f3e2961] [cursor=pointer]
+            - generic [ref=f3e2962] [cursor=pointer]
+            - generic [ref=f3e2963] [cursor=pointer]
+            - generic [ref=f3e2964] [cursor=pointer]
+            - generic [ref=f3e2965] [cursor=pointer]
+            - generic [ref=f3e2966] [cursor=pointer]
+            - generic [ref=f3e2967] [cursor=pointer]
+            - generic [ref=f3e2968] [cursor=pointer]
+            - generic [ref=f3e2969] [cursor=pointer]
+            - generic [ref=f3e2970]: layer 0
+            - generic [ref=f3e2971]: layer 29
+            - generic [ref=f3e2972]: Press Next or Autoplay
+            - generic [ref=f3e2973]:
+              - generic [ref=f3e2982]: The
+              - generic [ref=f3e2983]: +
+            - generic [ref=f3e2984]:
+              - generic [ref=f3e2993]: ␣cat
+              - generic [ref=f3e2994]: +
+            - generic [ref=f3e2995]:
+              - generic [ref=f3e3004]: ␣sat
+              - generic [ref=f3e3005]: +
+            - generic [ref=f3e3006]:
+              - generic [ref=f3e3015]: ␣on
+              - generic [ref=f3e3016]: +
+            - generic [ref=f3e3017]:
+              - generic [ref=f3e3026]: ␣the
+              - generic [ref=f3e3027]: +
+            - generic [ref=f3e3028]: each token’s running vector (a few of its 576 numbers)
+            - generic [ref=f3e3029]:
+              - generic [ref=f3e3032]: Last token’s vector → scores
+              - generic [ref=f3e3033]: for all 49,152 tokens → next word
+          - generic [ref=f3e3034]:
+            - button "◀ Back" [disabled] [ref=f3e3035]
+            - button "Next ▶" [ref=f3e3036] [cursor=pointer]
+            - button "Autoplay" [ref=f3e3038] [cursor=pointer]
+            - generic [ref=f3e3039]:
+              - text: Speed
+              - combobox "Autoplay speed" [ref=f3e3040]:
+                - option "Slow"
+                - option "Normal" [selected]
+                - option "Fast"
+            - button "Skip to the end" [ref=f3e3041] [cursor=pointer]
+            - button "Reset" [ref=f3e3042] [cursor=pointer]
+          - paragraph [ref=f3e3043]: Not started
+          - paragraph [ref=f3e3044]: Five tokens, their running vectors drawn as coloured cells, and the tower of 30 layers on the left. Step through with Next, or press Autoplay. You can also click a layer in the tower, or use the ← and → keys.
+        - generic [ref=f3e679]:
+          - paragraph [ref=f3e680]: "Why both halves? They do different jobs, and each needs the other:"
+          - list [ref=f3e681]:
+            - listitem [ref=f3e682]: Attention moves information between tokens, but it only mixes and re-weights what is already there.
+            - listitem [ref=f3e683]: Feed-forward transforms each token, applying patterns stored in its weights, but it can’t see the other tokens.
+            - listitem [ref=f3e684]: "Alternating them 30 times lets the model build up meaning step by step. Roughly, early layers sort out nearby words and grammar, middle layers combine facts, and late layers settle on the next word. The logit lens in chapter 7 shows this with real numbers: the right answer usually appears only in the last third."
+          - paragraph [ref=f3e685]: The next two chapters zoom into each half. Chapter 9 replays this loop on your whole prompt at once, as a matrix with one row per token, with the real numbers.
+        - 'heading "Follow the shape: one token’s vector through the model" [level=3] [ref=f3e686]'
+        - paragraph [ref=f3e688]:
+          - text: Now zoom in on a single token and watch only the
+          - emphasis [ref=f3e689]: shape
+          - text: "of its vector. It enters as a column of 576 numbers. Each step multiplies it by a weight matrix, and the shape rule from chapter 0 decides what comes out: (m × n) × (n × 1) = (m × 1). The table underneath keeps count of every matrix the vector passes through, and adds up to the whole model. After you generate, the pictures use your prompt’s real vector and the model’s real weights."
+        - generic "Shape walkthrough. Left and right arrow keys step back and forward." [ref=f3e3045]:
+          - generic [ref=f3e3046]:
+            - generic [ref=f3e3047]:
+              - button "◀ Back" [disabled] [ref=f3e3048]
+              - button "Next ▶" [ref=f3e3049] [cursor=pointer]
+            - button "Autoplay" [ref=f3e3050] [cursor=pointer]
+            - group "Jump to a step" [ref=f3e3051]:
+              - 'button "Step 1: Look up the embedding" [ref=f3e3052] [cursor=pointer]'
+              - 'button "Step 2: Layer 0 · normalize" [ref=f3e3053] [cursor=pointer]'
+              - 'button "Step 3: Layer 0 · query" [ref=f3e3054] [cursor=pointer]'
+              - 'button "Step 4: Layer 0 · key" [ref=f3e3055] [cursor=pointer]'
+              - 'button "Step 5: Layer 0 · value" [ref=f3e3056] [cursor=pointer]'
+              - 'button "Step 6: Layer 0 · attention" [ref=f3e3057] [cursor=pointer]'
+              - 'button "Step 7: Layer 0 · output" [ref=f3e3058] [cursor=pointer]'
+              - 'button "Step 8: Layer 0 · add" [ref=f3e3059] [cursor=pointer]'
+              - 'button "Step 9: Layer 0 · normalize again" [ref=f3e3060] [cursor=pointer]'
+              - 'button "Step 10: Layer 0 · gate (up-projection)" [ref=f3e3061] [cursor=pointer]'
+              - 'button "Step 11: Layer 0 · up-projection" [ref=f3e3062] [cursor=pointer]'
+              - 'button "Step 12: Layer 0 · combine" [ref=f3e3063] [cursor=pointer]'
+              - 'button "Step 13: Layer 0 · down-projection" [ref=f3e3064] [cursor=pointer]'
+              - 'button "Step 14: Layer 0 · add" [ref=f3e3065] [cursor=pointer]'
+              - 'button "Step 15: Layers 1 to 29 · the same again" [ref=f3e3066] [cursor=pointer]'
+              - 'button "Step 16: Unembedding: a score for every token" [ref=f3e3067] [cursor=pointer]'
+              - 'button "Step 17: Softmax and pick" [ref=f3e3068] [cursor=pointer]'
+          - generic [ref=f3e3069]:
+            - generic [ref=f3e3070]:
+              - 'heading "Step 1 of 17: Look up the embedding" [level=4] [ref=f3e3071]'
+              - paragraph [ref=f3e3072]: "The token’s ID selects one row of the 49,152 × 576 embedding table. That row, 576 numbers, is the token’s vector. From now on we draw it standing up, as a column: 576 × 1."
+            - generic [ref=f3e3073]:
+              - generic [ref=f3e3074]: the token right now
+              - generic [ref=f3e3075]: 576 × 1
+          - generic [ref=f3e3077]:
+            - generic [ref=f3e3078]:
+              - generic [ref=f3e3079]:
+                - generic [ref=f3e3080]: token ID
+                - generic [ref=f3e3081]: "3575"
+              - code [ref=f3e3083]: ␣capital
+              - generic [ref=f3e3084]: 1 number
+            - generic [ref=f3e3085]: selects a row of
+            - generic [ref=f3e3086]:
+              - code [ref=f3e3089]: embedding table
+              - generic [ref=f3e3090]: 49,152 × 576
+            - generic [ref=f3e3091]: →
+            - generic [ref=f3e3092]:
+              - code [ref=f3e3096]: x
+              - generic [ref=f3e3097]: 576 × 1
+          - paragraph [ref=f3e3098]: Stand-in numbers until you generate (and grey matrices until the weights are loaded). The shapes are already exact. Very tall or wide shapes are cut off, shown by the jagged edge.
+          - generic [ref=f3e3099]:
+            - generic [ref=f3e3100]:
+              - generic [ref=f3e3101]: "Weights passed so far: 28,311,552"
+              - generic [ref=f3e3102]: "Whole model: 134,515,008 in 211 matrices plus 61 small norm vectors"
+            - generic [ref=f3e3103]:
+              - generic [ref=f3e3104]:
+                - generic [ref=f3e3105]: Embedding
+                - generic [ref=f3e3106]:
+                  - generic [ref=f3e3107]:
+                    - superscript [ref=f3e3108]: 49,152
+                    - text: n_vocab
+                  - generic [ref=f3e3109]: ×
+                  - generic [ref=f3e3110]:
+                    - superscript [ref=f3e3111]: "576"
+                    - text: d_embed
+                  - generic [ref=f3e3112]: =
+                  - generic [ref=f3e3113]: 28,311,552
+                - generic [ref=f3e3114]: once
+                - generic [ref=f3e3115]: 28,311,552
+              - generic [ref=f3e3116]:
+                - generic [ref=f3e3117]: Query
+                - generic [ref=f3e3118]:
+                  - generic [ref=f3e3119]:
+                    - superscript [ref=f3e3120]: "576"
+                    - text: n_heads·d_head
+                  - generic [ref=f3e3121]: ×
+                  - generic [ref=f3e3122]:
+                    - superscript [ref=f3e3123]: "576"
+                    - text: d_embed
+                  - generic [ref=f3e3124]: =
+                  - generic [ref=f3e3125]: 331,776
+                - generic [ref=f3e3126]: × 30 layers
+                - generic [ref=f3e3127]: 9,953,280
+              - generic [ref=f3e3128]:
+                - generic [ref=f3e3129]: Key
+                - generic [ref=f3e3130]:
+                  - generic [ref=f3e3131]:
+                    - superscript [ref=f3e3132]: "192"
+                    - text: n_kv·d_head
+                  - generic [ref=f3e3133]: ×
+                  - generic [ref=f3e3134]:
+                    - superscript [ref=f3e3135]: "576"
+                    - text: d_embed
+                  - generic [ref=f3e3136]: =
+                  - generic [ref=f3e3137]: 110,592
+                - generic [ref=f3e3138]: × 30 layers
+                - generic [ref=f3e3139]: 3,317,760
+              - generic [ref=f3e3140]:
+                - generic [ref=f3e3141]: Value
+                - generic [ref=f3e3142]:
+                  - generic [ref=f3e3143]:
+                    - superscript [ref=f3e3144]: "192"
+                    - text: n_kv·d_head
+                  - generic [ref=f3e3145]: ×
+                  - generic [ref=f3e3146]:
+                    - superscript [ref=f3e3147]: "576"
+                    - text: d_embed
+                  - generic [ref=f3e3148]: =
+                  - generic [ref=f3e3149]: 110,592
+                - generic [ref=f3e3150]: × 30 layers
+                - generic [ref=f3e3151]: 3,317,760
+              - generic [ref=f3e3152]:
+                - generic [ref=f3e3153]: Attention scores
+                - generic [ref=f3e3154]: "no weights: uses the KV cache"
+                - generic [ref=f3e3156]: —
+              - generic [ref=f3e3157]:
+                - generic [ref=f3e3158]: Output
+                - generic [ref=f3e3159]:
+                  - generic [ref=f3e3160]:
+                    - superscript [ref=f3e3161]: "576"
+                    - text: d_embed
+                  - generic [ref=f3e3162]: ×
+                  - generic [ref=f3e3163]:
+                    - superscript [ref=f3e3164]: "576"
+                    - text: n_heads·d_head
+                  - generic [ref=f3e3165]: =
+                  - generic [ref=f3e3166]: 331,776
+                - generic [ref=f3e3167]: × 30 layers
+                - generic [ref=f3e3168]: 9,953,280
+              - generic [ref=f3e3169]:
+                - generic [ref=f3e3170]: Gate
+                - generic [ref=f3e3171]:
+                  - generic [ref=f3e3172]:
+                    - superscript [ref=f3e3173]: 1,536
+                    - text: d_ff
+                  - generic [ref=f3e3174]: ×
+                  - generic [ref=f3e3175]:
+                    - superscript [ref=f3e3176]: "576"
+                    - text: d_embed
+                  - generic [ref=f3e3177]: =
+                  - generic [ref=f3e3178]: 884,736
+                - generic [ref=f3e3179]: × 30 layers
+                - generic [ref=f3e3180]: 26,542,080
+              - generic [ref=f3e3181]:
+                - generic [ref=f3e3182]: Up-projection
+                - generic [ref=f3e3183]:
+                  - generic [ref=f3e3184]:
+                    - superscript [ref=f3e3185]: 1,536
+                    - text: d_ff
+                  - generic [ref=f3e3186]: ×
+                  - generic [ref=f3e3187]:
+                    - superscript [ref=f3e3188]: "576"
+                    - text: d_embed
+                  - generic [ref=f3e3189]: =
+                  - generic [ref=f3e3190]: 884,736
+                - generic [ref=f3e3191]: × 30 layers
+                - generic [ref=f3e3192]: 26,542,080
+              - generic [ref=f3e3193]:
+                - generic [ref=f3e3194]: Down-projection
+                - generic [ref=f3e3195]:
+                  - generic [ref=f3e3196]:
+                    - superscript [ref=f3e3197]: "576"
+                    - text: d_embed
+                  - generic [ref=f3e3198]: ×
+                  - generic [ref=f3e3199]:
+                    - superscript [ref=f3e3200]: 1,536
+                    - text: d_ff
+                  - generic [ref=f3e3201]: =
+                  - generic [ref=f3e3202]: 884,736
+                - generic [ref=f3e3203]: × 30 layers
+                - generic [ref=f3e3204]: 26,542,080
+              - generic [ref=f3e3205]:
+                - generic [ref=f3e3206]: Norm scales
+                - generic [ref=f3e3207]:
+                  - generic [ref=f3e3208]:
+                    - superscript [ref=f3e3209]: "576"
+                    - text: d_embed
+                  - generic [ref=f3e3210]: =
+                  - generic [ref=f3e3211]: "576"
+                - generic [ref=f3e3212]: × 61
+                - generic [ref=f3e3213]: 35,136
+              - generic [ref=f3e3214]:
+                - generic [ref=f3e3215]: Unembedding
+                - generic [ref=f3e3216]:
+                  - generic [ref=f3e3217]:
+                    - superscript [ref=f3e3218]: 49,152
+                    - text: n_vocab
+                  - generic [ref=f3e3219]: ×
+                  - generic [ref=f3e3220]:
+                    - superscript [ref=f3e3221]: "576"
+                    - text: d_embed
+                  - generic [ref=f3e3222]: =
+                  - generic [ref=f3e3223]: 28,311,552
+                - generic [ref=f3e3224]: once
+                - generic [ref=f3e3225]: 0 extra (shared)
+        - group [ref=f3e691]:
+          - 'generic "+ Go deeper: where the name comes from" [ref=f3e692] [cursor=pointer]'
+      - generic [ref=f3e693]:
+        - generic [ref=f3e694]:
+          - generic [aria-hidden] [ref=f3e695]: "6"
+          - generic [ref=f3e696]:
+            - 'heading "Attention: words look at each other" [level=2] [ref=f3e697]'
+            - paragraph [ref=f3e698]:
+              - generic [ref=f3e699]: weights + KV from HBM
+              - generic [ref=f3e700]: matmuls on tensor cores
+        - paragraph [ref=f3e701]:
+          - text: To understand “it” in “the cat sat because it was tired”, the model has to find what “it” refers to.
+          - 'button "Attention: The step where each token gathers information from earlier tokens, deciding how much to take from each." [ref=f3e702]': Attention
+          - text: is how each token gathers information from the tokens before it. The vectors now pass through 30
+          - 'button "layers: One repeated block of the model: attention followed by a feed-forward network. This model stacks 30 identical-shaped layers, each with its own weights." [ref=f3e703]': layers
+          - text: ", and each layer starts with an attention step."
+        - generic [ref=f3e704]:
+          - paragraph [ref=f3e705]:
+            - text: It works like a library search. Each token makes three new vectors by
+            - 'button "multiplying: Matrix multiplication: for every row of the matrix, take the dot product with the input vector. Each row gives one output number." [ref=f3e706]': multiplying
+            - text: "its own vector by three weight matrices:"
+          - list [ref=f3e707]:
+            - listitem [ref=f3e708]:
+              - text: a
+              - 'button "query: In attention, the vector a token uses to ask “what am I looking for?”" [ref=f3e709]': query
+              - text: ": what am I looking for?"
+            - listitem [ref=f3e710]:
+              - text: a
+              - 'button "key: In attention, the vector a token uses to advertise “this is what I contain.” Queries are compared against keys." [ref=f3e711]': key
+              - text: ": what do I contain? This is like a book’s title."
+            - listitem [ref=f3e712]:
+              - text: a
+              - 'button "value: In attention, the information a token hands over when another token pays attention to it." [ref=f3e713]': value
+              - text: ": what will I hand over if picked? This is like the book’s contents."
+          - paragraph [ref=f3e714]:
+            - text: Each token compares its query with the key of every earlier token (a
+            - 'button "dot product: Dot product: multiply two vectors number by number and add the results. A big positive answer means they point the same way, which is a way of measuring similarity." [ref=f3e715]': dot product
+            - text: ). Better matches get a bigger share of its attention, with shares adding up to 100%. The token then takes that mix of the earlier tokens’ values. A token can never look at tokens after it, because when generating text those don’t exist yet.
+          - paragraph [ref=f3e716]:
+            - text: Is this per layer? Yes. Each of the 30 layers has its own three matrices for this, plus a fourth (
+            - code [ref=f3e717]: o_proj
+            - text: ") that combines the results: 4 attention matrices × 30 layers = 120 separate matrices. They’re the four light tiles in every layer of the 3D model and the"
+            - code [ref=f3e718]: self_attn
+            - text: group in chapter 1’s anatomy. Every layer does the same steps with different numbers, so each layer looks for different things.
+        - 'heading "Heads: one query, cut into slices" [level=3] [ref=f3e719]'
+        - generic [ref=f3e720]:
+          - paragraph [ref=f3e721]:
+            - text: One more detail, because it explains the odd matrix sizes. The
+            - 'button "query: In attention, the vector a token uses to ask “what am I looking for?”" [ref=f3e722]': query
+            - text: isn’t used as one long list of 576 numbers. It is cut into 9 slices of 64, and each slice does its own attention, separately from the others. Each slice is called a
+            - 'button "head: Attention runs several times side by side with different weights. Each copy is a head and can track a different kind of relationship." [ref=f3e723]': head
+            - text: ". Nine heads means nine independent “searches” per layer: one head might track the previous word, another the subject of the sentence. That’s why the grid below changes when you change Head."
+          - paragraph [ref=f3e724]:
+            - text: Keys and values are cut the same way, but there are only 3 slices of them (3 × 64 = 192 numbers). Each key/value slice is shared by 3 query heads. That saves memory, and it’s exactly why
+            - code [ref=f3e725]: k_proj
+            - text: and
+            - code [ref=f3e726]: v_proj
+            - text: are 192 × 576 while
+            - code [ref=f3e727]: q_proj
+            - text: "is 576 × 576. Here are the real vectors for the last token of your prompt in layer 0, each number a coloured cell:"
+        - generic [ref=f3e728]:
+          - img "The 576-number query split into 9 heads of 64; keys and values split into 3 heads, each shared by 3 query heads" [ref=f3e3226]:
+            - generic [ref=f3e3227]: "Query: 576 numbers = 9 heads × 64"
+            - generic [ref=f3e3293]: head 0
+            - generic [ref=f3e3359]: head 1
+            - generic [ref=f3e3425]: head 2
+            - generic [ref=f3e3491]: head 3
+            - generic [ref=f3e3557]: head 4
+            - generic [ref=f3e3623]: head 5
+            - generic [ref=f3e3689]: head 6
+            - generic [ref=f3e3755]: head 7
+            - generic [ref=f3e3821]: head 8
+            - generic [ref=f3e3831]: "Key: 192 = 3 × 64"
+            - generic [ref=f3e3897]: key head 0
+            - generic [ref=f3e3898]: for heads 0–2
+            - generic [ref=f3e3964]: key head 1
+            - generic [ref=f3e3965]: for heads 3–5
+            - generic [ref=f3e4031]: key head 2
+            - generic [ref=f3e4032]: for heads 6–8
+            - generic [ref=f3e4033]: "Value: 192 = 3 × 64, shared the same way"
+          - paragraph [ref=f3e4229]: Grey until you generate; then these fill with the real numbers.
+        - generic [ref=f3e4230]:
+          - generic [ref=f3e4231]:
+            - text: Layer
+            - slider "Layer" [ref=f3e4232]: "0"
+            - status [ref=f3e4233]: "0"
+          - generic [ref=f3e4234]:
+            - text: Head
+            - slider "Head" [ref=f3e4235]: "0"
+            - status [ref=f3e4236]: "0"
+          - generic [ref=f3e4237]:
+            - text: Show
+            - combobox "Which pass to show" [ref=f3e4238]:
+              - option "Prefill (the prompt)" [selected]
+              - option "Latest decode step"
+        - paragraph [ref=f3e4239]: Load the weights and generate to see real attention patterns.
+        - generic [ref=f3e732]:
+          - paragraph [ref=f3e733]: "How to read the grid: each row is one token, read left to right. That row’s shading shows how it split its attention across earlier tokens: dark means a lot. The empty top-right triangle is the “no looking ahead” rule. The list on the right spells out one row as percentages. Click a row to switch."
+          - paragraph [ref=f3e734]: "What to notice: many heads put most of their attention on the very first token. That’s a known habit called an attention sink: heads with nothing useful to look at park their attention there. Some heads look mostly at the previous word, which shows up as a dark line just left of the diagonal. Generate to find these in your own prompt."
+        - group [ref=f3e735]:
+          - 'generic "+ Go deeper: one layer with real shapes, heads, and timings" [ref=f3e736] [cursor=pointer]'
+      - generic [ref=f3e737]:
+        - generic [ref=f3e738]:
+          - generic [aria-hidden] [ref=f3e739]: "7"
+          - generic [ref=f3e740]:
+            - heading "Each word thinks on its own, and keeps a running total" [level=2] [ref=f3e741]
+            - paragraph [ref=f3e742]:
+              - generic [ref=f3e743]: most of each layer’s weights
+              - generic [ref=f3e744]: tensor cores
+        - paragraph [ref=f3e745]:
+          - text: After gathering context with attention, each token is processed on its own by a small network called the
+          - emphasis [ref=f3e746]: feed-forward
+          - text: network. It stretches the token’s 576 numbers out to 1,536, filters them, and squeezes them back to 576. These matrices hold 75% of each layer’s weights, and this is where much of the model’s learned knowledge is applied.
+        - paragraph [ref=f3e748]: "How to read this: each thin bar is one of the 1,536 intermediate numbers for the last token of your prompt, in the layer you pick. Most sit near zero and a few spike. Each spike is a learned pattern that recognised something in this context and fired."
+        - paragraph [ref=f3e4240]: Load the weights and generate to see real activations.
+        - heading "Nothing is replaced, only added" [level=3] [ref=f3e750]
+        - paragraph [ref=f3e752]:
+          - text: Neither attention nor the feed-forward step overwrites a token’s vector. Each adds its result to the vector instead, like adding notes to a running total. That running vector is the
+          - 'button "residual stream: The running vector for each token. Each layer adds its contribution to it instead of replacing it." [ref=f3e753]': residual stream
+          - text: ", and it carries everything the token has picked up so far. How to read this: each line is one token of your prompt, showing how long its vector gets after each layer. The highlighted line is the last token, the one that will predict the next word."
+        - paragraph [ref=f3e4241]: Generate to see the residual stream grow.
+        - heading "Peek at the model’s guess after every layer" [level=3] [ref=f3e755]
+        - paragraph [ref=f3e757]: The running total can be read at any point to see what the model would say if it stopped there. This trick is called the logit lens. Early layers produce nonsense, and the real answer usually appears in the last third.
+        - paragraph [ref=f3e4242]: Generate first, then run the lens on your prompt.
+        - group [ref=f3e759]:
+          - 'generic "+ Go deeper: SwiGLU" [ref=f3e760] [cursor=pointer]'
+      - generic [ref=f3e761]:
+        - generic [ref=f3e762]:
+          - generic [aria-hidden] [ref=f3e763]: "8"
+          - generic [ref=f3e764]:
+            - heading "Picking the next word" [level=2] [ref=f3e765]
+            - paragraph [ref=f3e766]:
+              - generic [ref=f3e767]: scores on the GPU
+              - generic [ref=f3e768]: 4 bytes back
+              - generic [ref=f3e769]: text on the CPU
+        - paragraph [ref=f3e770]:
+          - text: After the last layer, the model compares the last token’s vector against every one of the 49,152 dictionary entries and gives each a score. These scores are called
+          - 'button "logits: The raw score the model gives each vocabulary entry for being the next token, before turning scores into percentages." [ref=f3e771]': logits
+          - text: .
+          - 'button "Softmax: Turns a list of scores into percentages that add up to 100%. Higher scores get much bigger shares." [ref=f3e772]': Softmax
+          - text: "turns the scores into percentages. Then the computer rolls weighted dice: a token with 80% wins 8 times out of 10. The winner is the next token, and the whole process repeats with it added to the text."
+        - generic [ref=f3e773]:
+          - paragraph [ref=f3e774]: "You control the dice:"
+          - list [ref=f3e775]:
+            - listitem [ref=f3e776]: Temperature below 1 makes the favourite even more likely (safer, more repetitive). Above 1 evens the odds (more varied, more mistakes). At 0 the model always takes the top choice, called greedy.
+            - listitem [ref=f3e777]: Top-k only allows the k highest-scoring tokens.
+            - listitem [ref=f3e778]: Top-p only allows the smallest group of top tokens whose chances add up to p.
+          - paragraph [ref=f3e779]: Click any word of the answer above to see the choice behind it. Click another candidate below to swap it in and continue from there.
+        - generic [ref=f3e4243]:
+          - generic [ref=f3e4244]:
+            - text: Temperature
+            - slider "Temperature" [ref=f3e4245]: "0.7"
+            - status [ref=f3e4246]: "0.70"
+          - generic [ref=f3e4247]:
+            - text: Top-k
+            - slider "Top-k" [ref=f3e4248]: "40"
+            - status [ref=f3e4249]: "40"
+          - generic [ref=f3e4250]:
+            - text: Top-p
+            - slider "Top-p" [ref=f3e4251]: "0.95"
+            - status [ref=f3e4252]: "0.95"
+          - button "Greedy" [ref=f3e4253] [cursor=pointer]
+        - paragraph [ref=f3e4254]: Load the weights and generate to see real probabilities.
+        - heading "From ID back to text" [level=3] [ref=f3e781]
+        - paragraph [ref=f3e783]: "Only the winning ID, a single number, goes back to the CPU. The CPU reverses the tokenizer: it looks up the dictionary entry, turns it into bytes, and the bytes into characters."
+        - generic [ref=f3e784]: The chosen token’s journey back to text appears here.
+        - group [ref=f3e785]:
+          - 'generic "+ Go deeper: the LM head" [ref=f3e786] [cursor=pointer]'
+      - generic [ref=f3e787]:
+        - generic [ref=f3e788]:
+          - generic [aria-hidden] [ref=f3e789]: "9"
+          - generic [ref=f3e790]:
+            - heading "Your whole prompt through all 30 layers" [level=2] [ref=f3e791]
+            - paragraph [ref=f3e792]:
+              - generic [ref=f3e793]: each layer’s weights from HBM
+              - generic [ref=f3e794]: every step on the GPU
+        - paragraph [ref=f3e795]:
+          - text: Chapter 5 followed one token’s vector. During prefill, all the prompt’s tokens actually go through together, stacked as one
+          - 'button "matrix: A grid of numbers with rows and columns, like a spreadsheet. A 192 × 576 matrix has 192 rows of 576 numbers each." [ref=f3e796]': matrix
+          - text: "with one row per token: T × 576, where T is the number of tokens. Every layer takes that matrix in and hands on a matrix of exactly the same shape. Pick a layer and step through its six steps to watch each operation on your prompt’s real numbers."
+        - paragraph [ref=f3e798]: "How to read the pictures. Each picture is a matrix: one row per token of your prompt, labelled on the left, and one column per number. Red is positive, blue is negative, white is near zero. The bottom row, highlighted, is the last token, the one whose final row picks the next word. Hover over any cell to read its token, column and value. Shapes follow the rule from chapter 0, with T in amber. Only one step, attention, lets the rows talk to each other; everything else works on each row separately."
+        - paragraph [ref=f3e4256]: Load the model and generate to see your prompt go through the layers.
+      - generic [ref=f3e800]:
+        - generic [ref=f3e801]:
+          - generic [aria-hidden] [ref=f3e802]: "10"
+          - generic [ref=f3e803]:
+            - heading "One word at a time, with notes" [level=2] [ref=f3e804]
+            - paragraph [ref=f3e805]:
+              - generic [ref=f3e806]: KV cache lives in GPU memory
+              - generic [ref=f3e807]: one token per pass
+        - paragraph [ref=f3e808]:
+          - text: Your whole prompt went through the model in one go; this is called
+          - 'button "prefill: The first phase: the whole prompt goes through the model in one pass, all tokens at once." [ref=f3e809]': prefill
+          - text: . The answer can’t be produced that way. Each new token depends on the one chosen before it, so the model runs once per token, feeding in the token it just picked. This loop is called
+          - 'button "decode: The second phase: the model generates one token per pass, each pass feeding in the previous output." [ref=f3e810]': decode
+          - text: .
+        - generic [ref=f3e811]:
+          - paragraph [ref=f3e812]:
+            - text: On every pass, the new token needs to look back at all earlier tokens (chapter 6), using their
+            - 'button "keys: In attention, the vector a token uses to advertise “this is what I contain.” Queries are compared against keys." [ref=f3e813]': keys
+            - text: and
+            - 'button "values: In attention, the information a token hands over when another token pays attention to it." [ref=f3e814]': values
+            - text: . Those never change once computed, so instead of recomputing them on every pass the model keeps them, like notes, in GPU memory. These notes are the
+            - 'button "KV cache: KV cache: stored keys and values for every earlier token in every layer, so they don’t have to be recomputed for each new token." [ref=f3e815]': KV cache
+            - text: . Each pass adds one column of notes for the new token, in every layer.
+          - paragraph [ref=f3e816]: "How to read this: each column is one token and each row is one layer. Every small cell holds that token’s key and value for that layer. Amber cells came from your prompt; pink cells were added one by one as the answer was written."
+        - generic [ref=f3e817]:
+          - paragraph [ref=f3e4258]: Load the weights and generate to watch the cache fill.
+          - generic [ref=f3e4259]:
+            - generic [ref=f3e4260]: reused from the prefix cache
+            - generic [ref=f3e4262]: written during prefill
+            - generic [ref=f3e4264]: appended by decode steps
+            - generic [ref=f3e4266]: latest
+        - heading "Open one layer’s notes" [level=3] [ref=f3e818]
+        - paragraph [ref=f3e820]: "Here are the actual numbers inside one layer’s cache: the 4-D shape from chapter 0, with a single layer picked out. Each column is one token. Each column holds that token’s key (3 heads × 64 numbers) and, on the right, its value. Watch a new column appear for every word the model writes."
+        - generic [ref=f3e821]:
+          - generic [ref=f3e4269]:
+            - text: Layer
+            - slider "Layer" [ref=f3e4270]: "0"
+            - status [ref=f3e4271]: "0"
+          - paragraph [ref=f3e4273]: Generate to fill the cache.
+        - heading "Turn the notes off and see the cost" [level=3] [ref=f3e822]
+        - paragraph [ref=f3e824]: Without the cache, every new word means redoing the work for the whole text so far. Untick the box and press Generate (or Continue). Each bar is the real time one step took in this tab.
+        - generic [ref=f3e825]:
+          - generic [ref=f3e4274]:
+            - generic [ref=f3e4275] [cursor=pointer]:
+              - checkbox "Use the KV cache" [checked] [ref=f3e4276]
+              - text: Use the KV cache
+            - generic [ref=f3e4277]: "Switch it off, then press Generate or Continue: new steps recompute every K and V from scratch."
+          - paragraph [ref=f3e4279]: Per-step times appear once decoding starts.
+      - generic [ref=f3e826]:
+        - generic [ref=f3e827]:
+          - generic [aria-hidden] [ref=f3e828]: "11"
+          - generic [ref=f3e829]:
+            - heading "Why writing is slower than reading" [level=2] [ref=f3e830]
+            - paragraph [ref=f3e831]:
+              - generic [ref=f3e832]: memory speed
+              - generic [ref=f3e833]: vs arithmetic speed
+        - paragraph [ref=f3e834]:
+          - text: Think of the GPU as a very fast chef with a pantry down the hall. The ingredients are the model’s weights. To write each new word, the chef must fetch
+          - emphasis [ref=f3e835]: every
+          - text: ingredient (all 269 MB), does a few seconds of chopping, then fetches everything again for the next word. The chef spends most of the time walking, not cooking. That is what memory-bound means.
+        - generic [ref=f3e836]:
+          - paragraph [ref=f3e837]: Reading the prompt is different. The chef fetches each ingredient once and uses it for all the prompt’s tokens at once, so there is lots of chopping per trip. That is compute-bound, and it’s why prefill handles hundreds of tokens in the time decode writes a few.
+          - paragraph [ref=f3e838]:
+            - text: "Servers fix the walking problem by cooking many orders per trip: they"
+            - 'button "batch: Several requests processed together in one pass, so every weight fetched from memory is used for all of them." [ref=f3e839]': batch
+            - text: many users’ next words into one pass, so each weight fetched is used for all of them. Drag the sliders and watch the dots move toward the flat “compute” part of the chart, where the chef finally stops waiting.
+        - generic [ref=f3e840]:
+          - 'img "Roofline for H100 SXM: decode at intensity 1.2 is memory-bound, prefill at 512 is compute-bound" [ref=f3e4281]':
+            - generic [ref=f3e4282]: "0.1"
+            - generic [ref=f3e4283]: "1"
+            - generic [ref=f3e4284]: "10"
+            - generic [ref=f3e4285]: "100"
+            - generic [ref=f3e4286]: "1000"
+            - generic [ref=f3e4287]: "10000"
+            - generic [ref=f3e4288]: "0.1"
+            - generic [ref=f3e4289]: "1"
+            - generic [ref=f3e4290]: "10"
+            - generic [ref=f3e4291]: "100"
+            - generic [ref=f3e4292]: "1000"
+            - generic [ref=f3e4293]: Arithmetic intensity (FLOPs per byte read from HBM)
+            - generic [ref=f3e4294]: Achievable TFLOP/s
+            - generic [ref=f3e4296]: "memory roof: 3.35 TB/s"
+            - generic [ref=f3e4297]: "compute roof: 989 TFLOP/s"
+            - generic [ref=f3e4298]: ridge ≈ 295
+            - generic [ref=f3e4300]: decode, batch 1
+            - generic [ref=f3e4302]: prefill, 512 tokens
+          - generic [ref=f3e4303]:
+            - generic [ref=f3e4304]:
+              - text: Prompt length for prefill (tokens)
+              - status "Prompt length for prefill (tokens)" [ref=f3e4305]: "512"
+            - slider "Prompt length for prefill (tokens)" [ref=f3e4306]: "9"
+            - generic [ref=f3e4307]:
+              - text: Decode batch (requests decoded together)
+              - status "Decode batch (requests decoded together)" [ref=f3e4308]: "1"
+            - slider "Decode batch (requests decoded together)" [ref=f3e4309]: "0"
+            - generic [ref=f3e4310]:
+              - text: Context already in each KV cache
+              - status "Context already in each KV cache" [ref=f3e4311]: 1,024
+            - slider "Context already in each KV cache" [ref=f3e4312]: "10"
+            - generic [ref=f3e4313]:
+              - paragraph [ref=f3e4314]: "Prefill: 147 GFLOP over 287 MB → 512 FLOP/B, compute-bound, ≥ 148 µs on one H100 SXM."
+              - paragraph [ref=f3e4315]: "Decode step: 340 MFLOP over 293 MB → 1.2 FLOP/B, memory-bound, ≥ 87 µs on one H100 SXM."
+              - paragraph [ref=f3e4316]: "At batch 1, a decode step yields 1 token in about 87 µs: 11,447 tokens/s in total. Raising the batch is nearly free until the point reaches the ridge, or the KV caches run out of memory."
+        - paragraph [ref=f3e842]: "How to read the chart: left to right is how much arithmetic is done per byte fetched from memory. Up is how fast the GPU can go. The sloped part of the roof is the memory limit and the flat part is the arithmetic limit. A dot on the slope is waiting on memory. An H100 needs about 295 operations per byte before its arithmetic units are kept busy. One user’s decode does about 1."
+        - heading "The same effect on your own computer" [level=3] [ref=f3e843]
+        - paragraph [ref=f3e845]: "This page’s own multiply code reuses each fetched weight for up to 4 tokens at once. Time it doing one token at a time (like decode) and 32 at a time (like prefill):"
+        - generic [ref=f3e4317]:
+          - button "Benchmark the kernel" [disabled] [ref=f3e4318]
+          - paragraph [ref=f3e4319]: After a run, this compares your prefill and decode speed per token.
+        - group [ref=f3e846]:
+          - 'generic "+ Go deeper: arithmetic intensity" [ref=f3e847] [cursor=pointer]'
+      - generic [ref=f3e848]:
+        - generic [ref=f3e849]:
+          - generic [aria-hidden] [ref=f3e850]: "12"
+          - generic [ref=f3e851]:
+            - heading "Reusing notes between requests" [level=2] [ref=f3e852]
+            - paragraph [ref=f3e853]:
+              - generic [ref=f3e854]: KV blocks stay in GPU memory
+        - paragraph [ref=f3e855]: "Most requests to a chatbot start with the same text: the hidden instructions (the system prompt) and the chat formatting. Their KV-cache notes come out identical every time, because each token’s notes depend only on the text before it. So servers keep those notes after a request ends and reuse them for the next request that starts the same way, skipping that part of prefill. This is prefix caching."
+        - generic [ref=f3e856]:
+          - paragraph [ref=f3e857]:
+            - text: Notes are kept in blocks of 16 tokens. A block is reused only if it
+            - emphasis [ref=f3e858]: and everything before it
+            - text: match exactly. Change one word early on and every block after it has to be recomputed. That’s why production apps keep their system prompt identical, byte for byte.
+          - paragraph [ref=f3e859]: "Try it: run a question, then press “Ask a different question”. Only the question changes, so the shared blocks are reused and the time to the first word drops. The default system prompt is short, so only one block can be shared. Switch to the longer one to see a bigger effect."
+        - generic [ref=f3e860]:
+          - generic [ref=f3e861] [cursor=pointer]:
+            - checkbox "Prefix caching on" [checked] [ref=f3e862]
+            - text: Prefix caching on
+          - button "Ask a different question" [ref=f3e863] [cursor=pointer]
+          - button "Use a longer system prompt" [ref=f3e864] [cursor=pointer]
+        - generic [ref=f3e4320]:
+          - paragraph [ref=f3e4321]: "Your current prompt as 3 blocks (the last one partial):"
+          - generic [ref=f3e4322]:
+            - generic "<|im_start|>system↵You␣are␣a␣helpful␣AI␣assistant␣named␣SmolLM,␣trained␣by" [ref=f3e4323]:
+              - generic [ref=f3e4324]: "#fe7495"
+              - generic [ref=f3e4326]: tokens 0–15
+            - generic "␣Hugging␣Face<|im_end|>↵<|im_start|>user↵What␣is␣the␣capital␣of␣France?<|im_end|>" [ref=f3e4327]:
+              - generic [ref=f3e4328]: "#e6664f"
+              - generic [ref=f3e4330]: tokens 16–31
+            - generic "↵<|im_start|>assistant↵" [ref=f3e4331]:
+              - generic [ref=f3e4332]: no hash yet
+              - generic [ref=f3e4334]: "5 of 16: not cacheable until full"
+      - generic [ref=f3e866]:
+        - generic [ref=f3e867]:
+          - generic [aria-hidden] [ref=f3e868]: "13"
+          - generic [ref=f3e869]:
+            - heading "The whole trip, in one table" [level=2] [ref=f3e870]
+            - paragraph [ref=f3e871]:
+              - generic [ref=f3e872]: CPU
+              - generic [ref=f3e873]: PCIe
+              - generic [ref=f3e874]: HBM
+              - generic [ref=f3e875]: SM
+        - paragraph [ref=f3e876]: "Your last request, step by step: where each step ran, how much data it moved, and how long it took. “This tab” is what actually happened in your browser. “H100 estimate” is the least time the same work could take on one data-centre GPU, counting only memory and arithmetic limits."
+        - paragraph [ref=f3e4336]: Generate something to fill in this table with your own run.
+        - generic [ref=f3e877]:
+          - paragraph [ref=f3e878]: "Three limits set the speed of inference:"
+          - list [ref=f3e879]:
+            - listitem [ref=f3e880]: "Memory speed: every new word means reading all the weights again."
+            - listitem [ref=f3e881]: "Memory space: every word of every conversation adds to the KV cache."
+            - listitem [ref=f3e882]: "Arithmetic: reading a long prompt is one big multiplication."
+          - paragraph [ref=f3e883]: "Every speed-up you’ll read about attacks one of these: quantization, paged attention, batching, prefix caching, speculative decoding, and splitting prefill and decode onto different GPUs."
+      - paragraph [ref=f3e885]:
+        - text: "Engine: a Llama-architecture forward pass in plain JavaScript with a hand-written WebAssembly SIMD matmul, checked against the ONNX reference to within 10"
+        - superscript [ref=f3e886]: −4
+        - text: on the logits. Weights from
+        - link "Hugging Face TB" [ref=f3e887] [cursor=pointer]:
+          - /url: https://huggingface.co/HuggingFaceTB
+        - text: ". Further reading:"
+        - link "Inference Engineering" [ref=f3e888] [cursor=pointer]:
+          - /url: https://inferenceengineering.tech/chapters/
+        - text: ","
+        - link "What Is LLM Inference, Really?" [ref=f3e889] [cursor=pointer]:
+          - /url: https://kraghavan.ca/llm-infrastructure/inference/2026/04/14/re-introduction-to-inference.html
+    - complementary "Prompt and machine map" [ref=f3e890]:
+      - generic [ref=f3e891]:
+        - region "Your prompt" [ref=f3e893]:
+          - heading "Your prompt" [level=2] [ref=f3e895]
+          - generic [ref=f3e896]: Prompt
+          - textbox "Prompt" [ref=f3e897]: What is the capital of France?
+          - button "Loading… 269 MB" [disabled] [ref=f3e4337]
+          - generic [ref=f3e899]:
+            - button "Generate" [disabled] [ref=f3e900]
+            - button "Step one token" [disabled] [ref=f3e901]
+            - button "Pause" [disabled] [ref=f3e902]
+          - paragraph [ref=f3e903]: Load the model to generate. The basics and the tokenizer already work.
+          - generic [ref=f3e904]: The model’s answer appears here, one token at a time.
+          - group [ref=f3e905]:
+            - generic "Options" [ref=f3e906] [cursor=pointer]
+        - paragraph [ref=f3e907]: Where this runs
+        - paragraph [ref=f3e4338]: A GPU server. Text work happens on the CPU (teal). The model’s weights sit in the GPU’s own memory, HBM (amber), and the multiplying happens in the GPU’s compute units, SMs (pink). The dotted lines show data moving.
+        - 'img "Diagram of a GPU server: disk, CPU, RAM, PCIe link, and a GPU with HBM, L2 cache and streaming multiprocessors" [ref=f3e909]':
+          - generic [ref=f3e911]: GPU (H100 SXM)
+          - generic [ref=f3e912]: PCIe 5 ×16 · 64 GB/s
+          - generic [ref=f3e913]: Disk or network
+          - 'generic "The computer’s main processor. A few fast, flexible cores. Here it handles text: tokenizing, sampling and turning tokens back into text." [ref=f3e916]':
+            - generic [ref=f3e918]: CPU
+            - generic [ref=f3e919]: tokenize · sample · text
+          - generic "The computer’s main memory, attached to the CPU. Large but far slower to reach from the GPU." [ref=f3e920]:
+            - generic [ref=f3e922]: CPU RAM
+            - generic [ref=f3e923]: staging copy
+          - 'generic "High-bandwidth memory: the GPU’s own memory, stacked right next to the chip. An H100 has 80 GB that it can read at 3.35 terabytes per second." [ref=f3e924]': HBM · 80 GB · 3.35 TB/s
+          - generic "A 50 MB cache shared by all SMs, sitting between them and HBM." [ref=f3e927]: L2 cache · 50 MB
+          - 'generic "Streaming multiprocessor: one of the GPU’s compute blocks. An H100 has 132, each with a little very fast on-chip memory (SRAM) and tensor cores for matrix math." [ref=f3e930]':
+            - generic [ref=f3e932]: 132 SMs
+            - generic [ref=f3e933]: 256 KB SRAM each + tensor cores
+          - generic [ref=f3e4339]: weights 269 MB
+          - generic [ref=f3e4340]: KV cache 0 B
+          - generic [ref=f3e4341]: 0.34% of 80 GB used by this request
+          - generic [ref=f3e4342]: weights, once
+        - group [ref=f3e936]:
+          - generic "What plays each part in this tab?" [ref=f3e937] [cursor=pointer]

@@ -282,7 +282,7 @@
         <li><b>Feed-forward transforms each token,</b> applying patterns stored in its weights, but it can’t see the other tokens.</li>
         <li><b>Alternating them 30 times</b> lets the model build up meaning step by step. Roughly, early layers sort out nearby words and grammar, middle layers combine facts, and late layers settle on the next word. The logit lens in chapter 7 shows this with real numbers: the right answer usually appears only in the last third.</li>
       </ul>
-      <p>The next two chapters zoom into each half. Chapter 9 replays this loop with the real numbers from your prompt.</p>
+      <p>The next two chapters zoom into each half. Chapter 9 replays this loop on your whole prompt at once, as a matrix with one row per token, with the real numbers.</p>
     </div>
 
     <h3 class="step-h">Follow the shape: one token’s vector through the model</h3>
@@ -405,12 +405,12 @@
     <header class="ch-head">
       <span class="ch-num" aria-hidden="true">9</span>
       <div>
-        <h2>Follow one token through the whole model</h2>
+        <h2>Your whole prompt through all <span data-bind="L">30</span> layers</h2>
         <p class="runs-on"><span class="loc hbm">each layer’s weights from HBM</span><span class="loc sm">every step on the GPU</span></p>
       </div>
     </header>
-    <p class="plain">Chapters 3 to 8 took the model apart. Here it is in one piece. We follow a single token from its embedding, through every step of every layer, to the final scores and percentages. Use <b>Next</b> to walk through it, or drag the layer slider. Every number is the real one from your last run.</p>
-    <div class="prose"><p><b>Which token?</b> The last token of your prompt. Every token goes through the same steps, but the last one is special: its final vector is the one that gets turned into scores for the next word. The layout stays the same at every step; only the numbers change. Each vector shows its first 8 numbers, then all of them as a colour strip.</p></div>
+    <p class="plain">Chapter 5 followed one token’s vector. During prefill, all the prompt’s tokens actually go through together, stacked as one <dfn data-term="matrix">matrix</dfn> with one row per token: <span class="dt">T</span> × <span data-bind="D">576</span>, where <span class="dt">T</span> is the number of tokens. Every layer takes that matrix in and hands on a matrix of exactly the same shape. Pick a layer and step through its six steps to watch each operation on your prompt’s real numbers.</p>
+    <div class="prose"><p><b>How to read the pictures.</b> Each picture is a matrix: one row per token of your prompt, labelled on the left, and one column per number. Red is positive, blue is negative, white is near zero. The bottom row, highlighted, is the last token, the one whose final row picks the next word. Hover over any cell to read its token, column and value. Shapes follow the rule from chapter 0, with <span class="dt">T</span> in amber. Only one step, attention, lets the rows talk to each other; everything else works on each row separately.</p></div>
     <div class="tracer" id="tracer"></div>
   </section>
 
