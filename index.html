@@ -118,7 +118,7 @@
     <h3 class="step-h">Matrices and tensors are boxes of numbers</h3>
     <div class="prose"><p>A <dfn data-term="matrix">matrix</dfn> is a grid of numbers, like a spreadsheet: so many rows, so many columns. <dfn data-term="tensor">Tensor</dfn> is the catch-all word for a box of numbers with any number of directions. Files and code say “tensor” because they don’t care how many directions a box has.</p></div>
     <div class="primer-shapes" id="primer-shapes"></div>
-    <div class="prose"><p>The last row is the trickiest, so here is its shape drawn out. Picture one sheet of numbers per layer. On each sheet, every token is a column, and the column holds 3 heads × 64 = 192 numbers. Stack 30 sheets and you have the keys; the values are a second stack of the same shape. Chapter 9 shows the real numbers.</p></div>
+    <div class="prose"><p>The last row is the trickiest, so here is its shape drawn out. Picture one sheet of numbers per layer. On each sheet, every token is a column, and the column holds 3 heads × 64 = 192 numbers. Stack 30 sheets and you have the keys; the values are a second stack of the same shape. Chapter 10 shows the real numbers.</p></div>
     <div class="kv-schematic" id="primer-kv"></div>
 
     <h3 class="step-h">The one operation: multiply a matrix by a vector</h3>
@@ -130,6 +130,14 @@
 
     <h3 class="step-h">Weights are the numbers inside the matrices</h3>
     <div class="prose"><p>The numbers in the model’s matrices are its <dfn data-term="weights">weights</dfn>, also called <dfn data-term="parameters">parameters</dfn>. Training adjusted them over trillions of words of text until the model got good at guessing the next word. When you use the model, which is called <em>inference</em>, the weights are frozen: nothing is learned and nothing changes. The 269 MB download is about 135 million of these numbers, and nothing else.</p></div>
+
+    <h3 class="step-h">Where the weights come from: forward and backward</h3>
+    <div class="prose">
+      <p>Running numbers through a model from input to output is a <dfn data-term="forward">forward pass</dfn>. That is all inference is, and all this page ever does.</p>
+      <p>Training adds a second direction. After each forward pass, the output is compared with the right answer: the word that actually came next in some real text. Then a <dfn data-term="backprop">backward pass</dfn> (backpropagation) works out, for every single weight, which direction would have made the right answer a little more likely. Every weight gets nudged that way, and it repeats. SmolLM2 went through this with 2 trillion tokens of text. Try it on a model with 9 weights:</p>
+    </div>
+    <div class="trainer" id="primer-train"></div>
+    <div class="prose"><p>A real model does exactly this, just with 135 million weights instead of 9, and with the error passed back through all 30 layers instead of one. When training is finished, the weights are frozen and published. Using the model only needs the forward half: no comparing, no nudging. That’s why running a model is so much cheaper than training it.</p></div>
 
     <h3 class="step-h">The machine: where the numbers live and move</h3>
     <div class="prose"><p>A server running a model has two very different processors. The <dfn data-term="cpu">CPU</dfn> handles text and decisions. The <dfn data-term="gpu">GPU</dfn> does the giant multiplications. Each has its own memory, and moving numbers between places takes time.</p></div>
@@ -255,10 +263,40 @@
     </details>
   </section>
 
-  <!-- 5. ATTENTION -------------------------------------------------------->
-  <section class="chapter" id="ch-attention" data-map="attention">
+  <!-- 5. THE LOOP ------------------------------------------------------>
+  <section class="chapter" id="ch-loop" data-map="loop">
     <header class="ch-head">
       <span class="ch-num" aria-hidden="true">5</span>
+      <div>
+        <h2>The transformer: talk, think, repeat</h2>
+        <p class="runs-on"><span class="loc hbm">one layer’s weights at a time</span><span class="loc sm">GPU</span></p>
+      </div>
+    </header>
+    <p class="plain">Everything between the embeddings and the final scores is <b>one block, repeated 30 times</b>. Each block has two halves. First the tokens <em>talk</em>: attention lets each token gather information from the tokens before it. Then each token <em>thinks on its own</em>: the feed-forward network processes what it just gathered. Both halves add their result to the token’s running vector, and the next block starts from there.</p>
+    <div class="prose"><p>That repeated block is what makes this a <b>transformer</b>, the design behind GPT, Llama, Qwen, Claude and this model. Press play to watch a short sentence go through it.</p></div>
+    <div class="loop" id="loop-viz"></div>
+    <div class="prose">
+      <p><b>Why both halves?</b> They do different jobs, and each needs the other:</p>
+      <ul class="plain-list">
+        <li><b>Attention moves information between tokens,</b> but it only mixes and re-weights what is already there.</li>
+        <li><b>Feed-forward transforms each token,</b> applying patterns stored in its weights, but it can’t see the other tokens.</li>
+        <li><b>Alternating them 30 times</b> lets the model build up meaning step by step. Roughly, early layers sort out nearby words and grammar, middle layers combine facts, and late layers settle on the next word. The logit lens in chapter 7 shows this with real numbers: the right answer usually appears only in the last third.</li>
+      </ul>
+      <p>The next two chapters zoom into each half. Chapter 9 replays this loop with the real numbers from your prompt.</p>
+    </div>
+    <details class="deeper">
+      <summary>Go deeper: where the name comes from</summary>
+      <div class="prose">
+        <p>The transformer was introduced in 2017 in the paper “Attention Is All You Need”, for translation. That original had two stacks: an <em>encoder</em> that read the whole source sentence and a <em>decoder</em> that wrote the translation. Chat models keep only the decoder half and are called <em>decoder-only</em> transformers. They read left to right, each token can only attend to earlier tokens, and they are trained to predict the next token.</p>
+        <p>Each block also normalizes the vector before each half (RMSNorm), and adds each half’s output back to its input (the residual connection). Without those two details, stacks of 30 or 80 layers would be very hard to train.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- 6. ATTENTION -------------------------------------------------------->
+  <section class="chapter" id="ch-attention" data-map="attention">
+    <header class="ch-head">
+      <span class="ch-num" aria-hidden="true">6</span>
       <div>
         <h2>Attention: words look at each other</h2>
         <p class="runs-on"><span class="loc hbm">weights + KV from HBM</span><span class="loc sm">matmuls on tensor cores</span></p>
@@ -294,17 +332,17 @@
       <div class="prose"><p>The full layer, with the matrix shapes for your prompt (<i>T</i> = number of tokens). Amber boxes multiply by weights read from GPU memory; pink boxes are arithmetic with no weights.</p></div>
       <div class="layer-diagram" id="layer-diagram"></div>
       <div class="prose">
-        <p>Attention runs as <b data-bind="H">9</b> independent <dfn data-term="head">heads</dfn> per layer, each with 64-number queries and keys, so each can track a different kind of relationship. To save memory, this model has only <b data-bind="KVH">3</b> key/value heads, and each is shared by 3 query heads. This is grouped-query attention, and it makes the KV cache (chapter 9) 3× smaller. Scores are divided by √64 before <dfn data-term="softmax">softmax</dfn> to keep them in a sensible range.</p>
+        <p>Attention runs as <b data-bind="H">9</b> independent <dfn data-term="head">heads</dfn> per layer, each with 64-number queries and keys, so each can track a different kind of relationship. To save memory, this model has only <b data-bind="KVH">3</b> key/value heads, and each is shared by 3 query heads. This is grouped-query attention, and it makes the KV cache (chapter 10) 3× smaller. Scores are divided by √64 before <dfn data-term="softmax">softmax</dfn> to keep them in a sensible range.</p>
         <p>Where the time went during your last prompt, measured in this tab and summed over all layers:</p>
       </div>
       <div class="op-times" id="op-times"></div>
     </details>
   </section>
 
-  <!-- 6. FFN + RESIDUAL --------------------------------------------------->
+  <!-- 7. FFN + RESIDUAL --------------------------------------------------->
   <section class="chapter" id="ch-ffn" data-map="ffn">
     <header class="ch-head">
-      <span class="ch-num" aria-hidden="true">6</span>
+      <span class="ch-num" aria-hidden="true">7</span>
       <div>
         <h2>Each word thinks on its own, and keeps a running total</h2>
         <p class="runs-on"><span class="loc hbm">most of each layer’s weights</span><span class="loc sm">tensor cores</span></p>
@@ -327,10 +365,10 @@
     </details>
   </section>
 
-  <!-- 7. SAMPLING --------------------------------------------------------->
+  <!-- 8. SAMPLING --------------------------------------------------------->
   <section class="chapter" id="ch-sample" data-map="sample">
     <header class="ch-head">
-      <span class="ch-num" aria-hidden="true">7</span>
+      <span class="ch-num" aria-hidden="true">8</span>
       <div>
         <h2>Picking the next word</h2>
         <p class="runs-on"><span class="loc sm">scores on the GPU</span><span class="loc link">4 bytes back</span><span class="loc host">text on the CPU</span></p>
@@ -358,24 +396,24 @@
     </details>
   </section>
 
-  <!-- 8. TRACE --------------------------------------------------------->
+  <!-- 9. TRACE --------------------------------------------------------->
   <section class="chapter" id="ch-trace" data-map="trace">
     <header class="ch-head">
-      <span class="ch-num" aria-hidden="true">8</span>
+      <span class="ch-num" aria-hidden="true">9</span>
       <div>
         <h2>Follow one token through the whole model</h2>
         <p class="runs-on"><span class="loc hbm">each layer’s weights from HBM</span><span class="loc sm">every step on the GPU</span></p>
       </div>
     </header>
-    <p class="plain">Chapters 3 to 7 took the model apart. Here it is in one piece. We follow a single token from its embedding, through every step of every layer, to the final scores and percentages. Use <b>Next</b> to walk through it, or drag the layer slider. Every number is the real one from your last run.</p>
+    <p class="plain">Chapters 3 to 8 took the model apart. Here it is in one piece. We follow a single token from its embedding, through every step of every layer, to the final scores and percentages. Use <b>Next</b> to walk through it, or drag the layer slider. Every number is the real one from your last run.</p>
     <div class="prose"><p><b>Which token?</b> The last token of your prompt. Every token goes through the same steps, but the last one is special: its final vector is the one that gets turned into scores for the next word. The layout stays the same at every step; only the numbers change. Each vector shows its first 8 numbers, then all of them as a colour strip.</p></div>
     <div class="tracer" id="tracer"></div>
   </section>
 
-  <!-- 9. DECODE + KV CACHE ------------------------------------------------>
+  <!-- 10. DECODE + KV CACHE ------------------------------------------------>
   <section class="chapter" id="ch-kv" data-map="kv">
     <header class="ch-head">
-      <span class="ch-num" aria-hidden="true">9</span>
+      <span class="ch-num" aria-hidden="true">10</span>
       <div>
         <h2>One word at a time, with notes</h2>
         <p class="runs-on"><span class="loc hbm">KV cache lives in GPU memory</span><span class="loc sm">one token per pass</span></p>
@@ -383,7 +421,7 @@
     </header>
     <p class="plain">Your whole prompt went through the model in one go; this is called <dfn data-term="prefill">prefill</dfn>. The answer can’t be produced that way. Each new token depends on the one chosen before it, so the model runs once per token, feeding in the token it just picked. This loop is called <dfn data-term="decode">decode</dfn>.</p>
     <div class="prose">
-      <p>On every pass, the new token needs to look back at all earlier tokens (chapter 5), using their <dfn data-term="key">keys</dfn> and <dfn data-term="value">values</dfn>. Those never change once computed, so instead of recomputing them on every pass the model keeps them, like notes, in GPU memory. These notes are the <dfn data-term="kvcache">KV cache</dfn>. Each pass adds one column of notes for the new token, in every layer.</p>
+      <p>On every pass, the new token needs to look back at all earlier tokens (chapter 6), using their <dfn data-term="key">keys</dfn> and <dfn data-term="value">values</dfn>. Those never change once computed, so instead of recomputing them on every pass the model keeps them, like notes, in GPU memory. These notes are the <dfn data-term="kvcache">KV cache</dfn>. Each pass adds one column of notes for the new token, in every layer.</p>
       <p><b>How to read this:</b> each column is one token and each row is one layer. Every small cell holds that token’s key and value for that layer. Amber cells came from your prompt; pink cells were added one by one as the answer was written.</p>
     </div>
     <div class="kv" id="kv"></div>
@@ -397,10 +435,10 @@
     <div class="steps" id="steps"></div>
   </section>
 
-  <!-- 10. ROOFLINE --------------------------------------------------------->
+  <!-- 11. ROOFLINE --------------------------------------------------------->
   <section class="chapter" id="ch-roofline" data-map="roofline">
     <header class="ch-head">
-      <span class="ch-num" aria-hidden="true">10</span>
+      <span class="ch-num" aria-hidden="true">11</span>
       <div>
         <h2>Why writing is slower than reading</h2>
         <p class="runs-on"><span class="loc hbm">memory speed</span><span class="loc sm">vs arithmetic speed</span></p>
@@ -423,10 +461,10 @@
     </details>
   </section>
 
-  <!-- 11. PREFIX CACHE ---------------------------------------------------->
+  <!-- 12. PREFIX CACHE ---------------------------------------------------->
   <section class="chapter" id="ch-prefix" data-map="prefix">
     <header class="ch-head">
-      <span class="ch-num" aria-hidden="true">11</span>
+      <span class="ch-num" aria-hidden="true">12</span>
       <div>
         <h2>Reusing notes between requests</h2>
         <p class="runs-on"><span class="loc hbm">KV blocks stay in GPU memory</span></p>
@@ -446,10 +484,10 @@
     <div class="ttft" id="ttft"></div>
   </section>
 
-  <!-- 12. SUMMARY --------------------------------------------------------->
+  <!-- 13. SUMMARY --------------------------------------------------------->
   <section class="chapter" id="ch-summary" data-map="summary">
     <header class="ch-head">
-      <span class="ch-num" aria-hidden="true">12</span>
+      <span class="ch-num" aria-hidden="true">13</span>
       <div>
         <h2>The whole trip, in one table</h2>
         <p class="runs-on"><span class="loc host">CPU</span><span class="loc link">PCIe</span><span class="loc hbm">HBM</span><span class="loc sm">SM</span></p>

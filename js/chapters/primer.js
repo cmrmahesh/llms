@@ -228,18 +228,96 @@ export default function primer(ctx) {
     el.append(
       row('The rule', [m('m'), ' × ', n('n')], [n('n'), ' × 1'], [m('m'), ' × 1'], 'the two inner sizes must match'),
       row('The example above', [m('3'), ' × ', n('4')], [n('4'), ' × 1'], [m('3'), ' × 1'], '3 rows, so 3 outputs'),
-      row('One token, one model matrix', [m(fmtInt(I)), ' × ', n(fmtInt(D))], [n(fmtInt(D)), ' × 1'], [m(fmtInt(I)), ' × 1'], 'feed-forward “up”, chapter 6'),
+      row('One token, one model matrix', [m(fmtInt(I)), ' × ', n(fmtInt(D))], [n(fmtInt(D)), ' × 1'], [m(fmtInt(I)), ' × 1'], 'feed-forward “up”, chapter 7'),
       row('Your whole prompt at once', [m(fmtInt(I)), ' × ', n(fmtInt(D))], [n(fmtInt(D)), ' × ', t(String(T))], [m(fmtInt(I)), ' × ', t(String(T))], `${T} tokens side by side: this is prefill`),
       h('p', { class: 'caption' }, h('span', { class: 'dm' }, 'm'), ' = rows of the matrix = how many numbers come out. ',
         h('span', { class: 'dn' }, 'n'), ' = columns = how many numbers go in. ',
         h('span', { class: 'dt' }, 'T'), ' = how many tokens are processed together.'));
   }
 
+  // ---------------- a 9-weight model: forward, backward, update
+  function trainer() {
+    const el = $('#primer-train');
+    if (!el) return;
+    el.textContent = '';
+    const words = ['sat', 'flew', 'barked'];
+    const target = 0;
+    const x = [0.9, -0.5, 0.6];               // the vector for the context "the cat"
+    const init = () => [[-0.4, 0.3, 0.1], [0.5, -0.2, 0.4], [0.2, 0.6, -0.3]];
+    let W = init();
+    let probs = null, grad = null, stage = 'start', history = [], steps = 0;
+    const lr = 0.8;
+    const fmt = v => (v < 0 ? '−' : '') + Math.abs(v).toFixed(2);
+    const forward = () => {
+      const z = W.map(row => row.reduce((s, w, i) => s + w * x[i], 0));
+      const m = Math.max(...z);
+      const e = z.map(v => Math.exp(v - m));
+      const sum = e.reduce((a, b) => a + b, 0);
+      return { z, p: e.map(v => v / sum) };
+    };
+    const backward = p => W.map((row, j) => row.map((_, i) => (p[j] - (j === target ? 1 : 0)) * x[i]));
+
+    const grid = h('div', { class: 'tr-body' });
+    const note = h('p', { class: 'tr-note', 'aria-live': 'polite' });
+    const bF = h('button', { class: 'btn primary' }, '1. Forward');
+    const bB = h('button', { class: 'btn' }, '2. Backward');
+    const bU = h('button', { class: 'btn' }, '3. Update weights');
+    const b10 = h('button', { class: 'btn' }, 'Train 10 rounds');
+    const bR = h('button', { class: 'btn ghost' }, 'Reset');
+    bF.addEventListener('click', () => { const f = forward(); probs = f; grad = null; stage = 'forward'; draw(); });
+    bB.addEventListener('click', () => { grad = backward(probs.p); stage = 'backward'; draw(); });
+    bU.addEventListener('click', () => {
+      W = W.map((row, j) => row.map((w, i) => w - lr * grad[j][i]));
+      steps++; history.push(probs.p[target]);
+      probs = forward(); grad = null; stage = 'updated'; draw();
+    });
+    b10.addEventListener('click', () => {
+      for (let r = 0; r < 10; r++) {
+        const f = forward(); history.push(f.p[target]);
+        const g = backward(f.p);
+        W = W.map((row, j) => row.map((w, i) => w - lr * g[j][i]));
+        steps++;
+      }
+      probs = forward(); grad = null; stage = 'trained'; draw();
+    });
+    bR.addEventListener('click', () => { W = init(); probs = null; grad = null; stage = 'start'; history = []; steps = 0; draw(); });
+
+    function draw() {
+      bB.disabled = stage !== 'forward';
+      bU.disabled = stage !== 'backward';
+      grid.textContent = '';
+      const xCol = h('div', { class: 'tr-col' }, h('small', {}, 'input: “the cat”'), ...x.map(v => h('span', { class: 'tr-cell in' }, fmt(v))));
+      const wGrid = h('div', { class: 'tr-col' }, h('small', {}, 'the 9 weights'),
+        ...W.map((row, j) => h('div', { class: 'tr-row' }, row.map((w, i) => {
+          const g = grad?.[j][i];
+          const dir = g === undefined ? '' : g > 0.005 ? ' down' : g < -0.005 ? ' up' : '';
+          return h('span', { class: `tr-cell w${dir}`, title: g === undefined ? '' : `nudge ${g > 0 ? 'down' : 'up'} by ${Math.abs(lr * g).toFixed(3)}` },
+            fmt(w), g === undefined ? null : h('i', { 'aria-hidden': 'true' }, g > 0.005 ? '↓' : g < -0.005 ? '↑' : '·'));
+        }))));
+      const outs = h('div', { class: 'tr-col tr-out' }, h('small', {}, 'next word: chance'),
+        ...words.map((wd, j) => h('div', { class: `tr-prob${j === target ? ' target' : ''}` },
+          h('code', {}, wd),
+          h('span', { class: 'b' }, h('span', { style: { width: probs ? `${probs.p[j] * 100}%` : '0' } })),
+          h('span', { class: 'p' }, probs ? `${Math.round(probs.p[j] * 100)}%` : '?'))));
+      grid.append(xCol, h('span', { class: 'mv-op', 'aria-hidden': 'true' }, '→'), wGrid, h('span', { class: 'mv-op', 'aria-hidden': 'true' }, '→'), outs);
+      const pT = probs ? Math.round(probs.p[target] * 100) : null;
+      note.textContent = {
+        start: 'A toy model: the context “the cat” is a vector of 3 numbers, and 9 weights turn it into a score for each of 3 possible next words. The right answer in our “training text” is “sat”. Press Forward.',
+        forward: `Forward pass: input × weights → 3 scores → softmax → chances. The model gives “sat” only ${pT}%. That’s the error. Press Backward.`,
+        backward: `Backward pass: for each weight, which way would raise the chance of “sat”? Arrows show the nudge: ↑ grow, ↓ shrink. Weights in the “sat” row grow where the input is positive; the other rows do the opposite. Press Update.`,
+        updated: `Every weight moved a little in its arrow’s direction. Forward again: “sat” is now ${pT}%. That was one training step. Repeat it billions of times on real text and you get a language model.`,
+        trained: `After ${steps} rounds of forward, backward and update, “sat” is at ${pT}%. The weights now “know” that “the cat” is followed by “sat”. Inference uses those frozen weights and runs only the forward pass.`,
+      }[stage];
+    }
+    el.append(grid, h('div', { class: 'tr-ctl' }, bF, bB, bU, b10, bR), note);
+    draw();
+  }
+
   let ttTimer = null;
   const twoTablesSoon = () => { clearTimeout(ttTimer); ttTimer = setTimeout(twoTables, 300); };
 
   // These work before anything is downloaded.
-  colour(); matvec(); shapes(); hardware(); kvSchematic(); shapeRule();
+  colour(); matvec(); shapes(); hardware(); kvSchematic(); shapeRule(); trainer();
 
   return {
     update(reason) {

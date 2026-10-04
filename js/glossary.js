@@ -38,6 +38,9 @@ export const TERMS = {
   quantization: 'Storing weights with fewer bits (8 or 4 instead of 16) to shrink the model and the bytes read per token, at a small cost in quality.',
   latency: 'How long you wait. Time to first token (TTFT) is how long before the first word appears.',
   batch: 'Several requests processed together in one pass, so every weight fetched from memory is used for all of them.',
+  forward: 'Forward pass: feeding an input through the model, layer by layer, to get its output. Inference is only forward passes.',
+  backprop: 'Backpropagation: during training, working backwards from the error to find how each weight should change to make the right answer more likely.',
+  transformer: 'The model design used by GPT, Llama, Qwen and this model: a stack of identical blocks, each with attention followed by a feed-forward network.',
   bpe: 'Byte Pair Encoding: build the vocabulary by repeatedly gluing together the most common neighbouring pair of pieces in a big pile of text.',
   rope: 'Rotary position embedding: the model marks where each token sits by rotating its query and key vectors by an amount that depends on position.',
 };

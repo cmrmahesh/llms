@@ -156,14 +156,14 @@ export default function artifact(ctx) {
           h('label', {}, 'Pick a layer ', slider, out),
           h('span', { class: 'dim' }, `One of ${d.L}. Every layer has exactly this list.`)),
         line(p + 'input_layernorm.weight', [d.D], 'norm', 'rescales the vector first', 1),
-        h('div', { class: 'an-group' }, 'self_attn: attention (chapter 5)'),
+        h('div', { class: 'an-group' }, 'self_attn: attention (chapter 6)'),
         line(p + 'self_attn.q_proj.weight', [d.D, d.D], 'attn', 'makes queries', 2),
         line(p + 'self_attn.k_proj.weight', [kvw, d.D], 'attn', 'makes keys (narrower: shared by heads)', 2),
         line(p + 'self_attn.v_proj.weight', [kvw, d.D], 'attn', 'makes values (narrower: shared by heads)', 2),
         line(p + 'self_attn.o_proj.weight', [d.D, d.D], 'attn', 'combines the heads’ results', 2),
         h('div', { class: 'an-subtotal' }, `Attention in this layer: ${fmtInt(attn)} numbers`),
         line(p + 'post_attention_layernorm.weight', [d.D], 'norm', 'rescales again', 1),
-        h('div', { class: 'an-group' }, 'mlp: feed-forward (chapter 6)'),
+        h('div', { class: 'an-group' }, 'mlp: feed-forward (chapter 7)'),
         line(p + 'mlp.gate_proj.weight', [d.I, d.D], 'mlp', 'stretch 576 → 1,536', 2),
         line(p + 'mlp.up_proj.weight', [d.I, d.D], 'mlp', 'stretch 576 → 1,536', 2),
         line(p + 'mlp.down_proj.weight', [d.D, d.I], 'mlp', 'squeeze 1,536 → 576', 2),
@@ -201,15 +201,15 @@ export default function artifact(ctx) {
 
   function role(name) {
     const tied = S.config?.tie_word_embeddings;
-    if (name.includes('embed_tokens')) return `The vocabulary table. Row n is the vector for token ID n (chapter 3).${tied ? ' This model reuses it at the very end to score every possible next token (chapter 7).' : ''}`;
-    if (name.includes('lm_head')) return 'Scores every vocabulary entry as the possible next token (chapter 7).';
-    if (name.includes('q_proj')) return 'Turns each token’s vector into its query: “what am I looking for?” (chapter 5).';
-    if (name.includes('k_proj')) return 'Turns each token’s vector into its key: “what do I contain?” It is smaller than the query matrix because several heads share each key (chapter 5).';
-    if (name.includes('v_proj')) return 'Turns each token’s vector into its value: the information it passes on when another token pays attention to it (chapter 5).';
-    if (name.includes('o_proj')) return 'Combines the results of all attention heads into one vector, which is added to the token’s running total (chapter 6).';
-    if (name.includes('gate_proj')) return 'Feed-forward, step 1 of 3: stretches 576 numbers to 1,536. This one decides how much of each passes through (chapter 6).';
-    if (name.includes('up_proj')) return 'Feed-forward, step 2 of 3: also stretches 576 numbers to 1,536. This one carries the content that the gate lets through (chapter 6).';
-    if (name.includes('down_proj')) return 'Feed-forward, step 3 of 3: squeezes the 1,536 numbers back to 576 and adds them to the token’s running total (chapter 6).';
+    if (name.includes('embed_tokens')) return `The vocabulary table. Row n is the vector for token ID n (chapter 3).${tied ? ' This model reuses it at the very end to score every possible next token (chapter 8).' : ''}`;
+    if (name.includes('lm_head')) return 'Scores every vocabulary entry as the possible next token (chapter 8).';
+    if (name.includes('q_proj')) return 'Turns each token’s vector into its query: “what am I looking for?” (chapter 6).';
+    if (name.includes('k_proj')) return 'Turns each token’s vector into its key: “what do I contain?” It is smaller than the query matrix because several heads share each key (chapter 6).';
+    if (name.includes('v_proj')) return 'Turns each token’s vector into its value: the information it passes on when another token pays attention to it (chapter 6).';
+    if (name.includes('o_proj')) return 'Combines the results of all attention heads into one vector, which is added to the token’s running total (chapter 7).';
+    if (name.includes('gate_proj')) return 'Feed-forward, step 1 of 3: stretches 576 numbers to 1,536. This one decides how much of each passes through (chapter 7).';
+    if (name.includes('up_proj')) return 'Feed-forward, step 2 of 3: also stretches 576 numbers to 1,536. This one carries the content that the gate lets through (chapter 7).';
+    if (name.includes('down_proj')) return 'Feed-forward, step 3 of 3: squeezes the 1,536 numbers back to 576 and adds them to the token’s running total (chapter 7).';
     return 'A list of scale factors, one per position in the vector. Before each block, the token’s vector is rescaled to a standard size and then multiplied by these.';
   }
 

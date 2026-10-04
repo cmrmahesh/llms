@@ -821,3 +821,34 @@ details.deeper .prose:first-of-type { margin-top: 14px; }
   .tv-strip { gap: 1px; }
   .tv-cell.end { padding: 0 5px; font-size: 0.7rem; }
 }
+
+/* ---------- transformer loop ---------- */
+.loop { background: var(--panel); border: 1px solid var(--rule); border-radius: var(--r-m); padding: 14px 16px; margin: 14px 0; }
+.loop svg { width: 100%; height: auto; display: block; }
+.loop-ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+.loop-status { font-size: 0.88rem; color: var(--ink-2); margin-left: 8px; font-variant-numeric: tabular-nums; }
+.loop-text { margin: 10px 0 2px; min-height: 3.2em; max-width: 72ch; }
+
+/* ---------- forward / backward trainer ---------- */
+.trainer { background: var(--panel); border: 1px solid var(--rule); border-radius: var(--r-m); padding: 16px; margin: 12px 0 16px; }
+.tr-body { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.tr-col { display: flex; flex-direction: column; gap: 4px; }
+.tr-col small { color: var(--ink-3); font-size: 0.78rem; }
+.tr-row { display: flex; gap: 4px; }
+.tr-cell { width: 64px; height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; font: 600 0.92rem var(--sans); font-variant-numeric: tabular-nums; border: 1px solid var(--rule); border-radius: 4px; background: var(--panel-2); }
+.tr-cell.in { background: var(--host-fill); border-color: var(--host); }
+.tr-cell i { font-style: normal; font-weight: 800; }
+.tr-cell.up { background: #e7f3e4; border-color: #3a7d2c; }
+.tr-cell.up i { color: #2f6b22; }
+.tr-cell.down { background: #fbe9e4; border-color: var(--pos); }
+.tr-cell.down i { color: var(--pos); }
+.tr-out { min-width: 230px; flex: 1; }
+.tr-prob { display: grid; grid-template-columns: 64px minmax(0, 1fr) 44px; gap: 8px; align-items: center; font-size: 0.9rem; min-height: 36px; }
+.tr-prob .b { height: 14px; background: var(--rule-2); border-radius: 3px; overflow: hidden; }
+.tr-prob .b span { display: block; height: 100%; background: var(--ink); transition: width 300ms ease-out; }
+.tr-prob.target .b span { background: var(--sm); }
+.tr-prob.target code { background: var(--sm-fill); }
+.tr-prob .p { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.tr-ctl { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.tr-note { margin: 10px 0 0; min-height: 3em; max-width: 72ch; }
+@media (prefers-reduced-motion: reduce) { .tr-prob .b span { transition: none; } }

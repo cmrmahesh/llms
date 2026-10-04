@@ -131,7 +131,7 @@ export default function tracer(ctx) {
     }
 
     if (w.kind === 'final') {
-      head('Finish: score every word, then softmax', `After the last layer, the vector is rescaled once more and compared with every row of the vocabulary table: one dot product per token, ${fmtInt(d().V)} in all (chapter 7). Each result is that token’s score. Softmax turns the scores into percentages.`);
+      head('Finish: score every word, then softmax', `After the last layer, the vector is rescaled once more and compared with every row of the vocabulary table: one dot product per token, ${fmtInt(d().V)} in all (chapter 8). Each result is that token’s score. Softmax turns the scores into percentages.`);
       c.append(shape([dm('1'), ' × ', dn(fmtInt(D))], [dn(fmtInt(D)), ' × ', dm(fmtInt(d().V))], [dm('1'), ' × ', dm(fmtInt(d().V)), ' scores']));
       c.append(vecRow('final x', tk.final, 0, D, 'after the final RMSNorm'));
       const step0 = S.run.steps[0];
@@ -147,7 +147,7 @@ export default function tracer(ctx) {
             h('span', { class: 'p' }, `${(t.p * 100).toFixed(1)}%`)));
         }
         c.append(h('p', { class: 'tv-sub' }, 'The 10 highest scores, as percentages (before temperature and other sampling settings):'), list,
-          h('p', { class: 'caption' }, 'Highlighted: the token the sampler actually picked as the first word of the answer. Then the whole journey repeats for that token, one layer at a time, using the KV cache (chapter 9).'));
+          h('p', { class: 'caption' }, 'Highlighted: the token the sampler actually picked as the first word of the answer. Then the whole journey repeats for that token, one layer at a time, using the KV cache (chapter 10).'));
       }
       return;
     }
@@ -159,7 +159,7 @@ export default function tracer(ctx) {
       head(stageTitle + 'normalize', 'Rescale the vector to a standard size, then multiply each number by a learned factor. This keeps the numbers from growing out of control as 30 layers keep adding to them. Nothing is learned about context yet.');
       c.append(vecRow('x', tk.x, oD, D, 'coming into this layer'), arrow('rescale'), vecRow('h', tk.h, oD, D, 'normalized'));
     } else if (s === 1) {
-      head(stageTitle + 'make the query, key and value', 'Three matrix multiplications, each with this layer’s own weights. The query asks “what am I looking for?”, the key says “what do I contain?”, and the value is what this token hands over when others attend to it (chapter 5). The key and value are also saved into the KV cache.');
+      head(stageTitle + 'make the query, key and value', 'Three matrix multiplications, each with this layer’s own weights. The query asks “what am I looking for?”, the key says “what do I contain?”, and the value is what this token hands over when others attend to it (chapter 6). The key and value are also saved into the KV cache.');
       c.append(
         shape([dm('1'), ' × ', dn(fmtInt(D))], [dn(fmtInt(D)), ' × ', dm(fmtInt(D))], [dm('1'), ' × ', dm(fmtInt(D)), ' = q']),
         vecRow('q', tk.q, oD, D, `${H} heads × ${HD}`),
@@ -171,7 +171,7 @@ export default function tracer(ctx) {
       c.append(headsTable(tr, l));
       c.append(vecRow('mixed', tk.att, oD, D, `${H} heads’ results, side by side`));
     } else if (s === 3) {
-      head(stageTitle + 'combine the heads, then add', 'One more matrix (o_proj) blends the heads’ results into a correction. The correction is then ADDED to the running vector. Nothing is overwritten: this is the residual stream (chapter 6).');
+      head(stageTitle + 'combine the heads, then add', 'One more matrix (o_proj) blends the heads’ results into a correction. The correction is then ADDED to the running vector. Nothing is overwritten: this is the residual stream (chapter 7).');
       c.append(
         shape([dm('1'), ' × ', dn(fmtInt(D))], [dn(fmtInt(D)), ' × ', dm(fmtInt(D))], [dm('1'), ' × ', dm(fmtInt(D)), ' correction']),
         vecRow('x', tk.x, oD, D, 'before'), arrow('+'),
@@ -181,7 +181,7 @@ export default function tracer(ctx) {
       head(stageTitle + 'normalize again', 'Same as step 1: rescale before the next block of multiplications.');
       c.append(vecRow('x', tk.xmid, oD, D, 'after attention'), arrow('rescale'), vecRow('h', tk.h2, oD, D, 'normalized'));
     } else {
-      head(stageTitle + 'feed-forward, then add', `The token is processed on its own: stretched to ${fmtInt(I)} numbers twice (gate and up), combined as silu(gate) × up, squeezed back to ${D}, and ADDED to the running vector (chapter 6).`);
+      head(stageTitle + 'feed-forward, then add', `The token is processed on its own: stretched to ${fmtInt(I)} numbers twice (gate and up), combined as silu(gate) × up, squeezed back to ${D}, and ADDED to the running vector (chapter 7).`);
       const act = tr.ffnAct;
       c.append(
         shape([dm('1'), ' × ', dn(fmtInt(D))], [dn(fmtInt(D)), ' × ', dm(fmtInt(I))], [dm('1'), ' × ', dm(fmtInt(I)), ' (twice)']),
@@ -219,8 +219,8 @@ export default function tracer(ctx) {
           h('span', { class: 'tv-pct' }, `${Math.round(row[j] * 100)}%`))))));
     }
     const note = sinks === H
-      ? `In this layer every head parks most of its attention on the first token (the attention sink from chapter 5), so attention adds little here.`
-      : `${sinks} of ${H} heads park most of their attention on the first token (the attention sink from chapter 5). The others are doing real work: head ${best.hh} puts ${Math.round(best.p * 100)}% on “${vis(S.tok.tokenText(tokenAtPos(best.j)))}”.`;
+      ? `In this layer every head parks most of its attention on the first token (the attention sink from chapter 6), so attention adds little here.`
+      : `${sinks} of ${H} heads park most of their attention on the first token (the attention sink from chapter 6). The others are doing real work: head ${best.hh} puts ${Math.round(best.p * 100)}% on “${vis(S.tok.tokenText(tokenAtPos(best.j)))}”.`;
     return h('div', {}, h('p', { class: 'tv-sub' }, 'Where each head looked (its top 3 earlier tokens):'), box, h('p', { class: 'caption' }, note));
   }
 
@@ -264,7 +264,7 @@ export default function tracer(ctx) {
     const top = lens[l];
     box.append(h('b', {}, s === 5 ? `Best guess after layer ${l}: ` : `Best guess after this layer finishes: `),
       ...top.slice(0, 3).map((c, i) => h('span', { class: 'tv-gtok' }, h('code', {}, vis(S.tok.tokenText(c.id))), ` ${(c.p * 100).toFixed(0)}%${i < 2 ? '' : ''}`)),
-      h('small', { class: 'dim' }, ' (the logit lens from chapter 6: what the model would say if it stopped here)'));
+      h('small', { class: 'dim' }, ' (the logit lens from chapter 7: what the model would say if it stopped here)'));
     return box;
   }
 
