@@ -29,7 +29,7 @@ with an "in plain words" explanation and keeps the technical version in a
 | 2 | Tokenizer: vocabulary explorer, pre-split, BPE glue steps for any word, ID lookup | CPU |
 | 3 | Embedding lookup and nearest neighbours | HBM gather |
 | 4 | Word order via RoPE, shown as clock hands using the model's real vectors | SM registers |
-| 5 | The transformer loop: attention (tokens talk) → add → feed-forward (each token alone) → add, × 30 layers | HBM → SM |
+| 5 | The transformer loop (attention → add → feed-forward → add, × 30, with Back/Next/Autoplay) and "follow the shape": one token's 576 × 1 vector through every matrix, drawn to scale, with a running ledger of all 134,515,008 weights | HBM → SM |
 | 6 | Attention: Q/K/V, heads as slices, real attention maps, attention sinks and previous-word heads | HBM → SM |
 | 7 | Feed-forward (SwiGLU), the residual stream, logit lens | HBM → SM |
 | 8 | Logits → softmax → temperature / top-k / top-p → token → bytes → text | SM, then 4 bytes to CPU |

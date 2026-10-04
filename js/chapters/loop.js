@@ -99,7 +99,7 @@ export default function loop(ctx) {
     add('text', { x: 46, y: 382, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--ink-3)' }, svg, 'layer 0');
     add('text', { x: 46, y: 52, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--ink-3)' }, svg, `layer ${Lc - 1}`);
     // phase title
-    const title = add('text', { x: 110, y: 30, 'font-size': 16, 'font-weight': 700, fill: 'var(--ink)' }, svg, 'Press play');
+    const title = add('text', { x: 110, y: 30, 'font-size': 16, 'font-weight': 700, fill: 'var(--ink)' }, svg, 'Press Next or Autoplay');
     // groups
     const arcs = add('g', {});
     const ffn = add('g', {});
@@ -120,27 +120,52 @@ export default function loop(ctx) {
     add('text', { x: cx(n - 1) - 210, y: 114, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700, fill: 'var(--ink)' }, final, 'Last token’s vector → scores');
     add('text', { x: cx(n - 1) - 210, y: 132, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--ink-2)' }, final, 'for all 49,152 tokens → next word');
 
-    const play = h('button', { class: 'btn primary' }, 'Play');
-    const stepBtn = h('button', { class: 'btn' }, 'Step');
-    const resetBtn = h('button', { class: 'btn' }, 'Reset');
+    const back = h('button', { class: 'btn' }, '◀ Back');
+    const next = h('button', { class: 'btn primary' }, 'Next ▶');
+    const play = h('button', { class: 'btn' }, 'Autoplay');
+    const speed = h('select', { class: 'inline', 'aria-label': 'Autoplay speed' },
+      h('option', { value: 'slow' }, 'Slow'), h('option', { value: 'normal', selected: true }, 'Normal'), h('option', { value: 'fast' }, 'Fast'));
+    const toEnd = h('button', { class: 'btn ghost' }, 'Skip to the end');
+    const resetBtn = h('button', { class: 'btn ghost' }, 'Reset');
     const status = h('span', { class: 'loop-status' });
-    const text = h('p', { class: 'loop-text', 'aria-live': 'polite' }, 'Five tokens, their running vectors drawn as coloured cells, and the tower of 30 layers on the left. Press Play.');
+    const text = h('p', { class: 'loop-text', 'aria-live': 'polite' }, 'Five tokens, their running vectors drawn as coloured cells, and the tower of 30 layers on the left. Step through with Next, or press Autoplay. You can also click a layer in the tower, or use the ← and → keys.');
+    back.addEventListener('click', () => { stop(); setStep(step - 1); });
+    next.addEventListener('click', () => { stop(); advance(); });
     play.addEventListener('click', () => (timer ? stop() : start()));
-    stepBtn.addEventListener('click', () => { stop(); advance(); });
-    resetBtn.addEventListener('click', () => { stop(); reset(); draw(); text.textContent = 'Back to the start. Press Play.'; });
-    el.append(svg, h('div', { class: 'loop-ctl' }, play, stepBtn, resetBtn, status), text);
-    els = { svg, tower, title, arcs, ffn, chips, final, play, status, text, add };
+    toEnd.addEventListener('click', () => { stop(); setStep(4 * L()); });
+    resetBtn.addEventListener('click', () => { stop(); reset(); draw(); text.textContent = 'Back to the start. Press Next or Autoplay.'; });
+    tower.forEach((r, l) => {
+      r.style.cursor = 'pointer';
+      r.addEventListener('click', () => { stop(); setStep(4 * l); });
+    });
+    el.tabIndex = 0;
+    el.setAttribute('aria-label', 'Transformer loop animation. Left and right arrow keys step back and forward.');
+    el.addEventListener('keydown', e => {
+      if (e.target !== el && e.target.tagName !== 'svg') return;
+      if (e.key === 'ArrowRight') { e.preventDefault(); stop(); advance(); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); stop(); setStep(step - 1); }
+    });
+    el.append(svg, h('div', { class: 'loop-ctl' }, back, next, h('span', { class: 'loop-sep' }), play, h('label', { class: 'num' }, 'Speed ', speed), toEnd, resetBtn), h('p', { class: 'loop-status' }, status), text);
+    els = { svg, tower, title, arcs, ffn, chips, final, play, back, next, speed, status, text, add };
+    draw();
+  }
+
+  // Jump to any step by replaying the (deterministic) sketch from the start.
+  function setStep(target) {
+    target = Math.max(-1, Math.min(4 * L(), target));
+    reset();
+    while (step < target) advance(true);
     draw();
   }
 
   function start() {
-    if (step >= 4 * L()) { reset(); }
+    if (step >= 4 * L()) reset();
     els.play.textContent = 'Pause';
     tick();
   }
   function stop() {
     clearTimeout(timer); timer = null;
-    if (els) els.play.textContent = step >= 4 * L() ? 'Play again' : 'Play';
+    if (els) els.play.textContent = 'Autoplay';
   }
   function tick() {
     advance();
@@ -148,10 +173,11 @@ export default function loop(ctx) {
     const l = Math.floor(step / 4);
     // Slow for the first two layers and the last one, fast in between.
     const slow = l < 2 || l >= L() - 1;
-    timer = setTimeout(tick, reduced ? 1400 : slow ? 1300 : 140);
+    const f = { slow: 1.8, normal: 1, fast: 0.45 }[els.speed.value];
+    timer = setTimeout(tick, (reduced ? 1400 : slow ? 1300 : 160) * f);
   }
 
-  function advance() {
+  function advance(quiet = false) {
     if (step >= 4 * L()) return;
     step++;
     if (step < 4 * L()) {
@@ -159,12 +185,14 @@ export default function loop(ctx) {
       if (p === 1) applyAttention(l);
       if (p === 3) applyFfn(l);
     }
-    draw();
+    if (!quiet) draw();
   }
 
   function draw() {
     if (!els) return;
-    const { tower, title, arcs, ffn, chips, final, status, text, add } = els;
+    const { tower, title, arcs, ffn, chips, final, status, text, add, back, next } = els;
+    back.disabled = step < 0;
+    next.disabled = step >= 4 * L();
     const Lc = L();
     const done = step >= 4 * Lc;
     const l = done ? Lc - 1 : Math.max(0, Math.floor(step / 4));
@@ -200,7 +228,7 @@ export default function loop(ctx) {
       });
     }
     final.setAttribute('opacity', done ? 1 : 0);
-    if (step < 0) { title.textContent = 'Press play'; status.textContent = ''; return; }
+    if (step < 0) { title.textContent = 'Press Next or Autoplay'; status.textContent = 'Not started'; return; }
     if (done) {
       title.textContent = `After all ${Lc} layers`;
       status.textContent = `${Lc} of ${Lc} layers done`;
@@ -209,7 +237,7 @@ export default function loop(ctx) {
     }
     title.textContent = `Layer ${l}: ${PHASES[p].title}`;
     status.textContent = `Layer ${l} of ${Lc - 1}, step ${p + 1} of 4`;
-    text.textContent = l >= 2 && l < Lc - 1 && timer ? `Layers ${l}… the same two halves, again and again, each layer with its own weights.` : PHASES[p].text;
+    text.textContent = l >= 2 && l < Lc - 1 && timer && els.speed.value !== 'slow' ? `Layer ${l}… the same two halves, again and again, each layer with its own weights.` : PHASES[p].text;
   }
 
   build();

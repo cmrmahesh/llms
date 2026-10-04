@@ -273,7 +273,7 @@
       </div>
     </header>
     <p class="plain">Everything between the embeddings and the final scores is <b>one block, repeated 30 times</b>. Each block has two halves. First the tokens <em>talk</em>: attention lets each token gather information from the tokens before it. Then each token <em>thinks on its own</em>: the feed-forward network processes what it just gathered. Both halves add their result to the token’s running vector, and the next block starts from there.</p>
-    <div class="prose"><p>That repeated block is what makes this a <b>transformer</b>, the design behind GPT, Llama, Qwen, Claude and this model. Press play to watch a short sentence go through it.</p></div>
+    <div class="prose"><p>That repeated block is what makes this a <b>transformer</b>, the design behind GPT, Llama, Qwen, Claude and this model. Step through it with Next, or let it autoplay, to watch a short sentence go through it.</p></div>
     <div class="loop" id="loop-viz"></div>
     <div class="prose">
       <p><b>Why both halves?</b> They do different jobs, and each needs the other:</p>
@@ -284,6 +284,10 @@
       </ul>
       <p>The next two chapters zoom into each half. Chapter 9 replays this loop with the real numbers from your prompt.</p>
     </div>
+
+    <h3 class="step-h">Follow the shape: one token’s vector through the model</h3>
+    <div class="prose"><p>Now zoom in on a single token and watch only the <em>shape</em> of its vector. It enters as a column of 576 numbers. Each step multiplies it by a weight matrix, and the shape rule from chapter 0 decides what comes out: (<i>m</i> × <i>n</i>) × (<i>n</i> × 1) = (<i>m</i> × 1). The table underneath keeps count of every matrix the vector passes through, and adds up to the whole model. After you generate, the pictures use your prompt’s real vector and the model’s real weights.</p></div>
+    <div class="journey" id="journey"></div>
     <details class="deeper">
       <summary>Go deeper: where the name comes from</summary>
       <div class="prose">

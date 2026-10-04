@@ -15,6 +15,7 @@ import tokenizer from './chapters/tokenizer.js';
 import embed from './chapters/embed.js';
 import rope from './chapters/rope.js';
 import loop from './chapters/loop.js';
+import journey from './chapters/journey.js';
 import attention from './chapters/attention.js';
 import ffn from './chapters/ffn.js';
 import sample from './chapters/sample.js';
@@ -446,7 +447,7 @@ function init() {
   const machine = createMachine($('#machine'), $('#machine-caption'), ctx);
   ctx.machine = machine;
   initGlossary($('#tooltip'));
-  for (const mod of [primer, artifact, tokenizer, embed, rope, loop, attention, ffn, sample, tracer, kv, roofline, prefix, summary]) {
+  for (const mod of [primer, artifact, tokenizer, embed, rope, loop, journey, attention, ffn, sample, tracer, kv, roofline, prefix, summary]) {
     chapters.push(mod(ctx));
   }
   chapters.push(machine);
