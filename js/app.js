@@ -17,6 +17,7 @@ import rope from './chapters/rope.js';
 import attention from './chapters/attention.js';
 import ffn from './chapters/ffn.js';
 import sample from './chapters/sample.js';
+import tracer from './chapters/tracer.js';
 import kv from './chapters/kv.js';
 import roofline from './chapters/roofline.js';
 import prefix from './chapters/prefix.js';
@@ -444,7 +445,7 @@ function init() {
   const machine = createMachine($('#machine'), $('#machine-caption'), ctx);
   ctx.machine = machine;
   initGlossary($('#tooltip'));
-  for (const mod of [primer, artifact, tokenizer, embed, rope, attention, ffn, sample, kv, roofline, prefix, summary]) {
+  for (const mod of [primer, artifact, tokenizer, embed, rope, attention, ffn, sample, tracer, kv, roofline, prefix, summary]) {
     chapters.push(mod(ctx));
   }
   chapters.push(machine);

@@ -177,7 +177,26 @@ export class LlamaModel {
       layerMs: new Float64Array(L),
       opMs: { norm: 0, qkv: 0, rope: 0, attn: 0, oproj: 0, ffn: 0, head: 0, embed: 0 },
       qkv: null,
+      // Every intermediate vector of the LAST token, in every layer: the "token tracer".
+      tok: {
+        x: new Float32Array(L * D),      // residual entering the layer
+        h: new Float32Array(L * D),      // after the first RMSNorm
+        q: new Float32Array(L * D),      // query, before RoPE
+        k: new Float32Array(L * kvDim),  // key, before RoPE
+        v: new Float32Array(L * kvDim),
+        att: new Float32Array(L * D),    // heads' mixed values, concatenated
+        o: new Float32Array(L * D),      // after the output projection
+        xmid: new Float32Array(L * D),   // residual after adding attention
+        h2: new Float32Array(L * D),     // after the second RMSNorm
+        gate: new Float32Array(L * I),
+        up: new Float32Array(L * I),
+        down: new Float32Array(L * D),   // feed-forward output, before adding
+        final: new Float32Array(D),      // after the final norm
+      },
     } : null;
+    const tk = tr?.tok;
+    const lastD = T - 1;
+    const keep = (dst, src, l, n) => dst.set(src.subarray(lastD * n, lastD * n + n), l * n);
     const op = tr ? tr.opMs : { norm: 0, qkv: 0, rope: 0, attn: 0, oproj: 0, ffn: 0, head: 0, embed: 0 };
     let c = performance.now();
     const lap = key => { const n = performance.now(); op[key] += n - c; c = n; };
@@ -196,11 +215,13 @@ export class LlamaModel {
       c = lt;
       const W = this.layers[l];
       // --- attention block ---
+      if (tk) keep(tk.x, x, l, D);
       rmsnorm(h, x, W.inNorm, T, D, eps); lap('norm');
       rt.matmul(q, h, W.wq, T, D, D);
       rt.matmul(k, h, W.wk, T, D, kvDim);
       rt.matmul(v, h, W.wv, T, D, kvDim);
       lap('qkv');
+      if (tk) { keep(tk.h, h, l, D); keep(tk.q, q, l, D); keep(tk.k, k, l, kvDim); keep(tk.v, v, l, kvDim); }
       let qPre, kPre;
       if (tr && l === 0) { qPre = q.slice((T - 1) * D, (T - 1) * D + HD); kPre = k.slice((T - 1) * kvDim, (T - 1) * kvDim + HD); }
       this.rope(q, T, H, startPos);
@@ -236,18 +257,22 @@ export class LlamaModel {
       }
       lap('attn');
       rt.matmul(ao, att, W.wo, T, D, D);
+      if (tk) { keep(tk.att, att, l, D); keep(tk.o, ao, l, D); }
       for (let i = 0; i < T * D; i++) x[i] += ao[i]; // residual
+      if (tk) keep(tk.xmid, x, l, D);
       lap('oproj');
       // --- feed-forward block (SwiGLU) ---
       rmsnorm(h, x, W.postNorm, T, D, eps); lap('norm');
       rt.matmul(gate, h, W.wg, T, D, I);
       rt.matmul(up, h, W.wu, T, D, I);
+      if (tk) { keep(tk.h2, h, l, D); keep(tk.gate, gate, l, I); keep(tk.up, up, l, I); }
       for (let i = 0; i < T * I; i++) {
         const g = gate[i];
         gate[i] = (g / (1 + Math.exp(-g))) * up[i]; // silu(g) ⊙ u
       }
       if (tr) tr.ffnAct.set(gate.subarray((T - 1) * I, T * I), l * I);
       rt.matmul(ao, gate, W.wd, T, I, D);
+      if (tk) keep(tk.down, ao, l, D);
       for (let i = 0; i < T * D; i++) x[i] += ao[i]; // residual
       lap('ffn');
       if (tr) {
@@ -263,6 +288,7 @@ export class LlamaModel {
     c = performance.now();
     rmsnorm(s.last, x.subarray((T - 1) * D), this.finalNorm, 1, D, eps);
     rt.matmul(s.logits, s.last, this.lmHead, 1, D, V);
+    if (tk) tk.final.set(s.last);
     lap('head');
     const logits = s.logits.slice();
     if (tr) tr.totalMs = performance.now() - t0;

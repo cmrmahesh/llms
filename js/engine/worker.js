@@ -128,6 +128,7 @@ function collectBuffers(tr) {
   if (!tr) return [];
   const b = [tr.embed.buffer, tr.attn.buffer, tr.resNorm.buffer, tr.ffnAct.buffer, tr.hidden.buffer, tr.layerMs.buffer];
   if (tr.qkv) for (const k of ['qPre', 'kPre', 'q', 'k', 'v', 'qAll', 'kAll', 'vAll']) b.push(tr.qkv[k].buffer);
+  if (tr.tok) for (const v of Object.values(tr.tok)) b.push(v.buffer);
   return b;
 }
 

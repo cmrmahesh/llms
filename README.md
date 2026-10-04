@@ -32,10 +32,11 @@ with an "in plain words" explanation and keeps the technical version in a
 | 5 | Attention: layer diagram with real shapes, Q/K/V, attention maps, per-op time | HBM → SM |
 | 6 | Feed-forward (SwiGLU), the residual stream, logit lens | HBM → SM |
 | 7 | Logits → softmax → temperature / top-k / top-p → token → bytes → text | SM, then 4 bytes to CPU |
-| 8 | Decode loop and the KV cache (live grid, sizes, with/without cache timings) | HBM |
-| 9 | Why decode is memory-bound: arithmetic intensity, H100 roofline, CPU benchmark | HBM vs SM |
-| 10 | Prefix caching: hash-chained 16-token blocks, measured time-to-first-token | HBM |
-| 11 | One request, every byte: phase-by-phase table for your last run | all |
+| 8 | Follow one token through the whole model: every stage of every layer, real vectors, a worked multiply, per-layer best guess, final softmax | HBM → SM |
+| 9 | Decode loop and the KV cache (live grid, one layer's real numbers, with/without cache timings) | HBM |
+| 10 | Why decode is memory-bound: arithmetic intensity, H100 roofline, CPU benchmark | HBM vs SM |
+| 11 | Prefix caching: hash-chained 16-token blocks, measured time-to-first-token | HBM |
+| 12 | One request, every byte: phase-by-phase table for your last run | all |
 
 A sticky **machine map** (CPU, RAM, PCIe, HBM, L2, SMs) follows the chapters and
 shows where each step happens and what crosses each link.

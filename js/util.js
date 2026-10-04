@@ -169,6 +169,20 @@ export function samplingDistribution(logits, { temperature, topK, topP }, keep =
   return { cands, shown: cands.slice(0, keep), greedy };
 }
 
+// Top-k tokens by logit with their plain softmax (temperature 1) probabilities.
+export function softmaxTop(logits, k) {
+  let max = -Infinity;
+  for (const v of logits) if (v > max) max = v;
+  let z = 0;
+  for (const v of logits) z += Math.exp(v - max);
+  const idx = [];
+  for (let i = 0; i < logits.length; i++) {
+    if (idx.length < k) { idx.push(i); idx.sort((a, b) => logits[b] - logits[a]); }
+    else if (logits[i] > logits[idx[k - 1]]) { idx[k - 1] = i; idx.sort((a, b) => logits[b] - logits[a]); }
+  }
+  return idx.map(id => ({ id, logit: logits[id], p: Math.exp(logits[id] - max) / z }));
+}
+
 export function sampleFrom(dist, rand = Math.random) {
   if (dist.greedy) return dist.cands[0];
   let r = rand(), acc = 0;

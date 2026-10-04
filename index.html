@@ -118,7 +118,7 @@
     <h3 class="step-h">Matrices and tensors are boxes of numbers</h3>
     <div class="prose"><p>A <dfn data-term="matrix">matrix</dfn> is a grid of numbers, like a spreadsheet: so many rows, so many columns. <dfn data-term="tensor">Tensor</dfn> is the catch-all word for a box of numbers with any number of directions. Files and code say “tensor” because they don’t care how many directions a box has.</p></div>
     <div class="primer-shapes" id="primer-shapes"></div>
-    <div class="prose"><p>The last row is the trickiest, so here is its shape drawn out. Picture one sheet of numbers per layer. On each sheet, every token is a column, and the column holds 3 heads × 64 = 192 numbers. Stack 30 sheets and you have the keys; the values are a second stack of the same shape. Chapter 8 shows the real numbers.</p></div>
+    <div class="prose"><p>The last row is the trickiest, so here is its shape drawn out. Picture one sheet of numbers per layer. On each sheet, every token is a column, and the column holds 3 heads × 64 = 192 numbers. Stack 30 sheets and you have the keys; the values are a second stack of the same shape. Chapter 9 shows the real numbers.</p></div>
     <div class="kv-schematic" id="primer-kv"></div>
 
     <h3 class="step-h">The one operation: multiply a matrix by a vector</h3>
@@ -294,7 +294,7 @@
       <div class="prose"><p>The full layer, with the matrix shapes for your prompt (<i>T</i> = number of tokens). Amber boxes multiply by weights read from GPU memory; pink boxes are arithmetic with no weights.</p></div>
       <div class="layer-diagram" id="layer-diagram"></div>
       <div class="prose">
-        <p>Attention runs as <b data-bind="H">9</b> independent <dfn data-term="head">heads</dfn> per layer, each with 64-number queries and keys, so each can track a different kind of relationship. To save memory, this model has only <b data-bind="KVH">3</b> key/value heads, and each is shared by 3 query heads. This is grouped-query attention, and it makes the KV cache (chapter 8) 3× smaller. Scores are divided by √64 before <dfn data-term="softmax">softmax</dfn> to keep them in a sensible range.</p>
+        <p>Attention runs as <b data-bind="H">9</b> independent <dfn data-term="head">heads</dfn> per layer, each with 64-number queries and keys, so each can track a different kind of relationship. To save memory, this model has only <b data-bind="KVH">3</b> key/value heads, and each is shared by 3 query heads. This is grouped-query attention, and it makes the KV cache (chapter 9) 3× smaller. Scores are divided by √64 before <dfn data-term="softmax">softmax</dfn> to keep them in a sensible range.</p>
         <p>Where the time went during your last prompt, measured in this tab and summed over all layers:</p>
       </div>
       <div class="op-times" id="op-times"></div>
@@ -358,10 +358,24 @@
     </details>
   </section>
 
-  <!-- 8. DECODE + KV CACHE ------------------------------------------------>
-  <section class="chapter" id="ch-kv" data-map="kv">
+  <!-- 8. TRACE --------------------------------------------------------->
+  <section class="chapter" id="ch-trace" data-map="trace">
     <header class="ch-head">
       <span class="ch-num" aria-hidden="true">8</span>
+      <div>
+        <h2>Follow one token through the whole model</h2>
+        <p class="runs-on"><span class="loc hbm">each layer’s weights from HBM</span><span class="loc sm">every step on the GPU</span></p>
+      </div>
+    </header>
+    <p class="plain">Chapters 3 to 7 took the model apart. Here it is in one piece. We follow a single token from its embedding, through every step of every layer, to the final scores and percentages. Use <b>Next</b> to walk through it, or drag the layer slider. Every number is the real one from your last run.</p>
+    <div class="prose"><p><b>Which token?</b> The last token of your prompt. Every token goes through the same steps, but the last one is special: its final vector is the one that gets turned into scores for the next word. The layout stays the same at every step; only the numbers change. Each vector shows its first 8 numbers, then all of them as a colour strip.</p></div>
+    <div class="tracer" id="tracer"></div>
+  </section>
+
+  <!-- 9. DECODE + KV CACHE ------------------------------------------------>
+  <section class="chapter" id="ch-kv" data-map="kv">
+    <header class="ch-head">
+      <span class="ch-num" aria-hidden="true">9</span>
       <div>
         <h2>One word at a time, with notes</h2>
         <p class="runs-on"><span class="loc hbm">KV cache lives in GPU memory</span><span class="loc sm">one token per pass</span></p>
@@ -383,10 +397,10 @@
     <div class="steps" id="steps"></div>
   </section>
 
-  <!-- 9. ROOFLINE --------------------------------------------------------->
+  <!-- 10. ROOFLINE --------------------------------------------------------->
   <section class="chapter" id="ch-roofline" data-map="roofline">
     <header class="ch-head">
-      <span class="ch-num" aria-hidden="true">9</span>
+      <span class="ch-num" aria-hidden="true">10</span>
       <div>
         <h2>Why writing is slower than reading</h2>
         <p class="runs-on"><span class="loc hbm">memory speed</span><span class="loc sm">vs arithmetic speed</span></p>
@@ -409,10 +423,10 @@
     </details>
   </section>
 
-  <!-- 10. PREFIX CACHE ---------------------------------------------------->
+  <!-- 11. PREFIX CACHE ---------------------------------------------------->
   <section class="chapter" id="ch-prefix" data-map="prefix">
     <header class="ch-head">
-      <span class="ch-num" aria-hidden="true">10</span>
+      <span class="ch-num" aria-hidden="true">11</span>
       <div>
         <h2>Reusing notes between requests</h2>
         <p class="runs-on"><span class="loc hbm">KV blocks stay in GPU memory</span></p>
@@ -432,10 +446,10 @@
     <div class="ttft" id="ttft"></div>
   </section>
 
-  <!-- 11. SUMMARY --------------------------------------------------------->
+  <!-- 12. SUMMARY --------------------------------------------------------->
   <section class="chapter" id="ch-summary" data-map="summary">
     <header class="ch-head">
-      <span class="ch-num" aria-hidden="true">11</span>
+      <span class="ch-num" aria-hidden="true">12</span>
       <div>
         <h2>The whole trip, in one table</h2>
         <p class="runs-on"><span class="loc host">CPU</span><span class="loc link">PCIe</span><span class="loc hbm">HBM</span><span class="loc sm">SM</span></p>
